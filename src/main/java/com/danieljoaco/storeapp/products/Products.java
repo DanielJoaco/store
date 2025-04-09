@@ -13,16 +13,12 @@ public class Products {
     private int quantity;
     private Rating rating;
     
-    public Products(String name, double price, int quantity, String category, String subcategory, Admin admin){
-        if (admin.isAdmin()) {
+    public Products(String name, double price, int quantity, String category, String subcategory){
             this.id = UUID.randomUUID().toString();
             this.name = name;
             this.price = price;
             this.quantity = quantity;
             this.subCategory = new SubCategory(category, subcategory);
-        } else {
-            throw new IllegalArgumentException("Only admins can create products.");
-        }
     }
 
     public void setName(String name, Admin admin){

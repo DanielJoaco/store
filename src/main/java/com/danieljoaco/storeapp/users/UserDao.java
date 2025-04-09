@@ -1,9 +1,13 @@
 package com.danieljoaco.storeapp.users;
+
 import com.danieljoaco.storeapp.db.DatabaseManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 
 public class UserDao {
+    private static final Logger logger = LoggerFactory.getLogger(UserDao.class);
 
     // Método para guardar un usuario
     public static void saveUser(Users user) {
@@ -15,6 +19,7 @@ public class UserDao {
         } else if (user instanceof Customer) {
             userType = Users.UserType.CUSTOMER.name();
         } else {
+            logger.error("❌ Tipo de usuario no válido.");
             throw new IllegalArgumentException("Tipo de usuario no válido.");
         }
 
@@ -28,12 +33,13 @@ public class UserDao {
                 checkStmt.setString(2, user.getEmail());
                 try (ResultSet rs = checkStmt.executeQuery()) {
                     if (rs.next() && rs.getInt(1) > 0) {
-                        throw new SQLException("❌ Error: El ID o el email ya están registrados.");
+                        logger.warn("⚠️ Error: El ID o el email ya están registrados.");
+                        return;
                     }
                 }
             }
 
-            // 2) Inserta el usuario; SQLite confirmará automáticamente
+            // 2) Inserta el usuario
             try (PreparedStatement pstmt = conn.prepareStatement(insertSql)) {
                 pstmt.setString(1, user.getId());
                 pstmt.setString(2, user.getName());
@@ -43,14 +49,14 @@ public class UserDao {
 
                 int rows = pstmt.executeUpdate();
                 if (rows > 0) {
-                    System.out.println("✅ Usuario guardado: " + user.getEmail());
+                    logger.info("✅ Usuario guardado: {}", user.getEmail());
                 } else {
-                    System.err.println("⚠️ No se insertó el usuario.");
+                    logger.warn("⚠️ No se insertó el usuario.");
                 }
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("❌ Error al guardar usuario: {}", e.getMessage());
         }
     }
 
@@ -64,10 +70,11 @@ public class UserDao {
                 return rs.getInt(1) > 0;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("❌ Error verificando admin: {}", e.getMessage());
         }
         return false;
     }
+
     // Obtener usuario por ID
     public static ResultSet findUserById(String id) throws SQLException  {
         String sql = "SELECT * FROM users WHERE id = ?";
@@ -76,7 +83,7 @@ public class UserDao {
         pstmt.setString(1, id);
         return pstmt.executeQuery();
     }
-    
+
     // Obtener usuario por Email
     public static Users findUserByEmail(String email) {
         String sql = "SELECT * FROM users WHERE email = ?";
@@ -91,16 +98,16 @@ public class UserDao {
                     String pwdHash  = rs.getString("password");
                     String typeUser = rs.getString("typeUser").toUpperCase();
 
-                return switch (typeUser) {
-                    case "ADMIN"         -> Admin.createAdminFromDb(id, email, pwdHash, name);
-                    case "SUPPORT_AGENT" -> SupportAgent.createAgentFromDb(id, email, pwdHash, name);
-                    case "CUSTOMER"      -> new Customer(id, email, pwdHash, name);
-                    default              -> throw new IllegalStateException("Unknown type: " + typeUser);
-                };
+                    return switch (typeUser) {
+                        case "ADMIN"         -> Admin.createAdminFromDb(id, email, pwdHash, name);
+                        case "SUPPORT_AGENT" -> SupportAgent.createAgentFromDb(id, email, pwdHash, name);
+                        case "CUSTOMER"      -> new Customer(id, email, pwdHash, name);
+                        default              -> throw new IllegalStateException("Unknown type: " + typeUser);
+                    };
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("❌ Error al buscar usuario: {}", e.getMessage());
         }
         return null;
     }

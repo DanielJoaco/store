@@ -24,44 +24,31 @@ public class Admin extends Users {
         if (UserDao.adminExists()) {
             throw new IllegalStateException("At least 1 admin already exists, use createdAdmin().");
         }
-        Admin firstAdmin = new Admin(id, email, password, name);
-        UserDao.saveUser(firstAdmin); 
-            return firstAdmin;
+        return new Admin(id, email, password, name);
     }
 
     public static Admin createAdmin(
-        String creatorEmail,
-        String creatorPassword,
         String id,
         String email,
         String password,
-        String name
+        String name,
+        Admin admin
     ) throws SQLException {
-        if (!UserDao.adminExists()) {
-            throw new IllegalStateException("No admin exists. Use createFirstAdmin(...) first.");
+        if(admin.isAdmin()){
+            return new Admin(id, email, password, name);
+        } else {
+            throw new IllegalArgumentException("The user is not an admin.");
         }
-
-        Users creator = UserDao.findUserByEmail(creatorEmail);
-        if (creator == null) {
-            throw new IllegalStateException("Email not found.");
-        }
-        if (!BCrypt.checkpw(creatorPassword, creator.getPasswordHash())
-            || !creator.getTypeUser().equals(UserType.ADMIN.name())) {
-            throw new IllegalStateException("Incorrect password or not an admin.");
-        }
-
-        Admin newAdmin = new Admin(id, email, password, name);
-        UserDao.saveUser(newAdmin);
-        return newAdmin;
     }
 
-    public static Admin instanceAdmin(String emailAccess, String passwordAcess) throws SQLException {
+    public static Admin instanceAdmin(String emailAccess, String passwordAccess) throws SQLException {
         if (!UserDao.adminExists()) {
             throw new IllegalStateException("No admin exists. Use createFirstAdmin(...) first.");
         }
         Users creator = UserDao.findUserByEmail(emailAccess);
 
-        if (!BCrypt.checkpw(passwordAcess, creator.getPasswordHash()) ||
+        assert creator != null;
+        if (!BCrypt.checkpw(passwordAccess, creator.getPasswordHash()) ||
             !creator.getTypeUser().equals(UserType.ADMIN.name())) {
             throw new IllegalStateException("Incorrect credentials.");
         }

@@ -37,7 +37,6 @@ public class ProductsDao {
                         rs.getString("name"),
                         rs.getDouble("price"),
                         rs.getInt("quantity"),
-                        rs.getString("category"),
                         rs.getString("subcategory"),
                         rs.getString("admin")
                 );
@@ -58,7 +57,6 @@ public class ProductsDao {
 
             while (rs.next()) {
                 Products product = new Products(
-                        rs.getString("id"),
                         rs.getString("name"),
                         rs.getDouble("price"),
                         rs.getInt("quantity"),

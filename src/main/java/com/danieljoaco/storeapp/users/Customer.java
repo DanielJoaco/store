@@ -19,7 +19,7 @@ public class Customer extends Users {
         if (balance < 0) {
             throw new IllegalArgumentException("Balance cannot be negative");
         } else
-        this.balance = balance;
+            this.balance = balance;
     }
     @Override
     public boolean isCustomer() {
