@@ -2,7 +2,7 @@ package com.danieljoaco.storeapp.products;
 
 public class SubCategory extends Category {
 
-    private String name;
+    private  final String name;
 
     public enum SubCategories {
         LIPS("LIPSTICKS", "DELINERS", "SOFT_LIPS", "TINTE", "GLOSS"),

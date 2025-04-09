@@ -1,5 +1,7 @@
 package com.danieljoaco.storeapp;
 import java.sql.SQLException;
+
+import com.danieljoaco.storeapp.users.UserDao;
 import com.danieljoaco.storeapp.users.*;
 
 public class StoreApp {

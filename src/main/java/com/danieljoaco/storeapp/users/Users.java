@@ -127,6 +127,9 @@ public abstract class Users {
     public boolean isAdmin() {
         return false;
     }
+    public boolean isCustomer() {
+        return false;
+    }
     
     @Override
     public String toString() {

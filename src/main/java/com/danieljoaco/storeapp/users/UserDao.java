@@ -1,5 +1,6 @@
 package com.danieljoaco.storeapp.users;
 import com.danieljoaco.storeapp.db.DatabaseManager;
+
 import java.sql.*;
 
 public class UserDao {
@@ -20,7 +21,7 @@ public class UserDao {
         String checkSql  = "SELECT COUNT(*) FROM users WHERE id = ? OR email = ?";
         String insertSql = "INSERT INTO users (id, name, email, password, typeUser) VALUES (?, ?, ?, ?, ?)";
 
-        try (Connection conn = DatabaseManager.connect()) {
+        try (Connection conn = DatabaseManager.connectUsers()) {
             // 1) Comprueba duplicados
             try (PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
                 checkStmt.setString(1, user.getId());
@@ -56,7 +57,7 @@ public class UserDao {
     // Verificar si ya existe un Admin en la base de datos
     public static boolean adminExists() {
         String sql = "SELECT COUNT(*) FROM users WHERE typeUser = 'ADMIN'";
-        try (Connection conn = DatabaseManager.connect();
+        try (Connection conn = DatabaseManager.connectUsers();
              PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
             if (rs.next()) {
@@ -70,7 +71,7 @@ public class UserDao {
     // Obtener usuario por ID
     public static ResultSet findUserById(String id) throws SQLException  {
         String sql = "SELECT * FROM users WHERE id = ?";
-        Connection conn = DatabaseManager.connect();
+        Connection conn = DatabaseManager.connectUsers();
         PreparedStatement pstmt = conn.prepareStatement(sql);
         pstmt.setString(1, id);
         return pstmt.executeQuery();
@@ -79,7 +80,7 @@ public class UserDao {
     // Obtener usuario por Email
     public static Users findUserByEmail(String email) {
         String sql = "SELECT * FROM users WHERE email = ?";
-        try (Connection conn = DatabaseManager.connect();
+        try (Connection conn = DatabaseManager.connectUsers();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, email);

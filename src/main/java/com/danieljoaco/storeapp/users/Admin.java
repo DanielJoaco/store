@@ -1,6 +1,7 @@
 package com.danieljoaco.storeapp.users;
 
 import java.sql.SQLException;
+
 import org.mindrot.jbcrypt.BCrypt;
 
 public class Admin extends Users {

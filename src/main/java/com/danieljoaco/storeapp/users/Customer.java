@@ -21,6 +21,10 @@ public class Customer extends Users {
         } else
         this.balance = balance;
     }
+    @Override
+    public boolean isCustomer() {
+        return true;
+    }
 
     @Override
     public String toString() {

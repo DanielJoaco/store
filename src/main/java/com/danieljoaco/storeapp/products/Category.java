@@ -1,10 +1,9 @@
 
 package com.danieljoaco.storeapp.products;
 
-
 public abstract class   Category {
     
-    private String name;
+    private final String name;
     
     public enum Categories {
         LIPS, EYES, SKIN, ACCESSORIES, SKINCARE
@@ -18,11 +17,8 @@ public abstract class   Category {
         this.name = name.toUpperCase();
     }
 
-    public String getName(){
+    public String getCategoryName(){
         return this.name;
     }
 
-    public void setName(String name){
-        this.name = name;
-    }
 }
