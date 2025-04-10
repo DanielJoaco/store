@@ -3,13 +3,15 @@ package com.danieljoaco.storeapp.menu;
 import java.sql.SQLException;
 import java.util.Scanner;
 import static com.danieljoaco.storeapp.utils.Utils.readInt;
-import static com.danieljoaco.storeapp.menu.SignInMenu.signInMenu;
+
 
 public class Menu {
 
     public static Scanner scanner = new Scanner(System.in);
 
     public static void showMenu() throws SQLException {
+
+
 
         while (true) {
             System.out.print("""
@@ -23,11 +25,12 @@ public class Menu {
             int option = readInt();
 
             switch (option) {
-                case 1 -> signInMenu();
-                case 2 -> loginInMenu();
+                case 1 -> {}//signInMenu();
+                case 2 -> { //loginInMenu();
+                }
                 case 3 -> {
                     System.out.println("See you soon!");
-                    return;
+                    System.exit(0);
                 }
                 default -> System.out.println("Invalid option, please try again.");
             }

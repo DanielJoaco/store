@@ -35,7 +35,6 @@ public class LoginIn {
     }
 
     public static Admin loginInAdmin() throws SQLException {
-        System.out.println("Only an admin can created this user.");
         LoginInParameters parameters = validateFieldsLogin();
         return Admin.loginAdmin(parameters.getEmail(), parameters.getPassword());
 
