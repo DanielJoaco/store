@@ -1,5 +1,7 @@
 package com.danieljoaco.storeapp.users;
 
+import org.mindrot.jbcrypt.BCrypt;
+
 public class Customer extends Users {
     
     private double balance;
@@ -9,6 +11,18 @@ public class Customer extends Users {
     public Customer(String id, String email, String password, String name) {
         super(id, email, password, UserType.CUSTOMER.name(), name);
         this.balance = 0.0; 
+    }
+
+    public static Customer loginCustomer(String emailAccess, String passwordAccess){
+        Users user = UserDao.findUserByEmail(emailAccess);
+        assert user != null;
+        if (!BCrypt.checkpw(passwordAccess, user.getPasswordHash()) ||
+                !user.getTypeUser().equals(UserType.CUSTOMER.name())) {
+            throw new IllegalStateException("Incorrect credentials.");
+        }
+        System.out.println("Credentials are correct. Welcome " + user.getName());
+        return (Customer) user;
+
     }
 
     public double getBalance(){

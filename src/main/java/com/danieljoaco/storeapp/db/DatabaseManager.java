@@ -15,21 +15,54 @@ public class DatabaseManager {
 
     static {
         try {
+            // Asegúrate de que el driver está disponible, el registro es automático
             Class.forName("org.sqlite.JDBC");
-            logger.info("Driver JDBC de SQLite cargado correctamente.");
         } catch (ClassNotFoundException e) {
-            logger.error("No se pudo cargar el driver JDBC de SQLite", e);
-            throw new RuntimeException("No se pudo cargar el driver JDBC de SQLite", e);
+            logger.error("El driver JDBC de SQLite no está en el classpath", e);
+            throw new RuntimeException("El driver JDBC de SQLite no está en el classpath", e);
         }
     }
 
+
+    /**
+     * Conecta a la base de datos de usuarios con cifrado.
+     */
     public static Connection connectUsers() throws SQLException {
-        logger.info("Conectando a la base de datos de usuarios...");
-        Connection conn = DriverManager.getConnection(URL_USERS);
+        try {
+            Connection conn = DriverManager.getConnection(URL_USERS);
+
+            // Aplicar las configuraciones de cifrado específicas
+            applyEncryptionPragmas(conn);
+
+            // Crear tabla en caso de que no exista
+            createUsersTable(conn);
+
+            return conn;
+        } catch (SQLException e) {
+            logger.error("Error al conectar a la base de datos de usuarios", e);
+            throw e;
+        }
+    }
+
+    /**
+     * Aplica las configuraciones de cifrado a una conexión SQLite.
+     */
+    private static void applyEncryptionPragmas(Connection conn) throws SQLException {
         try (Statement stat = conn.createStatement()) {
             stat.execute(String.format("PRAGMA key = '%s';", KEY));
             stat.execute("PRAGMA cipher_page_size = 4096;");
             stat.execute("PRAGMA kdf_iter = 64000;");
+        } catch (SQLException e) {
+            logger.error("Error al aplicar las configuraciones de cifrado", e);
+            throw e;
+        }
+    }
+
+    /**
+     * Crea la tabla de usuarios si no existe.
+     */
+    private static void createUsersTable(Connection conn) throws SQLException {
+        try (Statement stat = conn.createStatement()) {
             stat.execute("""
                 CREATE TABLE IF NOT EXISTS users (
                     id TEXT PRIMARY KEY,
@@ -40,17 +73,31 @@ public class DatabaseManager {
                     balance REAL DEFAULT 0.0
                 );
             """);
-            logger.info("Tabla 'users' verificada/creada.");
-        } catch (SQLException e) {
-            logger.error("Error al conectar a la base de datos de usuarios", e);
-            throw e;
         }
-        return conn;
     }
 
+    /**
+     * Conecta a la base de datos de productos.
+     */
     public static Connection connectProducts() throws SQLException {
         logger.info("Conectando a la base de datos de productos...");
-        Connection conn = DriverManager.getConnection(URL_PRODUCTS);
+        try {
+            Connection conn = DriverManager.getConnection(URL_PRODUCTS);
+
+            // Crear tablas de productos si no existen
+            createProductTables(conn);
+
+            return conn;
+        } catch (SQLException e) {
+            logger.error("Error al conectar a la base de datos de productos", e);
+            throw e;
+        }
+    }
+
+    /**
+     * Crea las tablas relacionadas con productos si no existen.
+     */
+    private static void createProductTables(Connection conn) throws SQLException {
         try (Statement stat = conn.createStatement()) {
             stat.execute("""
                 CREATE TABLE IF NOT EXISTS categories (
@@ -89,9 +136,8 @@ public class DatabaseManager {
             """);
             logger.info("Tablas de productos verificadas/creadas.");
         } catch (SQLException e) {
-            logger.error("Error al conectar a la base de datos de productos", e);
+            logger.error("Error al crear tablas de productos", e);
             throw e;
         }
-        return conn;
     }
 }

@@ -86,12 +86,16 @@ public class UserDao {
 
     // Obtener usuario por Email
     public static Users findUserByEmail(String email) {
+
         String sql = "SELECT * FROM users WHERE email = ?";
         try (Connection conn = DatabaseManager.connectUsers();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, email);
+
+
             try (ResultSet rs = pstmt.executeQuery()) {
+                
                 if (rs.next()) {
                     String id       = rs.getString("id");
                     String name     = rs.getString("name");

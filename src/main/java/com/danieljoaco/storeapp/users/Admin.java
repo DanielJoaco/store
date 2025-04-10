@@ -41,23 +41,24 @@ public class Admin extends Users {
         }
     }
 
-    public static Admin instanceAdmin(String emailAccess, String passwordAccess) throws SQLException {
+    public static Admin loginAdmin(String emailAccess, String passwordAccess) throws SQLException {
         if (!UserDao.adminExists()) {
             throw new IllegalStateException("No admin exists. Use createFirstAdmin(...) first.");
         }
-        Users creator = UserDao.findUserByEmail(emailAccess);
+        System.out.println("Checking credentials...");
+        Users user = UserDao.findUserByEmail(emailAccess);
 
-        assert creator != null;
-        if (!BCrypt.checkpw(passwordAccess, creator.getPasswordHash()) ||
-            !creator.getTypeUser().equals(UserType.ADMIN.name())) {
+        assert user != null;
+        if (!BCrypt.checkpw(passwordAccess, user.getPasswordHash()) ||
+            !user.getTypeUser().equals(UserType.ADMIN.name())) {
             throw new IllegalStateException("Incorrect credentials.");
         }
-        
-        return (Admin) creator;
+        System.out.println("Credentials are correct. Welcome " + user.getName());
+        return (Admin) user;
     }
     static Admin createAdminFromDb(String id, String email, String passwordHash, String name) {
-        boolean isIstance = true;
-        return new Admin(id, email, passwordHash, name, isIstance);
+        boolean isInstance = true;
+        return new Admin(id, email, passwordHash, name, isInstance);
     }
     
     @Override
