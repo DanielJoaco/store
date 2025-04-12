@@ -1,7 +1,6 @@
 package com.danieljoaco.storeapp.users;
 
 import java.sql.SQLException;
-
 import org.mindrot.jbcrypt.BCrypt;
 
 public class Admin extends Users {
@@ -13,7 +12,7 @@ public class Admin extends Users {
     private Admin(String id, String email, String password, String name, boolean isIstance) {
         super(id, email, password, UserType.ADMIN.name(), name, isIstance);
     }
-    
+
     public static Admin createFirtsAdmin(
         String id,
         String email,
@@ -47,14 +46,17 @@ public class Admin extends Users {
         }
         System.out.println("Checking credentials...");
         Users user = UserDao.findUserByEmail(emailAccess);
-
-        assert user != null;
-        if (!BCrypt.checkpw(passwordAccess, user.getPasswordHash()) ||
-            !user.getTypeUser().equals(UserType.ADMIN.name())) {
+        if (user != null) {
+            if (BCrypt.checkpw(passwordAccess, user.getPasswordHash()) &&
+                    user.getTypeUser().equals(UserType.ADMIN.name())){
+                System.out.println("Credentials are correct. Welcome " + user.getName());
+                return (Admin) user;
+            } else{
+                throw new IllegalStateException("Incorrect credentials.");
+            }
+        } else {
             throw new IllegalStateException("Incorrect credentials.");
         }
-        System.out.println("Credentials are correct. Welcome " + user.getName());
-        return (Admin) user;
     }
     static Admin createAdminFromDb(String id, String email, String passwordHash, String name) {
         boolean isInstance = true;

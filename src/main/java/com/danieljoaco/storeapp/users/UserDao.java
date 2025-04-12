@@ -12,15 +12,14 @@ public class UserDao {
     // Método para guardar un usuario
     public static void saveUser(Users user) {
         String userType;
-        if (user instanceof Admin) {
-            userType = Users.UserType.ADMIN.name();
-        } else if (user instanceof SupportAgent) {
-            userType = Users.UserType.SUPPORT_AGENT.name();
-        } else if (user instanceof Customer) {
-            userType = Users.UserType.CUSTOMER.name();
-        } else {
-            logger.error("❌ Tipo de usuario no válido.");
-            throw new IllegalArgumentException("Tipo de usuario no válido.");
+        switch (user) {
+            case Admin admin -> userType = Users.UserType.ADMIN.name();
+            case SupportAgent supportAgent -> userType = Users.UserType.SUPPORT_AGENT.name();
+            case Customer customer -> userType = Users.UserType.CUSTOMER.name();
+            case null, default -> {
+                logger.error("❌ Tipo de usuario no válido.");
+                throw new IllegalArgumentException("Tipo de usuario no válido.");
+            }
         }
 
         String checkSql  = "SELECT COUNT(*) FROM users WHERE id = ? OR email = ?";
