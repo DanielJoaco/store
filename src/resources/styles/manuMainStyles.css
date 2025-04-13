@@ -4,7 +4,7 @@
 /* Contenedor principal (VBox) */
 .root {
     -fx-font-family: 'Lobster', 'Macondo', 'Silkscreen', sans-serif;
-    -fx-background-color: #FFB200; /* Color de fondo */
+    -fx-background-color: #3B1C32; /* Color de fondo */
     -fx-padding: 20;             /* Margen interno */
 }
 
@@ -12,8 +12,8 @@
 .button {
     -fx-font-size: 16px;         /* Tamaño de fuente */
     /*-fx-font-family: "Arial", sans-serif; /* Fuente de los botones */
-    -fx-text-fill: #FFB200;      /* Color del texto */
-    -fx-background-color: #D91656; /* Color del botón (verde) */
+    -fx-text-fill: #1A1A1D;      /* Color del texto */
+    -fx-background-color: #A64D79; /* Color del botón (verde) */
     -fx-border-radius: 5px;      /* Bordes redondeados */
     -fx-background-radius: 5px;
     -fx-padding: 10 20;          /* Espaciado interno */
@@ -23,13 +23,13 @@
 
 /* Efectos al pasar el mouse por los botones */
 .button:hover {
-    -fx-text-fill: #EB5B00;
-    -fx-background-color: #640D5F;       /* Color más oscuro al pasar el ratón */
+    -fx-text-fill: #A64D79;
+    -fx-background-color: #6A1E55;       /* Color más oscuro al pasar el ratón */
 }
 
 /* Efectos al presionar un botón */
 .button:pressed {
-    -fx-text-fill: #EB5B00;
-    -fx-background-color: #640D5F;      /* Color más oscuro al hacer clic */
+    -fx-text-fill: #A64D79;
+    -fx-background-color: #6A1E55;      /* Color más oscuro al hacer clic */
     -fx-effect: none;                   /* Remover el efecto de sombra */
 }

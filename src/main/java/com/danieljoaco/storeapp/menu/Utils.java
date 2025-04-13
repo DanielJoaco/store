@@ -50,7 +50,7 @@ public class Utils {
         return v;
     }
 
-    static Label createLabel(String text, int fontSize) {
+    static Label createTittleLabel(String text, int fontSize) {
         Label l = new Label(text);
         l.setFont(Font.font("Arial", FontWeight.BOLD, fontSize));
         return l;
@@ -121,7 +121,7 @@ public class Utils {
     }
 
     static void addTitleToGrid(GridPane grid, String title) {
-        Label lblTitle = createLabel(title, 16);
+        Label lblTitle = createTittleLabel(title, 16);
         GridPane.setColumnSpan(lblTitle, 2);
         GridPane.setHalignment(lblTitle, HPos.CENTER);
         grid.add(lblTitle, 0, 0, 2, 1);

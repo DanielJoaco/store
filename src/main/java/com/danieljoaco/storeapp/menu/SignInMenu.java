@@ -23,7 +23,7 @@ public class SignInMenu {
         stage.setTitle("Sign In Menu");
         VBox root = createVBox(30, 20, Pos.CENTER);
 
-        Label lblTitle = createLabel("Sign In Menu", 24);
+        Label lblTitle = Utils.createTittleLabel("Sign In Menu", 24);
         Button btnCreateCustomer = createMenuButton("Create Customer", e -> createCustomer());
         Button btnCreateSupportAgent = createMenuButton("Create Support Agent", e -> createSupportAgent());
         Button btnCreateAdmin = createMenuButton("Create Admin", e -> createdAdmin());
@@ -42,7 +42,7 @@ public class SignInMenu {
     }
 
     private void createSupportAgent() {
-        adminLogin = loginAsAdmin();
+        adminLogin = (Admin) loginInUsers(Users.UserType.ADMIN.name());
         if (adminLogin != null && adminLogin.isAdmin()) {
             newUser(Users.UserType.SUPPORT_AGENT.name());
         }
@@ -52,7 +52,7 @@ public class SignInMenu {
         boolean exists = adminExists();
 
         if (exists) {
-            adminLogin = loginAsAdmin();
+            adminLogin = (Admin) loginInUsers(Users.UserType.ADMIN.name());
             if (adminLogin == null || !adminLogin.isAdmin()) {
                 return;
             }

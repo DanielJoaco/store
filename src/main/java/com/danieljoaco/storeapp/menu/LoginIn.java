@@ -1,6 +1,9 @@
 package com.danieljoaco.storeapp.menu;
 
 import com.danieljoaco.storeapp.users.Admin;
+import com.danieljoaco.storeapp.users.Customer;
+import com.danieljoaco.storeapp.users.SupportAgent;
+import com.danieljoaco.storeapp.users.Users;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -18,12 +21,20 @@ import static com.danieljoaco.storeapp.utils.UserValidator.isValidPassword;
 
 public class LoginIn {
 
-    private static Admin adminLogin;
+    private static Users userLogin;
 
-    static Admin loginAsAdmin() {
-        Stage loginStage = setupStage("Admin Access");
+    static Users loginInUsers(String typeUser) {
+
+        String tittle;
+        switch (typeUser) {
+            case "ADMIN" -> tittle = "Ingreso como Administrador";
+            case "SUPPORT_AGENT" -> tittle = "Ingreso como Agente de Soporte";
+            case "CUSTOMER" -> tittle = "Ingreso como Cliente";
+            default -> tittle = "Ingreso como Usuario";
+        }
+        Stage loginStage = setupStage(tittle);
         loginStage.initModality(Modality.APPLICATION_MODAL);
-        GridPane grid = loginAsAdminGrid(loginStage);
+        GridPane grid = loginInUserGrid(loginStage, typeUser, tittle);
         VBox root = createVBox(0, 20, Pos.CENTER, grid);
         setScene(loginStage, root, 400, 300, "/styles/manuMainStyles.css");
         try {
@@ -31,12 +42,12 @@ public class LoginIn {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return adminLogin;
+        return userLogin;
     }
 
-    static GridPane loginAsAdminGrid(Stage stage) {
+    static GridPane loginInUserGrid(Stage stage, String typeUser, String title) {
         GridPane grid = createGridPane();
-        addTitleToGrid(grid, "Admin Access");
+        addTitleToGrid(grid, title);
 
         Label lblEmail = new Label("Email: ");
         TextField txtEmail = new TextField();
@@ -56,13 +67,19 @@ public class LoginIn {
                     throw new IllegalArgumentException("Email and password cannot be blank.");
                 } else if (isValidEmail(email) && isValidPassword(password)) {
                     try {
-                        adminLogin = Admin.loginAdmin(email, password);
+
+                        switch (typeUser) {
+                            case "ADMIN" -> userLogin = Admin.loginAdmin(email, password);
+                            case "SUPPORT_AGENT" -> userLogin = SupportAgent.loginSupportAgent(email, password);
+                            case "CUSTOMER" -> userLogin = Customer.loginCustomer(email, password);
+                        }
                         showSuccess(lblError, "Success message");
+
                     } catch (SQLException e) {
                         showError(lblError, e.getMessage());
                     }
                     disableControls(lblEmail, txtEmail, lblPassword, txtPassword, btnAccess);
-                    showSuccess(lblError, "Access granted! Welcome, " + adminLogin.getName() + ".");
+                    showSuccess(lblError, "Access granted! Welcome, " + userLogin.getName() + ".");
                     closeAfterDelay(stage);
                 } else {
                     throw new IllegalArgumentException("Invalid email or password format.");
