@@ -44,12 +44,10 @@ public class Admin extends Users {
         if (!UserDao.adminExists()) {
             throw new IllegalStateException("No admin exists. Use createFirstAdmin(...) first.");
         }
-        System.out.println("Checking credentials...");
         Users user = UserDao.findUserByEmail(emailAccess);
         if (user != null) {
             if (BCrypt.checkpw(passwordAccess, user.getPasswordHash()) &&
                     user.getTypeUser().equals(UserType.ADMIN.name())){
-                System.out.println("Credentials are correct. Welcome " + user.getName());
                 return (Admin) user;
             } else{
                 throw new IllegalStateException("Incorrect credentials.");

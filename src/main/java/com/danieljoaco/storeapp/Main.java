@@ -7,6 +7,8 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import com.danieljoaco.storeapp.menu.SignInMenu;
 
+import java.util.Objects;
+
 public class Main extends Application {
 
     @Override
@@ -28,12 +30,15 @@ public class Main extends Application {
         });
 
         VBox vbox = new VBox(15); // Espaciado entre botones: 15px
-        vbox.setStyle("-fx-padding: 20; -fx-alignment: center;"); // Margen y centrado
+        vbox.setStyle("-fx-alignment: center;"); // Margen y centrado
         vbox.getChildren().addAll(btnRegister, btnLogin, btnExit);
 
 
         // Crear una escena y asignarla al escenario principal
-        Scene scene = new Scene(vbox, 800, 600); // Tamaño: 300x200
+        Scene scene = new Scene(vbox, 500, 400); // Tamaño: 300x200
+        String css = Objects.requireNonNull(getClass().getResource("/styles/manuMainStyles.css")).toExternalForm();
+        scene.getStylesheets().add(css);
+
         primaryStage.setScene(scene);
 
         // Mostrar la ventana

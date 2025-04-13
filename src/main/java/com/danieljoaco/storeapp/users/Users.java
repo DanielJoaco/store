@@ -51,8 +51,7 @@ public abstract class Users {
         
         if (isValidPassword(password)) {
             String salt = BCrypt.gensalt(12);
-            String hashedPassword = BCrypt.hashpw(password, salt);
-            this.passwordHash = hashedPassword;
+            this.passwordHash = BCrypt.hashpw(password, salt);
         } else {
             throw new IllegalArgumentException("The password must be between 8 and 20 characters, at least one letter and one number, and can contain alphanumeric characters and the symbols &%$#_.-");
         }

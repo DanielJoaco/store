@@ -1,0 +1,35 @@
+/* Importar las fuentes de Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Lobster&family=Macondo&family=Silkscreen:wght@400;700&display=swap');
+
+/* Contenedor principal (VBox) */
+.root {
+    -fx-font-family: 'Lobster', 'Macondo', 'Silkscreen', sans-serif;
+    -fx-background-color: #FFB200; /* Color de fondo */
+    -fx-padding: 20;             /* Margen interno */
+}
+
+/* Botones */
+.button {
+    -fx-font-size: 16px;         /* Tamaño de fuente */
+    /*-fx-font-family: "Arial", sans-serif; /* Fuente de los botones */
+    -fx-text-fill: #FFB200;      /* Color del texto */
+    -fx-background-color: #D91656; /* Color del botón (verde) */
+    -fx-border-radius: 5px;      /* Bordes redondeados */
+    -fx-background-radius: 5px;
+    -fx-padding: 10 20;          /* Espaciado interno */
+    -fx-cursor: hand;            /* Cambiar el cursor al pasar */
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 5, 0.3, 0, 3);
+}
+
+/* Efectos al pasar el mouse por los botones */
+.button:hover {
+    -fx-text-fill: #EB5B00;
+    -fx-background-color: #640D5F;       /* Color más oscuro al pasar el ratón */
+}
+
+/* Efectos al presionar un botón */
+.button:pressed {
+    -fx-text-fill: #EB5B00;
+    -fx-background-color: #640D5F;      /* Color más oscuro al hacer clic */
+    -fx-effect: none;                   /* Remover el efecto de sombra */
+}

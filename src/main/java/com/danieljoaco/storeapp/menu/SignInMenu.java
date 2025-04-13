@@ -1,226 +1,94 @@
 package com.danieljoaco.storeapp.menu;
 
-import static com.danieljoaco.storeapp.utils.UserValidator.*;
-import com.danieljoaco.storeapp.users.Admin;
-import com.danieljoaco.storeapp.utils.LoginInParameters;
-import javafx.animation.PauseTransition;
+import static com.danieljoaco.storeapp.menu.LoginIn.*;
+import static com.danieljoaco.storeapp.users.UserDao.*;
+import static com.danieljoaco.storeapp.menu.Utils.*;
+import com.danieljoaco.storeapp.users.*;
 import javafx.geometry.HPos;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
-import javafx.util.Duration;
-
-import java.util.stream.Stream;
 
 public class SignInMenu {
-    private Admin currentAdmin; // Almacena un administrador autenticado, si corresponde
-    private LoginInParameters parameters;
 
-    /**
-     * Muestra el menú principal donde el usuario puede elegir entre crear un cliente,
-     * un agente de soporte, un administrador o regresar al menú principal.
-     */
+    private Admin adminLogin;
+
     public void show(Stage stage) {
         stage.setTitle("Sign In Menu");
+        VBox root = createVBox(30, 20, Pos.CENTER);
 
-        VBox root = new VBox();
-        root.setPadding(new Insets(30));
-        root.setSpacing(20);
-        root.setAlignment(Pos.CENTER);
+        Label lblTitle = createLabel("Sign In Menu", 24);
+        Button btnCreateCustomer = createMenuButton("Create Customer", e -> createCustomer());
+        Button btnCreateSupportAgent = createMenuButton("Create Support Agent", e -> createSupportAgent());
+        Button btnCreateAdmin = createMenuButton("Create Admin", e -> createdAdmin());
+        Button btnReturnToMainMenu = createMenuButton("Return to Main Menu", e -> returnToMainMenu(stage));
 
-        // Título del menú
-        Label lblTitle = new Label("Sign In Menu");
-        lblTitle.setFont(Font.font("Arial", FontWeight.BOLD, 24));
-
-        // Botón para crear un cliente
-        Button btnCreateCustomer = new Button("Create Customer");
-        btnCreateCustomer.setMinWidth(200);
-        btnCreateCustomer.setOnAction(e -> createCustomer());
-
-        // Botón para crear un agente de soporte
-        Button btnCreateSupportAgent = new Button("Create Support Agent");
-        btnCreateSupportAgent.setMinWidth(200);
-        btnCreateSupportAgent.setOnAction(e -> createSupportAgent());
-
-        // Botón para crear un administrador
-        Button btnCreateAdmin = new Button("Create Admin");
-        btnCreateAdmin.setMinWidth(200);
-        btnCreateAdmin.setOnAction(e -> accessingAsAdmin());
-
-        // Botón para regresar al menú principal
-        Button btnReturnToMainMenu = new Button("Return to Main Menu");
-        btnReturnToMainMenu.setMinWidth(200);
-        btnReturnToMainMenu.setOnAction(e -> returnToMainMenu(stage));
-
-        // Agregar todos los botones al contenedor
         root.getChildren().addAll(lblTitle, btnCreateCustomer, btnCreateSupportAgent, btnCreateAdmin, btnReturnToMainMenu);
-
-        stage.setScene(new Scene(root, 400, 300));
-        stage.show();
+        setScene(stage, root, 600, 400, "/styles/manuMainStyles.css");
     }
 
-    /**
-     * Lógica para manejar la creación de un cliente.
-     * (Implementación pendiente o simulada por ahora).
-     */
     private void createCustomer() {
-        System.out.println("Creating a new Customer... (Logic not implemented yet)");
-        // Se podría implementar la ventana correspondiente aquí
-    }
-
-    /**
-     * Lógica para manejar la creación de un agente de soporte.
-     * (Implementación pendiente o simulada).
-     */
-    private void createSupportAgent() {
-        Admin admin = accessingAsAdmin();
-        if(admin.isAdmin()){
-            newUser("Agente Soporte");
+        try {
+            newUser(Users.UserType.CUSTOMER.name());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
-    /**
-     * Lógica para acceder al panel de creación de administrador.
-     * Llama al método `accessingAsAdmin()`.
-     */
-    private Admin accessingAsAdmin() {
-        Stage adminStage = setupStage("Admin Access");
-
-        // Crear la interfaz llamando a createAdminAccessGrid
-        GridPane adminAccessGrid = createAdminAccessGrid(adminStage);
-        VBox root = new VBox(adminAccessGrid);
-        root.setAlignment(Pos.CENTER);
-        root.setSpacing(20);
-
-        Scene adminScene = new Scene(root, 400, 300);
-        adminStage.setScene(adminScene);
-        adminStage.showAndWait();
-
-        // Retornar administrador autenticado (si lo hay)
-        return currentAdmin;
-    }
-    /**
-     * Lógica para regresar al menú principal.
-     *
-     * @param stage El escenario principal que se actualizará.
-     */
-    private void returnToMainMenu(Stage stage) {
-        // Simulación de regreso al menú principal
-        System.out.println("Returning to the main menu...");
-        stage.close(); // Cierra esta ventana; se podría invocar `menu.show(primaryStage)` si hay una instancia del menú principal
+    private void createSupportAgent() {
+        adminLogin = loginAsAdmin();
+        if (adminLogin != null && adminLogin.isAdmin()) {
+            newUser(Users.UserType.SUPPORT_AGENT.name());
+        }
     }
 
-    // Métodos auxiliares reutilizables para configurar ventanas y diseñar la interfaz
-    private Stage setupStage(String title) {
-        Stage stage = new Stage();
-        stage.setTitle(title);
-        return stage;
-    }
+    private void createdAdmin() {
+        boolean exists = adminExists();
 
-    private GridPane createAdminAccessGrid(Stage adminStage) {
-        GridPane grid = new GridPane();
-        grid.setPadding(new Insets(50));
-        grid.setHgap(15);
-        grid.setVgap(15);
-        grid.setAlignment(Pos.CENTER);
-
-        Label lblTitle = new Label("Admin Access");
-        lblTitle.setFont(Font.font("Arial", FontWeight.BOLD, 16));
-        GridPane.setColumnSpan(lblTitle, 2);
-        GridPane.setHalignment(lblTitle, HPos.CENTER);
-
-        Label lblEmail = new Label("Email: ");
-        TextField txtEmail = new TextField();
-
-        Label lblPassword = new Label("Password: ");
-        PasswordField txtPassword = new PasswordField();
-
-        Label lblError = new Label();
-        lblError.setStyle("-fx-text-fill: red;");
-
-        Button btnAccess = new Button("Access");
-        btnAccess.setOnAction(event -> {
-            String email = txtEmail.getText();
-            String password = txtPassword.getText();
-
-            try {
-                if (email.isBlank() || password.isBlank()) {
-                    throw new IllegalArgumentException("Email and password cannot be blank.");
-                } else{
-                    if (isValidEmail(email) && isValidPassword(password)) { // Llamada a UserValidator
-                        // Si la validación pasa, intentar iniciar sesión como administrador
-                        currentAdmin = Admin.loginAdmin(email, password);
-                        Stream.of(lblEmail, txtEmail, lblPassword, txtPassword, btnAccess).forEach(node -> node.setDisable(true));
-                        lblError.setText("Access granted! Welcome, " + currentAdmin.getName() + ".");
-                        lblError.setStyle("-fx-text-fill: green;");
-
-                        // Cerrar la ventana tras un retraso
-                        PauseTransition pause = new PauseTransition(Duration.millis(2000));
-                        pause.setOnFinished(e -> adminStage.close());
-                        pause.play();
-                    } else {
-                        throw new IllegalArgumentException("Invalid email or password format.");
-                    }
-                }
-
-            } catch (Exception ex) {
-                // Mostrar mensaje de error en caso de excepción
-                lblError.setText(ex.getMessage());
-                lblError.setStyle("-fx-text-fill: red;");
+        if (exists) {
+            adminLogin = loginAsAdmin();
+            if (adminLogin == null || !adminLogin.isAdmin()) {
+                return;
             }
-        });
+        }
 
-        // Añadir componentes al grid
-        grid.add(lblTitle, 0, 0, 2, 1);
-        grid.add(lblEmail, 0, 1);
-        grid.add(txtEmail, 1, 1);
-        grid.add(lblPassword, 0, 2);
-        grid.add(txtPassword, 1, 2);
-        grid.add(btnAccess, 0, 3, 2, 1);
-        grid.add(lblError, 0, 4, 2, 1);
-
-        GridPane.setHalignment(btnAccess, HPos.CENTER);
-        GridPane.setHalignment(lblError, HPos.CENTER);
-
-        return grid;
+        newUser(exists ? "ADMIN" : "FIRST_ADMIN");
     }
 
-    private void newUser(String typeUser) throws Exception {
-        Stage newUserStage = setupStage("New" + typeUser);
+    private void returnToMainMenu(Stage stage) {
+        System.out.println("Returning to the main menu...");
+        stage.close();
+    }
 
-        // Crear la interfaz llamando a createAdminAccessGrid
-        GridPane newUserGrid = createNewUsersGrid(newUserStage, typeUser);
-        VBox root = new VBox(newUserGrid);
-        root.setAlignment(Pos.CENTER);
-        root.setSpacing(20);
+    private void newUser(String typeUser){
+        String title = switch (typeUser) {
+            case "FIRST_ADMIN" -> "Crear Primer Administrador";
+            case "ADMIN" -> "Nuevo Administrador";
+            case "SUPPORT_AGENT" -> "Nuevo Agente de Soporte";
+            case "CUSTOMER" -> "Nuevo Cliente";
+            default -> "Nuevo usuario";
+        };
 
-        Scene newUserScene = new Scene(root, 400, 300);
-        newUserStage.setScene(newUserScene);
+        Stage newUserStage = setupStage(title);
+        GridPane newUserGrid = createNewUsersGrid(newUserStage, typeUser, title);
+        VBox root = createVBox(0, 20, Pos.CENTER, newUserGrid);
+        setScene(newUserStage, root, 450, 500, "/styles/manuMainStyles.css");
         newUserStage.showAndWait();
     }
 
-    private GridPane createNewUsersGrid(Stage newUserStage, String typeUser) {
-        GridPane grid = new GridPane();
-        grid.setPadding(new Insets(50));
-        grid.setHgap(15);
-        grid.setVgap(15);
-        grid.setAlignment(Pos.CENTER);
-        Label lblTitle = new Label("New " + typeUser);
-        lblTitle.setFont(Font.font("Arial", FontWeight.BOLD, 16));
-        GridPane.setColumnSpan(lblTitle, 2);
-        GridPane.setHalignment(lblTitle, HPos.CENTER);
+    private GridPane createNewUsersGrid(Stage newUserStage, String typeUser, String title) {
+        GridPane grid = createGridPane();
+        addTitleToGrid(grid, title);
 
         Label lblName = new Label("Name: ");
         TextField txtName = new TextField();
+
         Label lblEmail = new Label("Email: ");
         TextField txtEmail = new TextField();
 
@@ -229,8 +97,11 @@ public class SignInMenu {
 
         Label lblPassword = new Label("Password: ");
         PasswordField txtPassword = new PasswordField();
-        Label lblError = new Label();
-        lblError.setStyle("-fx-text-fill: red;");
+
+        Label lblRepeatPassword = new Label("Repeat Password: ");
+        PasswordField txtRepeatPassword = new PasswordField();
+
+        Label lblError = createErrorLabel();
 
         Button btnCreate = new Button("Create");
         btnCreate.setOnAction(event -> {
@@ -238,8 +109,64 @@ public class SignInMenu {
             String email = txtEmail.getText();
             String id = txtId.getText();
             String password = txtPassword.getText();
+            String repeatPassword = txtRepeatPassword.getText();
 
+            tryAction(lblError, () -> {
+                validateUserInput(name, email, id, password, repeatPassword);
+                try{
+                    createUserByType(typeUser, id, email, password, name);
+                } catch (Exception e) {
+                    showError(lblError, e.getMessage());
+                }
+
+                Node[] controls = {lblName, txtName, lblEmail, txtEmail, lblId, txtId,
+                        lblPassword, txtPassword, lblRepeatPassword, txtRepeatPassword, btnCreate};
+                disableControls(controls);
+
+                showSuccess(lblError, typeUser + " created successfully!");
+                closeAfterDelay(newUserStage);
+            }, "User created successfully");
         });
+
+        // Add all controls to grid
+        grid.add(lblName, 0, 1);
+        grid.add(txtName, 1, 1);
+        grid.add(lblEmail, 0, 2);
+        grid.add(txtEmail, 1, 2);
+        grid.add(lblId, 0, 3);
+        grid.add(txtId, 1, 3);
+        grid.add(lblPassword, 0, 4);
+        grid.add(txtPassword, 1, 4);
+        grid.add(lblRepeatPassword, 0, 5);
+        grid.add(txtRepeatPassword, 1, 5);
+        grid.add(btnCreate, 0, 6, 2, 1);
+        grid.add(lblError, 0, 7, 2, 1);
+
+        GridPane.setHalignment(btnCreate, HPos.CENTER);
+        GridPane.setHalignment(lblError, HPos.CENTER);
+
         return grid;
     }
+
+    private void createUserByType(String typeUser, String id, String email, String password, String name) throws Exception {
+        switch (typeUser) {
+            case "FIRST_ADMIN" -> {
+                Admin firstAdmin = Admin.createFirtsAdmin(id, email, password, name);
+                saveUser(firstAdmin);
+            }
+            case "ADMIN" -> {
+                Admin newAdmin = Admin.createAdmin(id, email, password, name, adminLogin);
+                saveUser(newAdmin);
+            }
+            case "SUPPORT_AGENT" -> {
+                SupportAgent newSupport = SupportAgent.createdSupportAgent(id, email, password, name, adminLogin);
+                saveUser(newSupport);
+            }
+            case "CUSTOMER" -> {
+                Customer newCustomer = new Customer(id, email, password, name);
+                saveUser(newCustomer);
+            }
+        }
+    }
+
 }
