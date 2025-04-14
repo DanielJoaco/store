@@ -16,7 +16,7 @@ public class ProductsDao {
             pstmt.setString(1, product.getId());  // Asumiendo que getId() genera un UUID único
             pstmt.setString(2, product.getName());
             pstmt.setDouble(3, product.getPrice());
-            pstmt.setInt(4, product.getQuantity());
+            pstmt.setInt(4, product.getStock());
             pstmt.setString(5, product.getCategory());
             pstmt.setString(6, product.getSubCategory());
             pstmt.executeUpdate();
@@ -26,19 +26,39 @@ public class ProductsDao {
     }
 
     // Obtener un producto por ID
-    public Products getProductById(String id) {
-        String sql = "SELECT * FROM products WHERE id = ?";
+    public Products getProductByRef(String ref) {
+        String sql = """
+                    SELECT
+                        p.name,
+                        p.ref,
+                        p.cost,
+                        p.price,
+                        p.stock,
+                        p.bill,
+                        p.date,
+                        c.name AS category,  -- Obtener la categoría
+                        s.name AS subcategory -- Obtener la subcategoría
+                    FROM products p
+                    LEFT JOIN subcategories s ON p.subcategory_id = s.id
+                    LEFT JOIN categories c ON s.category_id = c.id
+                    WHERE p.ref = ?
+                """;
+
         try (Connection conn = DatabaseManager.connectProducts(); // Usamos connectProducts()
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, id);
+            pstmt.setString(1, ref);
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
                 return new Products(
                         rs.getString("name"),
+                        rs.getString("ref"),
+                        rs.getDouble("cost"),
                         rs.getDouble("price"),
-                        rs.getInt("quantity"),
-                        rs.getString("subcategory"),
-                        rs.getString("admin")
+                        rs.getInt("stock"),
+                        rs.getString("bill"),
+                        rs.getDate("date").toLocalDate(),
+                        rs.getString("category"),
+                        rs.getString("subcategory")
                 );
             }
         } catch (SQLException e) {
@@ -49,7 +69,21 @@ public class ProductsDao {
 
     // Listar todos los productos
     public List<Products> getAllProducts() {
-        String sql = "SELECT * FROM products";
+        String sql = """
+                SELECT
+                    p.name,
+                    p.ref,
+                    p.cost,
+                    p.price,
+                    p.stock,
+                    p.bill,
+                    p.date,
+                    c.name AS category,
+                    s.name AS subcategory
+                FROM products p
+                LEFT JOIN subcategories s ON p.subcategory_id = s.id
+                LEFT JOIN categories c ON s.category_id = c.id
+            """;
         List<Products> productsList = new ArrayList<>();
         try (Connection conn = DatabaseManager.connectProducts(); // Usamos connectProducts()
              Statement stmt = conn.createStatement();
@@ -58,8 +92,12 @@ public class ProductsDao {
             while (rs.next()) {
                 Products product = new Products(
                         rs.getString("name"),
+                        rs.getString("ref"),
+                        rs.getDouble("cost"),
                         rs.getDouble("price"),
-                        rs.getInt("quantity"),
+                        rs.getInt("stock"),
+                        rs.getString("bill"),
+                        rs.getDate("date").toLocalDate(),
                         rs.getString("category"),
                         rs.getString("subcategory")
                 );
@@ -79,7 +117,7 @@ public class ProductsDao {
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, product.getName());
             pstmt.setDouble(2, product.getPrice());
-            pstmt.setInt(3, product.getQuantity());
+            pstmt.setInt(3, product.getStock());
             pstmt.setString(4, product.getCategory());
             pstmt.setString(5, product.getSubCategory());
             pstmt.setString(6, product.getId());

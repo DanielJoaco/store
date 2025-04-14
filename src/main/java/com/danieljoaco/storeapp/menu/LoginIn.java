@@ -15,8 +15,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.sql.SQLException;
-
-import static com.danieljoaco.storeapp.menu.SignInMenu.returnToMainMenu;
 import static com.danieljoaco.storeapp.menu.Utils.*;
 import static com.danieljoaco.storeapp.utils.UserValidator.isValidEmail;
 import static com.danieljoaco.storeapp.utils.UserValidator.isValidPassword;
@@ -25,27 +23,27 @@ public class LoginIn {
 
     private static Users userLogin;
 
-
     public void show(Stage primaryStage) {
-        primaryStage.hide();
+
         String loginInMenuTittle = "Inicio de sesión.";
-        Stage loginStage = setupStage(loginInMenuTittle);
+        Stage loginInMenuStage = setupStage(loginInMenuTittle);
         VBox root = createVBox(30, 20, Pos.CENTER);
 
         Label lblTitle = Utils.createTittleLabel(loginInMenuTittle, 24);
-        Button btnCreateCustomer = createMenuButton("Acceder como Administrador", e -> loginInUsers(Users.UserType.ADMIN.name()));
-        Button btnCreateSupportAgent = createMenuButton("Acceder como Agente Soporte", e -> loginInUsers(Users.UserType.SUPPORT_AGENT.name()));
-        Button btnCreateAdmin = createMenuButton("Acceder como cliente", e -> loginInUsers(Users.UserType.CUSTOMER.name()));
-        Button btnReturnToMainMenu = createMenuButton("Return to Main Menu", e -> returnToMainMenu(primaryStage, loginStage));
+        Button btnCreateCustomer = createMenuButton("Acceder como Administrador", e -> loginInUsers(Users.UserType.ADMIN.name(), primaryStage, loginInMenuStage));
+        Button btnCreateSupportAgent = createMenuButton("Acceder como Agente Soporte", e -> loginInUsers(Users.UserType.SUPPORT_AGENT.name(), primaryStage, loginInMenuStage));
+        Button btnCreateAdmin = createMenuButton("Acceder como cliente", e -> loginInUsers(Users.UserType.CUSTOMER.name(), primaryStage, loginInMenuStage));
+        Button btnReturnToMainMenu = createMenuButton("Return to Main Menu", e -> returnToMainMenu(primaryStage, loginInMenuStage));
 
         root.getChildren().addAll(lblTitle, btnCreateCustomer, btnCreateSupportAgent, btnCreateAdmin, btnReturnToMainMenu);
-        setScene(loginStage, root, 600, 400, "/styles/manuMainStyles.css");
-        loginStage.showAndWait();
+        setScene(loginInMenuStage, root, 600, 400, "/styles/manuMainStyles.css");
+        primaryStage.hide();
+        loginInMenuStage.showAndWait();
 
     }
 
-    static Users loginInUsers(String typeUser) {
-
+    static Users loginInUsers(String typeUser, Stage primaryStage, Stage loginInMenuStage) {
+        userLogin = null;
         String tittle;
         switch (typeUser) {
             case "ADMIN" -> tittle = "Ingreso como Administrador";
@@ -55,18 +53,15 @@ public class LoginIn {
         }
         Stage loginStage = setupStage(tittle);
         loginStage.initModality(Modality.APPLICATION_MODAL);
-        GridPane grid = loginInUserGrid(loginStage, typeUser, tittle);
+        GridPane grid = loginInUserGrid(loginStage, primaryStage, loginInMenuStage, typeUser, tittle);
         VBox root = createVBox(0, 20, Pos.CENTER, grid);
         setScene(loginStage, root, 400, 300, "/styles/manuMainStyles.css");
-        try {
-            loginStage.showAndWait();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
+        loginStage.showAndWait();
         return userLogin;
     }
 
-    static GridPane loginInUserGrid(Stage stage, String typeUser, String title) {
+    private static GridPane loginInUserGrid(Stage loginStage, Stage primaryStage, Stage loginInMenuStage, String typeUser, String title) {
         GridPane grid = createGridPane();
         addTitleToGrid(grid, title);
 
@@ -101,7 +96,20 @@ public class LoginIn {
                     }
                     disableControls(lblEmail, txtEmail, lblPassword, txtPassword, btnAccess);
                     showSuccess(lblError, "Access granted! Welcome, " + userLogin.getName() + ".");
-                    closeAfterDelay(stage);
+                    closeAfterDelay(loginStage);
+                    if (primaryStage != null){
+                        loginInMenuStage.close();
+                        switch (typeUser) {
+                            case "ADMIN": {
+                                AdminMenu adminMenu = new AdminMenu();
+                                adminMenu.showMenu((Admin) userLogin, primaryStage);
+                            }
+                            case "SUPPORT_AGENT": {
+                            }
+                            case "CUSTOMER": {
+                            }
+                    }
+                    }
                 } else {
                     throw new IllegalArgumentException("Invalid email or password format.");
                 }

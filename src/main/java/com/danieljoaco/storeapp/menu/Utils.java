@@ -86,6 +86,12 @@ public class Utils {
         return s;
     }
 
+    static void returnToMainMenu(Stage stageShow, Stage stageClose) {
+        System.out.println("Returning to the main menu...");
+        stageClose.close();
+        stageShow.show();
+    }
+
     static void tryAction(Label lblError, Runnable action, String successMsg) {
         try {
             action.run();

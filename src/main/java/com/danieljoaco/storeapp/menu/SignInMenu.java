@@ -21,13 +21,13 @@ public class SignInMenu {
     private boolean adminExists = false;
 
     public void show(Stage primaryStage) {
-        primaryStage.hide();
+
 
         String signUpMenuTittle = "Menu de registro.";
         Stage signUpStage = setupStage(signUpMenuTittle);
         VBox root = createVBox(30, 20, Pos.CENTER);
 
-        Label lblTitle = Utils.createTittleLabel(signUpMenuTittle, 24);
+        Label lblTitle = createTittleLabel(signUpMenuTittle, 24);
         Label lblError = createErrorLabel();
 
         adminExists = adminExists();
@@ -52,6 +52,7 @@ public class SignInMenu {
 
         root.getChildren().addAll(lblTitle, btnCreateCustomer, btnCreateSupportAgent, btnCreateAdmin, btnReturnToMainMenu, lblError);
         setScene(signUpStage, root, 600, 400, "/styles/manuMainStyles.css");
+        primaryStage.hide();
         signUpStage.showAndWait();
     }
 
@@ -64,16 +65,17 @@ public class SignInMenu {
     }
 
     private void createSupportAgent() {
-        adminLogin = (Admin) loginInUsers(Users.UserType.ADMIN.name());
+        adminLogin = null;
+        adminLogin = (Admin) loginInUsers(Users.UserType.ADMIN.name(), null, null);
         if (adminLogin != null && adminLogin.isAdmin()) {
             newUser(Users.UserType.SUPPORT_AGENT.name());
         }
     }
 
     private void createdAdmin() {
-
+        adminLogin = null;
         if (adminExists) {
-            adminLogin = (Admin) loginInUsers(Users.UserType.ADMIN.name());
+            adminLogin = (Admin) loginInUsers(Users.UserType.ADMIN.name(), null, null);
             if (adminLogin == null || !adminLogin.isAdmin()) {
                 return;
             }
@@ -82,11 +84,7 @@ public class SignInMenu {
         newUser(adminExists ? "ADMIN" : "FIRST_ADMIN");
     }
 
-    static void returnToMainMenu(Stage stageShow, Stage stageClose) {
-        System.out.println("Returning to the main menu...");
-        stageClose.close();
-        stageShow.show();
-    }
+
 
     private void newUser(String typeUser){
         String title = switch (typeUser) {

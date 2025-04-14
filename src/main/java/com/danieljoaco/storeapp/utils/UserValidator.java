@@ -15,6 +15,9 @@ public class UserValidator {
     private static final Pattern NAME =
             Pattern.compile("^[A-Za-z\\s]+$");
 
+    private static final Pattern PRODUCTS_INPUTS =
+            Pattern.compile("^\\w+$");
+
     public static boolean isValidEmail(String email) {
         return email != null && EMAIL_PATTERN.matcher(email).matches();
     }
@@ -29,5 +32,9 @@ public class UserValidator {
     
     public static boolean isValidName(String name){
         return name != null && NAME.matcher(name).matches();
+    }
+
+    public static boolean isValidProductsInputs(String productsInputs){
+        return productsInputs != null && PRODUCTS_INPUTS.matcher(productsInputs).matches();
     }
 }

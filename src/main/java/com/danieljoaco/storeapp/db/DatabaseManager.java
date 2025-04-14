@@ -117,8 +117,12 @@ public class DatabaseManager {
                 CREATE TABLE IF NOT EXISTS products (
                     id TEXT PRIMARY KEY,
                     name TEXT NOT NULL,
+                    ref TEXT NOT NULL,
+                    cost REAL NOT NULL,
                     price REAL NOT NULL,
-                    quantity INTEGER NOT NULL,
+                    stock INTEGER NOT NULL,
+                    bill TEXT NOT NULL,
+                    date DATE NOT NULL,
                     subcategory_id INTEGER,
                     FOREIGN KEY (subcategory_id) REFERENCES subcategories(id)
                 );
@@ -126,11 +130,11 @@ public class DatabaseManager {
             stat.execute("""
                 CREATE TABLE IF NOT EXISTS ratings (
                     id TEXT PRIMARY KEY,
-                    product_id TEXT,
+                    product_ref TEXT,
                     rating INTEGER NOT NULL,
                     comment TEXT,
                     customer_name TEXT,
-                    date DATE,
+                    date DATE NOT NULL,
                     FOREIGN KEY (product_id) REFERENCES products(id)
                 );
             """);
