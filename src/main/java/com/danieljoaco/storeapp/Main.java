@@ -1,5 +1,6 @@
 package com.danieljoaco.storeapp;
 
+import com.danieljoaco.storeapp.menu.LoginIn;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -23,7 +24,8 @@ public class Main extends Application {
         // Agregar lógica a los botones
         SignInMenu signInMenu = new SignInMenu();
         btnRegister.setOnAction(e -> signInMenu.show(primaryStage));
-        btnLogin.setOnAction(e -> System.out.println("Abrir formulario de inicio de sesión"));
+        LoginIn loginIn = new LoginIn();
+        btnLogin.setOnAction(e -> loginIn.show(primaryStage));
         btnExit.setOnAction(e -> {
             System.out.println("Saliendo de la aplicación...");
             primaryStage.close(); // Cerrar la ventana principal

@@ -18,19 +18,41 @@ import javafx.stage.Stage;
 public class SignInMenu {
 
     private Admin adminLogin;
+    private boolean adminExists = false;
 
-    public void show(Stage stage) {
-        stage.setTitle("Sign In Menu");
+    public void show(Stage primaryStage) {
+        primaryStage.hide();
+
+        String signUpMenuTittle = "Menu de registro.";
+        Stage signUpStage = setupStage(signUpMenuTittle);
         VBox root = createVBox(30, 20, Pos.CENTER);
 
-        Label lblTitle = Utils.createTittleLabel("Sign In Menu", 24);
-        Button btnCreateCustomer = createMenuButton("Create Customer", e -> createCustomer());
-        Button btnCreateSupportAgent = createMenuButton("Create Support Agent", e -> createSupportAgent());
-        Button btnCreateAdmin = createMenuButton("Create Admin", e -> createdAdmin());
-        Button btnReturnToMainMenu = createMenuButton("Return to Main Menu", e -> returnToMainMenu(stage));
+        Label lblTitle = Utils.createTittleLabel(signUpMenuTittle, 24);
+        Label lblError = createErrorLabel();
 
-        root.getChildren().addAll(lblTitle, btnCreateCustomer, btnCreateSupportAgent, btnCreateAdmin, btnReturnToMainMenu);
-        setScene(stage, root, 600, 400, "/styles/manuMainStyles.css");
+        adminExists = adminExists();
+
+        Button btnCreateCustomer = createMenuButton("Crear Cliente", e -> {
+            if (adminExists){
+                createCustomer();
+            } else {
+                createdAdmin();
+            }
+        });
+        Button btnCreateSupportAgent = createMenuButton("Crear Agente Soporte", e -> {
+            if (adminExists) {
+                createSupportAgent();
+            } else {
+                createdAdmin();
+
+            }
+        });
+        Button btnCreateAdmin = createMenuButton("Crear Administrador", e -> createdAdmin());
+        Button btnReturnToMainMenu = createMenuButton("Regresar al menu principal", e -> returnToMainMenu(primaryStage, signUpStage));
+
+        root.getChildren().addAll(lblTitle, btnCreateCustomer, btnCreateSupportAgent, btnCreateAdmin, btnReturnToMainMenu, lblError);
+        setScene(signUpStage, root, 600, 400, "/styles/manuMainStyles.css");
+        signUpStage.showAndWait();
     }
 
     private void createCustomer() {
@@ -49,21 +71,21 @@ public class SignInMenu {
     }
 
     private void createdAdmin() {
-        boolean exists = adminExists();
 
-        if (exists) {
+        if (adminExists) {
             adminLogin = (Admin) loginInUsers(Users.UserType.ADMIN.name());
             if (adminLogin == null || !adminLogin.isAdmin()) {
                 return;
             }
         }
 
-        newUser(exists ? "ADMIN" : "FIRST_ADMIN");
+        newUser(adminExists ? "ADMIN" : "FIRST_ADMIN");
     }
 
-    private void returnToMainMenu(Stage stage) {
+    static void returnToMainMenu(Stage stageShow, Stage stageClose) {
         System.out.println("Returning to the main menu...");
-        stage.close();
+        stageClose.close();
+        stageShow.show();
     }
 
     private void newUser(String typeUser){

@@ -15,6 +15,8 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.sql.SQLException;
+
+import static com.danieljoaco.storeapp.menu.SignInMenu.returnToMainMenu;
 import static com.danieljoaco.storeapp.menu.Utils.*;
 import static com.danieljoaco.storeapp.utils.UserValidator.isValidEmail;
 import static com.danieljoaco.storeapp.utils.UserValidator.isValidPassword;
@@ -22,6 +24,25 @@ import static com.danieljoaco.storeapp.utils.UserValidator.isValidPassword;
 public class LoginIn {
 
     private static Users userLogin;
+
+
+    public void show(Stage primaryStage) {
+        primaryStage.hide();
+        String loginInMenuTittle = "Inicio de sesión.";
+        Stage loginStage = setupStage(loginInMenuTittle);
+        VBox root = createVBox(30, 20, Pos.CENTER);
+
+        Label lblTitle = Utils.createTittleLabel(loginInMenuTittle, 24);
+        Button btnCreateCustomer = createMenuButton("Acceder como Administrador", e -> loginInUsers(Users.UserType.ADMIN.name()));
+        Button btnCreateSupportAgent = createMenuButton("Acceder como Agente Soporte", e -> loginInUsers(Users.UserType.SUPPORT_AGENT.name()));
+        Button btnCreateAdmin = createMenuButton("Acceder como cliente", e -> loginInUsers(Users.UserType.CUSTOMER.name()));
+        Button btnReturnToMainMenu = createMenuButton("Return to Main Menu", e -> returnToMainMenu(primaryStage, loginStage));
+
+        root.getChildren().addAll(lblTitle, btnCreateCustomer, btnCreateSupportAgent, btnCreateAdmin, btnReturnToMainMenu);
+        setScene(loginStage, root, 600, 400, "/styles/manuMainStyles.css");
+        loginStage.showAndWait();
+
+    }
 
     static Users loginInUsers(String typeUser) {
 
