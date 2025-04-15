@@ -3,17 +3,19 @@ package com.danieljoaco.storeapp.menu;
 import static com.danieljoaco.storeapp.menu.LoginIn.*;
 import static com.danieljoaco.storeapp.users.UserDao.*;
 import static com.danieljoaco.storeapp.menu.Utils.*;
+
 import com.danieljoaco.storeapp.users.*;
+import com.danieljoaco.storeapp.utils.InputField;
+import com.danieljoaco.storeapp.utils.PasswordFieldWithToggle;
+
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import java.util.List;
 
 public class SignInMenu {
 
@@ -21,7 +23,6 @@ public class SignInMenu {
     private boolean adminExists = false;
 
     public void show(Stage primaryStage) {
-
 
         String signUpMenuTittle = "Menu de registro.";
         Stage signUpStage = setupStage(signUpMenuTittle);
@@ -84,8 +85,6 @@ public class SignInMenu {
         newUser(adminExists ? "ADMIN" : "FIRST_ADMIN");
     }
 
-
-
     private void newUser(String typeUser){
         String title = switch (typeUser) {
             case "FIRST_ADMIN" -> "Crear Primer Administrador";
@@ -106,61 +105,57 @@ public class SignInMenu {
         GridPane grid = createGridPane();
         addTitleToGrid(grid, title);
 
-        Label lblName = new Label("Name: ");
-        TextField txtName = new TextField();
+        InputField inputName = new InputField("Name: ");
+        InputField inputEmail = new InputField("Email: ");
+        InputField inputId = new InputField("ID: ");
+        PasswordFieldWithToggle inputPasswordToggle = new PasswordFieldWithToggle("Password:");
+        PasswordFieldWithToggle inputRepeatPasswordToggle = new PasswordFieldWithToggle("Repeat Password:");
 
-        Label lblEmail = new Label("Email: ");
-        TextField txtEmail = new TextField();
-
-        Label lblId = new Label("ID: ");
-        TextField txtId = new TextField();
-
-        Label lblPassword = new Label("Password: ");
-        PasswordField txtPassword = new PasswordField();
-
-        Label lblRepeatPassword = new Label("Repeat Password: ");
-        PasswordField txtRepeatPassword = new PasswordField();
-
+        List<InputField> fields = List.of(inputName, inputEmail, inputId);
         Label lblError = createErrorLabel();
-
         Button btnCreate = new Button("Create");
+
         btnCreate.setOnAction(event -> {
-            String name = txtName.getText();
-            String email = txtEmail.getText();
-            String id = txtId.getText();
-            String password = txtPassword.getText();
-            String repeatPassword = txtRepeatPassword.getText();
+            String name = inputName.getText();
+            String email = inputEmail.getText();
+            String id = inputId.getText();
+            String password = inputPasswordToggle.getText();
+            String repeatPassword = inputRepeatPasswordToggle.getText();
 
             tryAction(lblError, () -> {
                 validateUserInput(name, email, id, password, repeatPassword);
-                try{
+                try {
                     createUserByType(typeUser, id, email, password, name);
                 } catch (Exception e) {
                     showError(lblError, e.getMessage());
                 }
 
-                Node[] controls = {lblName, txtName, lblEmail, txtEmail, lblId, txtId,
-                        lblPassword, txtPassword, lblRepeatPassword, txtRepeatPassword, btnCreate};
-                disableControls(controls);
+                fields.forEach(field -> field.setDisable(true));
+                inputPasswordToggle.setDisable(true);
+                inputRepeatPasswordToggle.setDisable(true);
+                btnCreate.setDisable(true);
 
                 showSuccess(lblError, typeUser + " created successfully!");
                 closeAfterDelay(newUserStage);
             }, "User created successfully");
         });
 
-        // Add all controls to grid
-        grid.add(lblName, 0, 1);
-        grid.add(txtName, 1, 1);
-        grid.add(lblEmail, 0, 2);
-        grid.add(txtEmail, 1, 2);
-        grid.add(lblId, 0, 3);
-        grid.add(txtId, 1, 3);
-        grid.add(lblPassword, 0, 4);
-        grid.add(txtPassword, 1, 4);
-        grid.add(lblRepeatPassword, 0, 5);
-        grid.add(txtRepeatPassword, 1, 5);
-        grid.add(btnCreate, 0, 6, 2, 1);
-        grid.add(lblError, 0, 7, 2, 1);
+        // Add non-password fields
+        for (int i = 0; i < fields.size(); i++) {
+            grid.add(fields.get(i).getLabel(), 0, i + 1);
+            grid.add(fields.get(i).getTextField(), 1, i + 1);
+        }
+
+        // Add password fields using the new component
+        int rowIndex = fields.size() + 1;
+        grid.add(new Label("Password:"), 0, rowIndex);
+        grid.add(inputPasswordToggle, 1, rowIndex);
+        rowIndex++;
+        grid.add(new Label("Repeat Password:"), 0, rowIndex);
+        grid.add(inputRepeatPasswordToggle, 1, rowIndex);
+
+        grid.add(btnCreate, 0, rowIndex + 1, 2, 1);
+        grid.add(lblError, 0, rowIndex + 2, 2, 1);
 
         GridPane.setHalignment(btnCreate, HPos.CENTER);
         GridPane.setHalignment(lblError, HPos.CENTER);

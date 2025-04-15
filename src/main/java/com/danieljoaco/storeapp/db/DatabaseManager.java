@@ -7,10 +7,8 @@ import org.slf4j.LoggerFactory;
 public class DatabaseManager {
 
     private static final Logger logger = LoggerFactory.getLogger(DatabaseManager.class);
-
     private static final String URL_USERS = "jdbc:sqlite:encrypted_users.db";
     private static final String KEY = "MiClaveDeCifrado123";
-
     private static final String URL_PRODUCTS = "jdbc:sqlite:products.db";
 
     static {

@@ -9,19 +9,22 @@ import static com.danieljoaco.storeapp.menu.Utils.*;
 import static com.danieljoaco.storeapp.utils.UserValidator.isValidProductsInputs;
 import static com.danieljoaco.storeapp.db.ProductsDao.*;
 
+import com.danieljoaco.storeapp.utils.InputField;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.control.ComboBox;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import java.util.Arrays;
 
-public class AdminMenu {
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+class AdminMenu {
 
     void showMenu(Admin admin, Stage primaryStage) {
 
@@ -55,28 +58,18 @@ public class AdminMenu {
         stageNewProduct.showAndWait();
     }
 
-    GridPane createNewProductsGrid(Stage newProductStage, String title) {
+    private GridPane createNewProductsGrid(Stage newProductStage, String title) {
         GridPane grid = createGridPane();
         addTitleToGrid(grid, title);
 
-        Label lblName = new Label("Name: ");
-        TextField txtName = new TextField();
+        InputField inputName = new InputField("Name: ");
+        InputField inputRef = new InputField("Ref: ");
+        InputField inputCost = new InputField("Cost: ");
+        InputField inputPrice = new InputField("Price: ");
+        InputField inputStock = new InputField("Stock: ");
+        InputField inputBill = new InputField("Bill: ");
 
-        Label lblRef = new Label("Ref: ");
-        TextField txtRef = new TextField();
-
-        Label lblCost = new Label("Cost: ");
-        TextField txtCost = new TextField();
-
-        Label lblPrice = new Label("Price: ");
-        TextField txtPrice = new TextField();
-
-        Label lblStock = new Label("Stock: ");
-        TextField txtStock = new TextField();
-
-        Label lblBill = new Label("Bill: ");
-        TextField txtBill = new TextField();
-
+        List<InputField> inputFields = List.of(inputName, inputRef, inputCost, inputPrice, inputStock, inputBill);
         Label lblCategory = new Label("Category: ");
         ComboBox<String> cbCategory = new ComboBox<>();
         cbCategory.getItems().addAll(Arrays.stream(Category.Categories.values())
@@ -84,34 +77,32 @@ public class AdminMenu {
                 .toList());
         cbCategory.setPromptText("Select a category");
 
-
-        Label lblSubcategory =  new Label("Subcategory: ");
+        Label lblSubcategory = new Label("Subcategory: ");
         ComboBox<String> cbSubCategory = new ComboBox<>();
 
         Label lblError = createErrorLabel();
 
         cbCategory.setOnAction(event -> {
-            try{
+            try {
                 String selectedCategory = cbCategory.getSelectionModel().getSelectedItem();
                 cbSubCategory.getItems().clear();
                 cbSubCategory.getItems().addAll(Arrays.stream(SubCategory.SubCategories.valueOf(selectedCategory).getItems()).toList());
                 cbSubCategory.setPromptText("Select a subcategory");
                 showSuccess(lblError, "");
-            }catch (Exception e){
+            } catch (Exception e) {
                 showError(lblError, "Don´t found subcategory for selected category.");
             }
-
         });
 
         Button btnCreate = new Button("Create");
         btnCreate.setOnAction(event -> {
 
-            String name = txtName.getText().toLowerCase();
-            String ref = txtRef.getText().toLowerCase();
-            String costText = txtCost.getText();
-            String priceText = txtPrice.getText();
-            String stockText = txtStock.getText();
-            String bill = txtBill.getText().toLowerCase();
+            String name = inputName.getText().toLowerCase();
+            String ref = inputRef.getText().toLowerCase();
+            String costText = inputCost.getText();
+            String priceText = inputPrice.getText();
+            String stockText = inputStock.getText();
+            String bill = inputBill.getText().toLowerCase();
             String category = cbCategory.getSelectionModel().getSelectedItem();
             String subCategory = cbSubCategory.getSelectionModel().getSelectedItem();
 
@@ -147,53 +138,56 @@ public class AdminMenu {
                 return;
             }
 
-            if(name.isEmpty() || ref.isEmpty()  || bill.isEmpty() || category.isEmpty() || subCategory.isEmpty()){
+            if (name.isEmpty() || ref.isEmpty() || bill.isEmpty() || category == null || subCategory == null) {
                 showError(lblError, "Please fill all the fields.");
                 return;
-            } else{
+            } else {
                 try {
                     isValidProductsInputs(name);
                     isValidProductsInputs(ref);
                     isValidProductsInputs(bill);
+
+                } catch (Exception e) {
+                    showError(lblError, "Only use alphanumeric characters or _ for name, reference and bill" + e.getMessage() + ".");
+                    return;
+                }
+
+                try {
                     Products newProduct = new Products(name, ref, cost, price, stock, bill, category, subCategory);
                     addProduct(newProduct);
-                }catch (Exception e){
-                    showError(lblError, "Only use alphanumeric characters or _ for name, reference and bill" + e.getMessage() + "." );
+                } catch (Exception e) {
+                    showError(lblError, e.getMessage());
                     return;
                 }
             }
 
-            Node[] controls = {lblName, txtName, lblRef, txtRef, lblCost, txtCost, lblPrice, txtPrice, lblStock, txtStock, lblBill, txtBill, lblCategory, cbCategory, lblSubcategory, cbSubCategory, btnCreate, lblError};
-            disableControls(controls);
+            inputFields.forEach(field -> field.setDisable(true));
+            List<Node> controlsToDisable = new ArrayList<>(List.of(lblCategory, cbCategory, lblSubcategory, cbSubCategory, btnCreate, lblError));
+            disableControls(controlsToDisable.toArray(new Node[0]));
 
-            showSuccess(lblError, name + " product successfully added!" );
+            showSuccess(lblError, name + " product successfully added!");
             closeAfterDelay(newProductStage);
         });
 
+        int row = 2;
+        for (InputField field : inputFields) {
+            grid.add(field.getLabel(), 0, row);
+            grid.add(field.getTextField(), 1, row);
+            row++;
+        }
 
-        grid.add(lblName, 0, 2);
-        grid.add(txtName, 1, 2);
-        grid.add(lblRef, 0, 3);
-        grid.add(txtRef, 1, 3);
-        grid.add(lblCost, 0, 4);
-        grid.add(txtCost, 1, 4);
-        grid.add(lblPrice, 0, 5);
-        grid.add(txtPrice, 1, 5);
-        grid.add(lblStock, 0, 6);
-        grid.add(txtStock, 1, 6);
-        grid.add(lblBill, 0, 7);
-        grid.add(txtBill, 1, 7);
-        grid.add(lblCategory, 0, 8);
-        grid.add(cbCategory, 1, 8);
-        grid.add(lblSubcategory, 0, 9);
-        grid.add(cbSubCategory, 1, 9);
-        grid.add(btnCreate, 0, 10, 2, 1);
-        grid.add(lblError, 0, 11, 2, 1);
+        grid.add(lblCategory, 0, row);
+        grid.add(cbCategory, 1, row);
+        row++;
+        grid.add(lblSubcategory, 0, row);
+        grid.add(cbSubCategory, 1, row);
+        row++;
+        grid.add(btnCreate, 0, row, 2, 1);
+        grid.add(lblError, 0, row + 1, 2, 1);
 
         GridPane.setHalignment(btnCreate, HPos.CENTER);
         GridPane.setHalignment(lblError, HPos.CENTER);
 
         return grid;
     }
-
 }
