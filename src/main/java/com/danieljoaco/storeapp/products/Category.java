@@ -1,4 +1,3 @@
-
 package com.danieljoaco.storeapp.products;
 
 public abstract class   Category {
@@ -10,11 +9,12 @@ public abstract class   Category {
     }
 
     public Category(String name) {
-        if (Categories.valueOf(name.toUpperCase()).name().equals(name.toUpperCase())
-        ) {
-            throw new IllegalArgumentException("Invalid category : " + name);
+        try {
+            Categories.valueOf(name.toUpperCase());
+            this.name = name.toUpperCase();
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid category: " + name);
         }
-        this.name = name.toUpperCase();
     }
 
     public String getCategoryName(){

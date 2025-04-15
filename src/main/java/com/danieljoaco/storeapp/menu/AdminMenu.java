@@ -7,9 +7,11 @@ import com.danieljoaco.storeapp.users.Admin;
 
 import static com.danieljoaco.storeapp.menu.Utils.*;
 import static com.danieljoaco.storeapp.utils.UserValidator.isValidProductsInputs;
+import static com.danieljoaco.storeapp.db.ProductsDao.*;
 
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -110,8 +112,8 @@ public class AdminMenu {
             String priceText = txtPrice.getText();
             String stockText = txtStock.getText();
             String bill = txtBill.getText().toLowerCase();
-            String category = cbCategory.getSelectionModel().getSelectedItem().toLowerCase();
-            String subCategory = cbSubCategory.getSelectionModel().getSelectedItem().toLowerCase();
+            String category = cbCategory.getSelectionModel().getSelectedItem();
+            String subCategory = cbSubCategory.getSelectionModel().getSelectedItem();
 
             // Validar que los campos no estén vacíos
             if (costText.isEmpty() || priceText.isEmpty() || stockText.isEmpty()) {
@@ -153,14 +155,19 @@ public class AdminMenu {
                     isValidProductsInputs(name);
                     isValidProductsInputs(ref);
                     isValidProductsInputs(bill);
+                    Products newProduct = new Products(name, ref, cost, price, stock, bill, category, subCategory);
+                    addProduct(newProduct);
                 }catch (Exception e){
-                    showError(lblError, "Only use alphanumeric characters or _ for name, reference and bill");
+                    showError(lblError, "Only use alphanumeric characters or _ for name, reference and bill" + e.getMessage() + "." );
                     return;
                 }
-
-
             }
 
+            Node[] controls = {lblName, txtName, lblRef, txtRef, lblCost, txtCost, lblPrice, txtPrice, lblStock, txtStock, lblBill, txtBill, lblCategory, cbCategory, lblSubcategory, cbSubCategory, btnCreate, lblError};
+            disableControls(controls);
+
+            showSuccess(lblError, name + " product successfully added!" );
+            closeAfterDelay(newProductStage);
         });
 
 

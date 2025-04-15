@@ -84,7 +84,6 @@ public class DatabaseManager {
         try {
             Connection conn = DriverManager.getConnection(URL_PRODUCTS);
 
-            // Crear tablas de productos si no existen
             createProductTables(conn);
 
             return conn;
@@ -102,40 +101,47 @@ public class DatabaseManager {
             stat.execute("""
                 CREATE TABLE IF NOT EXISTS categories (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name TEXT NOT NULL
+                    name TEXT NOT NULL UNIQUE
                 );
             """);
             stat.execute("""
                 CREATE TABLE IF NOT EXISTS subcategories (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      name TEXT NOT NULL,
+                      category_id INTEGER NOT NULL,
+                      FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT,
+                      UNIQUE (name, category_id)
+                  );
+            """);
+            stat.execute("""
+                CREATE TABLE IF NOT EXISTS product_references (
+                    ref TEXT PRIMARY KEY,
                     name TEXT NOT NULL,
-                    category_id INTEGER,
-                    FOREIGN KEY (category_id) REFERENCES categories(id)
+                    subcategory_id INTEGER NOT NULL,
+                    FOREIGN KEY (subcategory_id) REFERENCES subcategories(id) ON DELETE RESTRICT
                 );
             """);
             stat.execute("""
                 CREATE TABLE IF NOT EXISTS products (
-                    id TEXT PRIMARY KEY,
-                    name TEXT NOT NULL,
-                    ref TEXT NOT NULL,
-                    cost REAL NOT NULL,
-                    price REAL NOT NULL,
-                    stock INTEGER NOT NULL,
-                    bill TEXT NOT NULL,
-                    date DATE NOT NULL,
-                    subcategory_id INTEGER,
-                    FOREIGN KEY (subcategory_id) REFERENCES subcategories(id)
-                );
+                      id TEXT PRIMARY KEY,
+                      product_ref TEXT NOT NULL,
+                      cost REAL NOT NULL,
+                      price REAL NOT NULL,
+                      stock INTEGER NOT NULL,
+                      bill TEXT NOT NULL,
+                      date DATE NOT NULL,
+                      FOREIGN KEY (product_ref) REFERENCES product_references(ref) ON DELETE CASCADE -- Si se borra la referencia, se borran sus entradas de stock? O RESTRICT? A definir.
+                  );
             """);
             stat.execute("""
                 CREATE TABLE IF NOT EXISTS ratings (
                     id TEXT PRIMARY KEY,
-                    product_ref TEXT,
-                    rating INTEGER NOT NULL,
+                    product_ref TEXT NOT NULL,
+                    rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
                     comment TEXT,
                     customer_name TEXT,
                     date DATE NOT NULL,
-                    FOREIGN KEY (product_id) REFERENCES products(id)
+                    FOREIGN KEY (product_ref) REFERENCES product_references(ref) ON DELETE CASCADE
                 );
             """);
             logger.info("Tablas de productos verificadas/creadas.");

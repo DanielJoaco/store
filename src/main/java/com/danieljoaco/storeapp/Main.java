@@ -1,6 +1,8 @@
 package com.danieljoaco.storeapp;
 
 import com.danieljoaco.storeapp.menu.LoginIn;
+import com.danieljoaco.storeapp.products.Category;
+import com.danieljoaco.storeapp.products.SubCategory;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -14,6 +16,7 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+
         primaryStage.setTitle("Store App");
 
         // Crear botones

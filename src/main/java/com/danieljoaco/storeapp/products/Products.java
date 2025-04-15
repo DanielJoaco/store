@@ -125,6 +125,9 @@ public class Products {
     public String getBill(){
         return this.bill;
     }
+    public LocalDate getDate(){
+        return this.date;
+    }
     public String getSubCategory(){
         return this.subCategory.getName();
     }
