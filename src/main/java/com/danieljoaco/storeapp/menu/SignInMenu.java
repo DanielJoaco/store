@@ -5,8 +5,7 @@ import static com.danieljoaco.storeapp.users.UserDao.*;
 import static com.danieljoaco.storeapp.menu.Utils.*;
 
 import com.danieljoaco.storeapp.users.*;
-import com.danieljoaco.storeapp.utils.InputField;
-import com.danieljoaco.storeapp.utils.PasswordFieldWithToggle;
+import com.danieljoaco.storeapp.utils.*;
 
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
@@ -24,32 +23,32 @@ public class SignInMenu {
 
     public void show(Stage primaryStage) {
 
-        String signUpMenuTittle = "Menu de registro.";
+        String signUpMenuTittle = "Sign Up Menu";
         Stage signUpStage = setupStage(signUpMenuTittle);
         VBox root = createVBox(30, 20, Pos.CENTER);
 
-        Label lblTitle = createTittleLabel(signUpMenuTittle, 24);
+        Label lblTitle = createTittleLabel(signUpMenuTittle, 30);
         Label lblError = createErrorLabel();
 
         adminExists = adminExists();
 
-        Button btnCreateCustomer = createMenuButton("Crear Cliente", e -> {
+        Button btnCreateCustomer = createMenuButton("Create Customer", e -> {
             if (adminExists){
-                createCustomer();
+                tryAction(lblError, this::createCustomer, "");
             } else {
                 createdAdmin();
             }
         });
-        Button btnCreateSupportAgent = createMenuButton("Crear Agente Soporte", e -> {
+        Button btnCreateSupportAgent = createMenuButton("Create Support Agent", e -> {
             if (adminExists) {
-                createSupportAgent();
+                tryAction(lblError, this::createSupportAgent, "");
             } else {
-                createdAdmin();
+                tryAction(lblError, this::createdAdmin, "");
 
             }
         });
-        Button btnCreateAdmin = createMenuButton("Crear Administrador", e -> createdAdmin());
-        Button btnReturnToMainMenu = createMenuButton("Regresar al menu principal", e -> returnToMainMenu(primaryStage, signUpStage));
+        Button btnCreateAdmin = createMenuButton("Create Admin", e -> createdAdmin());
+        Button btnReturnToMainMenu = createMenuButton("Return to main menu", e -> returnToMainMenu(primaryStage, signUpStage));
 
         root.getChildren().addAll(lblTitle, btnCreateCustomer, btnCreateSupportAgent, btnCreateAdmin, btnReturnToMainMenu, lblError);
         setScene(signUpStage, root, 600, 400, "/styles/manuMainStyles.css");
@@ -87,17 +86,17 @@ public class SignInMenu {
 
     private void newUser(String typeUser){
         String title = switch (typeUser) {
-            case "FIRST_ADMIN" -> "Crear Primer Administrador";
-            case "ADMIN" -> "Nuevo Administrador";
-            case "SUPPORT_AGENT" -> "Nuevo Agente de Soporte";
-            case "CUSTOMER" -> "Nuevo Cliente";
-            default -> "Nuevo usuario";
+            case "FIRST_ADMIN" -> "Create first admin";
+            case "ADMIN" -> "Create new admin";
+            case "SUPPORT_AGENT" -> "Create new support agent";
+            case "CUSTOMER" -> "Create new customer";
+            default -> throw new IllegalStateException("Unexpected value: " + typeUser);
         };
 
         Stage newUserStage = setupStage(title);
         GridPane newUserGrid = createNewUsersGrid(newUserStage, typeUser, title);
         VBox root = createVBox(0, 20, Pos.CENTER, newUserGrid);
-        setScene(newUserStage, root, 450, 500, "/styles/manuMainStyles.css");
+        setScene(newUserStage, root, 550, 450, "/styles/manuMainStyles.css");
         newUserStage.showAndWait();
     }
 
@@ -105,22 +104,26 @@ public class SignInMenu {
         GridPane grid = createGridPane();
         addTitleToGrid(grid, title);
 
-        InputField inputName = new InputField("Name: ");
-        InputField inputEmail = new InputField("Email: ");
-        InputField inputId = new InputField("ID: ");
-        PasswordFieldWithToggle inputPasswordToggle = new PasswordFieldWithToggle("Password:");
-        PasswordFieldWithToggle inputRepeatPasswordToggle = new PasswordFieldWithToggle("Repeat Password:");
+        List<InputField> fields = List.of(
+                new InputField("Name: "),
+                new InputField("Email: "),
+                new InputField("ID: ")
+        );
 
-        List<InputField> fields = List.of(inputName, inputEmail, inputId);
+        List<PasswordFieldWithToggle> passwordFields = List.of(
+                new PasswordFieldWithToggle("Password:"),
+                new PasswordFieldWithToggle("Repeat Password:")
+        );
+
         Label lblError = createErrorLabel();
         Button btnCreate = new Button("Create");
 
         btnCreate.setOnAction(event -> {
-            String name = inputName.getText();
-            String email = inputEmail.getText();
-            String id = inputId.getText();
-            String password = inputPasswordToggle.getText();
-            String repeatPassword = inputRepeatPasswordToggle.getText();
+            String name = fields.get(0).getText();
+            String email = fields.get(1).getText();
+            String id = fields.get(2).getText();
+            String password = passwordFields.get(0).getText();
+            String repeatPassword = passwordFields.get(1).getText();
 
             tryAction(lblError, () -> {
                 validateUserInput(name, email, id, password, repeatPassword);
@@ -131,8 +134,7 @@ public class SignInMenu {
                 }
 
                 fields.forEach(field -> field.setDisable(true));
-                inputPasswordToggle.setDisable(true);
-                inputRepeatPasswordToggle.setDisable(true);
+                passwordFields.forEach(passwordField -> passwordField.setDisable(true));
                 btnCreate.setDisable(true);
 
                 showSuccess(lblError, typeUser + " created successfully!");
@@ -148,11 +150,11 @@ public class SignInMenu {
 
         // Add password fields using the new component
         int rowIndex = fields.size() + 1;
-        grid.add(new Label("Password:"), 0, rowIndex);
-        grid.add(inputPasswordToggle, 1, rowIndex);
-        rowIndex++;
-        grid.add(new Label("Repeat Password:"), 0, rowIndex);
-        grid.add(inputRepeatPasswordToggle, 1, rowIndex);
+        for (PasswordFieldWithToggle passwordField : passwordFields) {
+            grid.add(passwordField.getLabel(), 0, rowIndex);
+            grid.add(passwordField, 1, rowIndex);
+            rowIndex++;
+        }
 
         grid.add(btnCreate, 0, rowIndex + 1, 2, 1);
         grid.add(lblError, 0, rowIndex + 2, 2, 1);

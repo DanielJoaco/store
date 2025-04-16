@@ -40,7 +40,7 @@ public class Main extends Application {
 
 
         // Crear una escena y asignarla al escenario principal
-        Scene scene = new Scene(vbox, 500, 400); // Tamaño: 300x200
+        Scene scene = new Scene(vbox, 400, 350);
         String css = Objects.requireNonNull(getClass().getResource("/styles/manuMainStyles.css")).toExternalForm();
         scene.getStylesheets().add(css);
 

@@ -1,15 +1,13 @@
 package com.danieljoaco.storeapp.menu;
 
-import com.danieljoaco.storeapp.products.Category;
-import com.danieljoaco.storeapp.products.SubCategory;
-import com.danieljoaco.storeapp.products.Products;
+import com.danieljoaco.storeapp.products.*;
 import com.danieljoaco.storeapp.users.Admin;
+import com.danieljoaco.storeapp.utils.InputField;
 
 import static com.danieljoaco.storeapp.menu.Utils.*;
 import static com.danieljoaco.storeapp.utils.UserValidator.isValidProductsInputs;
 import static com.danieljoaco.storeapp.db.ProductsDao.*;
 
-import com.danieljoaco.storeapp.utils.InputField;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -17,9 +15,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ComboBox;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,14 +32,24 @@ class AdminMenu {
             VBox root = createVBox(30, 20, Pos.CENTER);
 
             Label lblTitle = createTittleLabel(title, 24);
-            Button btnNewProduct = createMenuButton("Agregar nuevo producto", e -> createNewProduct());
-            Button btnSetProduct = createMenuButton("Modificar productos", e -> {});
-            Button btnDeleteProduct = createMenuButton("Eliminar productos", e -> {});
-            Button btnSetUser = createMenuButton("Editar usuario", e -> {});
-            Button btnDeleteUser = createMenuButton("Eliminar usuario", e -> {});
+            Label lblError = createErrorLabel();
+
+            Button btnNewProduct = createMenuButton("Add product", e -> tryAction(lblError, this::createNewProduct, ""), 180);
+            Button btnSetProduct = createMenuButton("Modificar productos", e -> {}, 180);
+            Button btnDeleteProduct = createMenuButton("Eliminar productos", e -> {}, 180);
+            Button btnSetUser = createMenuButton("Editar usuario", e -> {}, 180);
+            Button btnDeleteUser = createMenuButton("Eliminar usuario", e -> {}, 180);
             Button btnReturnToMainMenu = createMenuButton("Regresar al menu principal", e -> returnToMainMenu(primaryStage, stageAdminMenu));
 
-            root.getChildren().addAll(lblTitle, btnNewProduct, btnSetProduct, btnDeleteProduct, btnSetUser, btnDeleteUser, btnReturnToMainMenu);
+            HBox buttonContainer1 = new HBox(10);
+            buttonContainer1.setAlignment(Pos.CENTER);
+            buttonContainer1.getChildren().addAll(btnNewProduct, btnSetProduct);
+
+            HBox buttonContainer2 = new HBox(10);
+            buttonContainer2.setAlignment(Pos.CENTER);
+            buttonContainer2.getChildren().addAll(btnDeleteProduct, btnSetUser);
+
+            root.getChildren().addAll(lblTitle, buttonContainer1,buttonContainer2, btnDeleteUser, btnReturnToMainMenu, lblError);
             setScene(stageAdminMenu, root, 500, 600, "/styles/manuMainStyles.css");
             stageAdminMenu.showAndWait();
             
@@ -49,11 +57,11 @@ class AdminMenu {
     }
     
     private void createNewProduct() {
-        String title = "Nuevo producto";
+        String title = "New product";
         Stage stageNewProduct = setupStage(title);
         GridPane newProductGrid = createNewProductsGrid(stageNewProduct, title);
         VBox root = createVBox(15, 20, Pos.CENTER, newProductGrid);
-        setScene(stageNewProduct, root, 450, 700, "/styles/manuMainStyles.css");
+        setScene(stageNewProduct, root, 450, 600, "/styles/manuMainStyles.css");
 
         stageNewProduct.showAndWait();
     }
@@ -62,31 +70,52 @@ class AdminMenu {
         GridPane grid = createGridPane();
         addTitleToGrid(grid, title);
 
-        InputField inputName = new InputField("Name: ");
-        InputField inputRef = new InputField("Ref: ");
-        InputField inputCost = new InputField("Cost: ");
-        InputField inputPrice = new InputField("Price: ");
-        InputField inputStock = new InputField("Stock: ");
-        InputField inputBill = new InputField("Bill: ");
+        List<InputField> fields = List.of(
+             new InputField("Name: "),
+             new InputField("Ref: "),
+             new InputField("Cost: "),
+             new InputField("Price: "),
+             new InputField("Stock: "),
+             new InputField("Bill: ")
+        );
 
-        List<InputField> inputFields = List.of(inputName, inputRef, inputCost, inputPrice, inputStock, inputBill);
         Label lblCategory = new Label("Category: ");
+        lblCategory.setStyle("-fx-font-size: 20px;");
         ComboBox<String> cbCategory = new ComboBox<>();
         cbCategory.getItems().addAll(Arrays.stream(Category.Categories.values())
-                .map(Enum::name)
+                .map(category -> {
+                    String name = category.name().toLowerCase();
+                    if (!name.isEmpty()) {
+                        return name.substring(0, 1).toUpperCase() + name.substring(1);
+                    } else {
+                        return name;
+                    }
+                })
                 .toList());
         cbCategory.setPromptText("Select a category");
 
         Label lblSubcategory = new Label("Subcategory: ");
+        lblSubcategory.setStyle("-fx-font-size: 20px;");
         ComboBox<String> cbSubCategory = new ComboBox<>();
 
         Label lblError = createErrorLabel();
 
         cbCategory.setOnAction(event -> {
             try {
-                String selectedCategory = cbCategory.getSelectionModel().getSelectedItem();
+                String selectedCategory = cbCategory.getSelectionModel().getSelectedItem().toUpperCase();
                 cbSubCategory.getItems().clear();
-                cbSubCategory.getItems().addAll(Arrays.stream(SubCategory.SubCategories.valueOf(selectedCategory).getItems()).toList());
+                cbSubCategory.getItems().addAll(Arrays.stream(SubCategory.SubCategories.valueOf(selectedCategory).getItems())
+                        .map(item -> {
+                            String name = item.replace("_", " ");
+
+                            String lowerCaseName = name.toLowerCase();
+                            if (!lowerCaseName.isEmpty()) {
+                                return lowerCaseName.substring(0, 1).toUpperCase() + lowerCaseName.substring(1);
+                            } else {
+                                return lowerCaseName;
+                            }
+                        })
+                        .toList());
                 cbSubCategory.setPromptText("Select a subcategory");
                 showSuccess(lblError, "");
             } catch (Exception e) {
@@ -97,14 +126,15 @@ class AdminMenu {
         Button btnCreate = new Button("Create");
         btnCreate.setOnAction(event -> {
 
-            String name = inputName.getText().toLowerCase();
-            String ref = inputRef.getText().toLowerCase();
-            String costText = inputCost.getText();
-            String priceText = inputPrice.getText();
-            String stockText = inputStock.getText();
-            String bill = inputBill.getText().toLowerCase();
+            String name = fields.get(0).getText().toLowerCase();
+            String ref = fields.get(1).getText().toLowerCase();
+            String costText = fields.get(2).getText();
+            String priceText = fields.get(3).getText();
+            String stockText = fields.get(4).getText();
+            String bill = fields.get(5).getText().toLowerCase();
             String category = cbCategory.getSelectionModel().getSelectedItem();
             String subCategory = cbSubCategory.getSelectionModel().getSelectedItem();
+            subCategory = subCategory.replace(" ", "_");
 
             // Validar que los campos no estén vacíos
             if (costText.isEmpty() || priceText.isEmpty() || stockText.isEmpty()) {
@@ -161,16 +191,20 @@ class AdminMenu {
                 }
             }
 
-            inputFields.forEach(field -> field.setDisable(true));
+            fields.forEach(field -> field.setDisable(true));
             List<Node> controlsToDisable = new ArrayList<>(List.of(lblCategory, cbCategory, lblSubcategory, cbSubCategory, btnCreate, lblError));
             disableControls(controlsToDisable.toArray(new Node[0]));
 
             showSuccess(lblError, name + " product successfully added!");
+            boolean continueCreate = askConfirmation("Create another product");
             closeAfterDelay(newProductStage);
+            if (continueCreate) {
+                createNewProduct();
+            }
         });
 
         int row = 2;
-        for (InputField field : inputFields) {
+        for (InputField field : fields) {
             grid.add(field.getLabel(), 0, row);
             grid.add(field.getTextField(), 1, row);
             row++;

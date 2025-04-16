@@ -1,23 +1,20 @@
 package com.danieljoaco.storeapp.menu;
 
-import com.danieljoaco.storeapp.users.Admin;
-import com.danieljoaco.storeapp.users.Customer;
-import com.danieljoaco.storeapp.users.SupportAgent;
-import com.danieljoaco.storeapp.users.Users;
+import com.danieljoaco.storeapp.users.*;
+import com.danieljoaco.storeapp.utils.*;
+
+import static com.danieljoaco.storeapp.menu.Utils.*;
+import static com.danieljoaco.storeapp.utils.UserValidator.*;
+
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.sql.SQLException;
-import static com.danieljoaco.storeapp.menu.Utils.*;
-import static com.danieljoaco.storeapp.utils.UserValidator.isValidEmail;
-import static com.danieljoaco.storeapp.utils.UserValidator.isValidPassword;
 
 public class LoginIn {
 
@@ -25,17 +22,17 @@ public class LoginIn {
 
     public void show(Stage primaryStage) {
 
-        String loginInMenuTittle = "Inicio de sesión.";
+        String loginInMenuTittle = "Login In Menu";
         Stage loginInMenuStage = setupStage(loginInMenuTittle);
         VBox root = createVBox(30, 20, Pos.CENTER);
 
-        Label lblTitle = Utils.createTittleLabel(loginInMenuTittle, 24);
-        Button btnCreateCustomer = createMenuButton("Acceder como Administrador", e -> loginInUsers(Users.UserType.ADMIN.name(), primaryStage, loginInMenuStage));
-        Button btnCreateSupportAgent = createMenuButton("Acceder como Agente Soporte", e -> loginInUsers(Users.UserType.SUPPORT_AGENT.name(), primaryStage, loginInMenuStage));
-        Button btnCreateAdmin = createMenuButton("Acceder como cliente", e -> loginInUsers(Users.UserType.CUSTOMER.name(), primaryStage, loginInMenuStage));
+        Label lblTitle = createTittleLabel(loginInMenuTittle, 24);
+        Button btnCreateAdmin = createMenuButton("Login In as Admin", e -> loginInUsers(Users.UserType.ADMIN.name(), primaryStage, loginInMenuStage));
+        Button btnCreateSupportAgent = createMenuButton("Login In as Support Agent", e -> loginInUsers(Users.UserType.SUPPORT_AGENT.name(), primaryStage, loginInMenuStage));
+        Button btnCreateCustomer = createMenuButton("Login In as Customer", e -> loginInUsers(Users.UserType.CUSTOMER.name(), primaryStage, loginInMenuStage));
         Button btnReturnToMainMenu = createMenuButton("Return to Main Menu", e -> returnToMainMenu(primaryStage, loginInMenuStage));
 
-        root.getChildren().addAll(lblTitle, btnCreateCustomer, btnCreateSupportAgent, btnCreateAdmin, btnReturnToMainMenu);
+        root.getChildren().addAll(lblTitle, btnCreateAdmin, btnCreateSupportAgent, btnCreateCustomer, btnReturnToMainMenu);
         setScene(loginInMenuStage, root, 600, 400, "/styles/manuMainStyles.css");
         primaryStage.hide();
         loginInMenuStage.showAndWait();
@@ -44,18 +41,19 @@ public class LoginIn {
 
     static Users loginInUsers(String typeUser, Stage primaryStage, Stage loginInMenuStage) {
         userLogin = null;
-        String tittle;
+
+        String tittle = "";
         switch (typeUser) {
-            case "ADMIN" -> tittle = "Ingreso como Administrador";
-            case "SUPPORT_AGENT" -> tittle = "Ingreso como Agente de Soporte";
-            case "CUSTOMER" -> tittle = "Ingreso como Cliente";
-            default -> tittle = "Ingreso como Usuario";
+            case "ADMIN" -> tittle = "Login In Admin";
+            case "SUPPORT_AGENT" -> tittle = "Login In Support Agent";
+            case "CUSTOMER" -> tittle = "Login In Customer";
         }
+
         Stage loginStage = setupStage(tittle);
         loginStage.initModality(Modality.APPLICATION_MODAL);
         GridPane grid = loginInUserGrid(loginStage, primaryStage, loginInMenuStage, typeUser, tittle);
         VBox root = createVBox(0, 20, Pos.CENTER, grid);
-        setScene(loginStage, root, 400, 300, "/styles/manuMainStyles.css");
+        setScene(loginStage, root, 500, 300, "/styles/manuMainStyles.css");
 
         loginStage.showAndWait();
         return userLogin;
@@ -65,25 +63,22 @@ public class LoginIn {
         GridPane grid = createGridPane();
         addTitleToGrid(grid, title);
 
-        Label lblEmail = new Label("Email: ");
-        TextField txtEmail = new TextField();
 
-        Label lblPassword = new Label("Password: ");
-        PasswordField txtPassword = new PasswordField();
-
+        InputField inputEmail = new InputField("Email: ");
+        PasswordFieldWithToggle inputPassword = new PasswordFieldWithToggle("Password: ");
         Label lblError = createErrorLabel();
 
         Button btnAccess = new Button("Access");
         btnAccess.setOnAction(event -> {
-            String email = txtEmail.getText();
-            String password = txtPassword.getText();
+            String email = inputEmail.getText();
+            String password = inputPassword.getText();
 
             tryAction(lblError, () -> {
                 if (email.isBlank() || password.isBlank()) {
                     throw new IllegalArgumentException("Email and password cannot be blank.");
                 } else if (isValidEmail(email) && isValidPassword(password)) {
-                    try {
 
+                    try {
                         switch (typeUser) {
                             case "ADMIN" -> userLogin = Admin.loginAdmin(email, password);
                             case "SUPPORT_AGENT" -> userLogin = SupportAgent.loginSupportAgent(email, password);
@@ -94,9 +89,13 @@ public class LoginIn {
                     } catch (SQLException e) {
                         showError(lblError, e.getMessage());
                     }
-                    disableControls(lblEmail, txtEmail, lblPassword, txtPassword, btnAccess);
+
+                    inputEmail.setDisable(true);
+                    inputPassword.setDisable(true);
+
                     showSuccess(lblError, "Access granted! Welcome, " + userLogin.getName() + ".");
                     closeAfterDelay(loginStage);
+
                     if (primaryStage != null){
                         loginInMenuStage.close();
                         switch (typeUser) {
@@ -116,10 +115,10 @@ public class LoginIn {
             }, "Login successful");
         });
 
-        grid.add(lblEmail, 0, 1);
-        grid.add(txtEmail, 1, 1);
-        grid.add(lblPassword, 0, 2);
-        grid.add(txtPassword, 1, 2);
+        grid.add(inputEmail.getLabel(), 0, 1);
+        grid.add(inputEmail.getTextField(), 1, 1);
+        grid.add(inputPassword.getLabel(), 0, 2);
+        grid.add(inputPassword, 1, 2);
         grid.add(btnAccess, 0, 3, 2, 1);
         grid.add(lblError, 0, 4, 2, 1);
 

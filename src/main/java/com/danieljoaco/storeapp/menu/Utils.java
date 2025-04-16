@@ -12,14 +12,15 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 import static com.danieljoaco.storeapp.utils.UserValidator.*;
@@ -28,7 +29,7 @@ import static com.danieljoaco.storeapp.utils.UserValidator.isValidId;
 public class Utils {
     private static final double DEFAULT_PADDING = 50;
     private static final double DEFAULT_GAP = 15;
-    private static final int DEFAULT_PAUSE_MS = 2000;
+    private static final int DEFAULT_PAUSE_MS = 1500;
 
     static void validateUserInput(String name, String email, String id, String password, String repeatPassword) {
         if (Stream.of(name, email, id, password, repeatPassword).anyMatch(String::isEmpty)) {
@@ -52,7 +53,7 @@ public class Utils {
 
     static Label createTittleLabel(String text, int fontSize) {
         Label l = new Label(text);
-        l.setFont(Font.font("Arial", FontWeight.BOLD, fontSize));
+        l.setFont(Font.font("Macondo", FontWeight.BOLD, fontSize));
         return l;
     }
 
@@ -66,7 +67,13 @@ public class Utils {
 
     static Button createMenuButton(String text, EventHandler<ActionEvent> handler) {
         Button b = new Button(text);
-        b.setMinWidth(200);
+        b.setMinWidth(50);
+        b.setOnAction(handler);
+        return b;
+    }
+    static Button createMenuButton(String text, EventHandler<ActionEvent> handler, int minWidth) {
+        Button b = new Button(text);
+        b.setMinWidth(minWidth);
         b.setOnAction(handler);
         return b;
     }
@@ -127,7 +134,7 @@ public class Utils {
     }
 
     static void addTitleToGrid(GridPane grid, String title) {
-        Label lblTitle = createTittleLabel(title, 16);
+        Label lblTitle = createTittleLabel(title, 30);
         GridPane.setColumnSpan(lblTitle, 2);
         GridPane.setHalignment(lblTitle, HPos.CENTER);
         grid.add(lblTitle, 0, 0, 2, 1);
@@ -135,6 +142,34 @@ public class Utils {
 
     static void disableControls(Node... controls) {
         Stream.of(controls).forEach(node -> node.setDisable(true));
+    }
+
+    static boolean askConfirmation(String text) {
+        AtomicBoolean result = new AtomicBoolean(false);
+
+        Stage stage = setupStage("Continue");
+        VBox root = createVBox(0, 20, Pos.CENTER);
+
+        Label lblTitle = createTittleLabel(text, 24);
+
+        Button continueButton = createMenuButton("Yes", e -> {
+            stage.close();
+            result.set(true);
+        });
+        Button cancelButton = createMenuButton("No", e -> {
+            stage.close();
+            result.set(false);
+        });
+
+        HBox buttonContainer = new HBox(10);
+        buttonContainer.setAlignment(Pos.CENTER);
+        buttonContainer.getChildren().addAll(continueButton, cancelButton);
+
+        root.getChildren().addAll(lblTitle, buttonContainer);
+        setScene(stage, root, 300, 200, "/styles/manuMainStyles.css");
+        stage.showAndWait();
+
+        return result.get();
     }
 
 }

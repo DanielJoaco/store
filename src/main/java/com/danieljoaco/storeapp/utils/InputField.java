@@ -12,6 +12,7 @@ public class InputField {
     public InputField(String text) {
         this.lb = new Label(text);
         this.tf = new TextField();
+        this.lb.setStyle("-fx-font-size: 20px;");
     }
 
     public Label getLabel() {

@@ -1,6 +1,8 @@
 package com.danieljoaco.storeapp.utils;
 
+import javafx.geometry.Pos;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
@@ -10,13 +12,13 @@ public class PasswordFieldWithToggle extends HBox {
 
     private final PasswordField passwordField = new PasswordField();
     private final TextField visibleTextField = new TextField();
-    private final CheckBox showPassword = new CheckBox("Mostrar");
-
-    public PasswordFieldWithToggle() {
-        this("");
-    }
+    private final CheckBox showPassword = new CheckBox("Show");
+    private final Label lbl;
 
     public PasswordFieldWithToggle(String promptText) {
+        this.lbl = new Label(promptText);
+        this.lbl.setStyle("-fx-font-size: 20px;");
+
         passwordField.setPromptText(promptText);
         visibleTextField.setPromptText(promptText);
 
@@ -27,31 +29,19 @@ public class PasswordFieldWithToggle extends HBox {
         passwordField.managedProperty().bind(showPassword.selectedProperty().not());
         passwordField.visibleProperty().bind(showPassword.selectedProperty().not());
 
-        StackPane passwordContainer = new StackPane(passwordField, visibleTextField); // Convertido a variable local
+        StackPane passwordContainer = new StackPane(passwordField, visibleTextField);
 
+        // Centrar verticalmente el contenido del HBox
+        setAlignment(Pos.CENTER_LEFT);
         getChildren().addAll(passwordContainer, showPassword);
-        setSpacing(5); // Espacio entre el campo de contraseña y el checkbox
-    }
-
-    public PasswordField getPasswordField() {
-        return passwordField;
-    }
-
-    public TextField getVisibleTextField() {
-        return visibleTextField;
+        setSpacing(5);
     }
 
     public String getText() {
         return showPassword.isSelected() ? visibleTextField.getText() : passwordField.getText();
     }
 
-    public CheckBox getShowPasswordCheckBox() {
-        return showPassword;
+    public Label getLabel() {
+        return lbl;
     }
-
-    public void setPromptText(String prompt) {
-        passwordField.setPromptText(prompt);
-        visibleTextField.setPromptText(prompt);
-    }
-
 }
