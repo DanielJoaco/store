@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox fx:id="mainBox" alignment="CENTER" spacing="15" prefWidth="400" prefHeight="350"
+      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.danieljoaco.storeapp.MainController">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20" />
+    </padding>
+    <Button fx:id="btnRegister" text="Registrarse" minWidth="150" onAction="#handleRegister" />
+    <Button fx:id="btnLogin" text="Iniciar sesión" minWidth="150" onAction="#handleLogin" />
+    <Button fx:id="btnExit" text="Salir" minWidth="150" onAction="#handleExit" />
+</VBox>

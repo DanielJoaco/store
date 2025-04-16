@@ -1,8 +1,9 @@
-package com.danieljoaco.storeapp.menu;
+package com.danieljoaco.storeapp.menu.utils;
 
 import javafx.animation.PauseTransition;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -12,15 +13,15 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+
+import java.io.IOException;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 import static com.danieljoaco.storeapp.utils.UserValidator.*;
@@ -31,7 +32,7 @@ public class Utils {
     private static final double DEFAULT_GAP = 15;
     private static final int DEFAULT_PAUSE_MS = 1500;
 
-    static void validateUserInput(String name, String email, String id, String password, String repeatPassword) {
+    public static void validateUserInput(String name, String email, String id, String password, String repeatPassword) {
         if (Stream.of(name, email, id, password, repeatPassword).anyMatch(String::isEmpty)) {
             throw new IllegalArgumentException("All fields must be completed.");
         }
@@ -41,7 +42,7 @@ public class Utils {
         if (!password.equals(repeatPassword)) throw new IllegalArgumentException("Passwords do not match.");
         if (!isValidId(id)) throw new IllegalArgumentException("Invalid ID format.");
     }
-    static VBox createVBox(double padding, double spacing, Pos align, Node... children) {
+    public static VBox createVBox(double padding, double spacing, Pos align, Node... children) {
         VBox v = new VBox(spacing);
         v.setPadding(new Insets(padding));
         v.setAlignment(align);
@@ -51,13 +52,13 @@ public class Utils {
         return v;
     }
 
-    static Label createTittleLabel(String text, int fontSize) {
+    public static Label createTittleLabel(String text, int fontSize) {
         Label l = new Label(text);
         l.setFont(Font.font("Macondo", FontWeight.BOLD, fontSize));
         return l;
     }
 
-    static Label createErrorLabel() {
+    public static Label createErrorLabel() {
         Label l = new Label();
         l.setStyle("-fx-text-fill: red;");
         l.setWrapText(true);
@@ -65,20 +66,20 @@ public class Utils {
         return l;
     }
 
-    static Button createMenuButton(String text, EventHandler<ActionEvent> handler) {
+    public static Button createMenuButton(String text, EventHandler<ActionEvent> handler) {
         Button b = new Button(text);
         b.setMinWidth(50);
         b.setOnAction(handler);
         return b;
     }
-    static Button createMenuButton(String text, EventHandler<ActionEvent> handler, int minWidth) {
+    public static Button createMenuButton(String text, EventHandler<ActionEvent> handler, int minWidth) {
         Button b = new Button(text);
         b.setMinWidth(minWidth);
         b.setOnAction(handler);
         return b;
     }
 
-    static void setScene(Stage stage, Parent root, int w, int h, String cssPath) {
+    public static void setScene(Stage stage, Parent root, int w, int h, String cssPath) {
         Scene s = new Scene(root, w, h);
         if (cssPath != null) {
             String css = Objects.requireNonNull(Utils.class.getResource(cssPath)).toExternalForm();
@@ -87,19 +88,19 @@ public class Utils {
         stage.setScene(s);
     }
 
-    static Stage setupStage(String title) {
+    public static Stage setupStage(String title) {
         Stage s = new Stage();
         s.setTitle(title);
         return s;
     }
 
-    static void returnToMainMenu(Stage stageShow, Stage stageClose) {
+    public static void returnToMainMenu(Stage stageShow, Stage stageClose) {
         System.out.println("Returning to the main menu...");
         stageClose.close();
         stageShow.show();
     }
 
-    static void tryAction(Label lblError, Runnable action, String successMsg) {
+    public static void tryAction(Label lblError, Runnable action, String successMsg) {
         try {
             action.run();
             showSuccess(lblError, successMsg);
@@ -108,23 +109,23 @@ public class Utils {
         }
     }
 
-    static void showError(Label lbl, String message) {
+    public static void showError(Label lbl, String message) {
         lbl.setText(message);
         lbl.setStyle("-fx-text-fill: red;");
     }
 
-    static void showSuccess(Label lbl, String message) {
+    public static void showSuccess(Label lbl, String message) {
         lbl.setText(message);
         lbl.setStyle("-fx-text-fill: green;");
     }
 
-    static void closeAfterDelay(Stage stage) {
+    public static void closeAfterDelay(Stage stage) {
         PauseTransition pause = new PauseTransition(Duration.millis(DEFAULT_PAUSE_MS));
         pause.setOnFinished(e -> stage.close());
         pause.play();
     }
 
-    static GridPane createGridPane() {
+    public static GridPane createGridPane() {
         GridPane grid = new GridPane();
         grid.setPadding(new Insets(DEFAULT_PADDING));
         grid.setHgap(DEFAULT_GAP);
@@ -133,43 +134,45 @@ public class Utils {
         return grid;
     }
 
-    static void addTitleToGrid(GridPane grid, String title) {
+    public static void addTitleToGrid(GridPane grid, String title) {
         Label lblTitle = createTittleLabel(title, 30);
         GridPane.setColumnSpan(lblTitle, 2);
         GridPane.setHalignment(lblTitle, HPos.CENTER);
         grid.add(lblTitle, 0, 0, 2, 1);
     }
 
-    static void disableControls(Node... controls) {
+    public static void disableControls(Node... controls) {
         Stream.of(controls).forEach(node -> node.setDisable(true));
     }
 
-    static boolean askConfirmation(String text) {
-        AtomicBoolean result = new AtomicBoolean(false);
+    public static boolean askConfirmation(String text) {
+        try {
+            // Cargar el archivo FXML
+            FXMLLoader loader = new FXMLLoader(Utils.class.getResource("/fxml/confirmation-dialog.fxml"));
+            Parent root = loader.load();
 
-        Stage stage = setupStage("Continue");
-        VBox root = createVBox(0, 20, Pos.CENTER);
+            // Obtener el controlador y establecer el texto
+            ConfirmationDialogController controller = loader.getController();
+            controller.setText(text);
 
-        Label lblTitle = createTittleLabel(text, 24);
+            // Configurar el escenario
+            Stage stage = setupStage("Continue");
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(
+                    Objects.requireNonNull(Utils.class.getResource("/styles/manuMainStyles.css")).toExternalForm()
+            );
+            stage.setScene(scene);
 
-        Button continueButton = createMenuButton("Yes", e -> {
-            stage.close();
-            result.set(true);
-        });
-        Button cancelButton = createMenuButton("No", e -> {
-            stage.close();
-            result.set(false);
-        });
+            // Mostrar el diálogo y esperar
+            stage.showAndWait();
 
-        HBox buttonContainer = new HBox(10);
-        buttonContainer.setAlignment(Pos.CENTER);
-        buttonContainer.getChildren().addAll(continueButton, cancelButton);
+            // Retornar el resultado
+            return controller.getResult();
 
-        root.getChildren().addAll(lblTitle, buttonContainer);
-        setScene(stage, root, 300, 200, "/styles/manuMainStyles.css");
-        stage.showAndWait();
-
-        return result.get();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
 }

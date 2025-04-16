@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Font?>
+
+<VBox fx:id="loginFormRoot" alignment="CENTER" prefWidth="500" prefHeight="300"
+      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.danieljoaco.storeapp.menu.loginIn.LoginFormController">
+
+    <GridPane fx:id="formGrid" alignment="CENTER" hgap="15" vgap="15">
+        <padding>
+            <Insets top="50" right="50" bottom="50" left="50" />
+        </padding>
+
+        <!-- Title -->
+        <Label fx:id="lblFormTitle" text="Login" GridPane.columnIndex="0" GridPane.rowIndex="0"
+               GridPane.columnSpan="2" GridPane.halignment="CENTER">
+            <font>
+                <Font name="Macondo Bold" size="24" />
+            </font>
+        </Label>
+
+        <!-- Email Field -->
+        <Label text="Email: " GridPane.columnIndex="0" GridPane.rowIndex="1" />
+        <TextField fx:id="txtEmail" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+        <!-- Password Field with Toggle -->
+        <Label text="Password: " GridPane.columnIndex="0" GridPane.rowIndex="2" />
+        <HBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="2">
+            <PasswordField fx:id="passwordField" promptText="Password" HBox.hgrow="ALWAYS" />
+            <TextField fx:id="visiblePasswordField" promptText="Password" visible="false" managed="false" HBox.hgrow="ALWAYS" />
+            <CheckBox fx:id="showPasswordCheckbox" text="Show" onAction="#togglePasswordVisibility" />
+        </HBox>
+
+        <!-- Login Button -->
+        <Button fx:id="btnAccess" text="Access" onAction="#handleAccess"
+                GridPane.columnIndex="0" GridPane.rowIndex="3"
+                GridPane.columnSpan="2" GridPane.halignment="CENTER" />
+
+        <!-- Error Label -->
+        <Label fx:id="lblError" wrapText="true" textAlignment="CENTER"
+               GridPane.columnIndex="0" GridPane.rowIndex="4"
+               GridPane.columnSpan="2" GridPane.halignment="CENTER" />
+    </GridPane>
+</VBox>
