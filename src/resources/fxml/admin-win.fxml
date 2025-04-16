@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Pane?>
+
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
+      prefHeight="630" prefWidth="1120.0"
+      xmlns="http://javafx.com/javafx/23.0.1"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.danieljoaco.storeapp.menu.adminMenu.AdminWinController">
+
+    <MenuBar prefHeight="25" prefWidth="1120">
+        <Menu mnemonicParsing="false" text="Product">
+            <MenuItem fx:id="menuNewProduct" mnemonicParsing="false" text="New product"/>
+            <MenuItem fx:id="menuEditProduct" mnemonicParsing="false" text="Edit product"/>
+            <MenuItem fx:id="menuDeleteProduct" mnemonicParsing="false" text="Delete product"/>
+        </Menu>
+        <Menu mnemonicParsing="false" text="User">
+            <MenuItem fx:id="menuNewUser" mnemonicParsing="false" text="New user"/>
+            <MenuItem fx:id="menuEditUser" mnemonicParsing="false" text="Edit user"/>
+            <MenuItem fx:id="menuDeleteUser" mnemonicParsing="false" text="Delete user"/>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Order">
+            <MenuItem fx:id="menuNewOrder" mnemonicParsing="false" text="New order"/>
+            <MenuItem fx:id="menuEditOrder" mnemonicParsing="false" text="Edit order"/>
+            <MenuItem fx:id="menuDeleteOrder" mnemonicParsing="false" text="Delete order"/>
+        </Menu>
+    </MenuBar>
+
+    <SplitPane dividerPositions="0.25" layoutY="25.0" prefHeight="605" prefWidth="1120">
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="605" prefWidth="280">
+            <Button fx:id="btnProducts" mnemonicParsing="false"
+                    prefHeight="202.0" prefWidth="280.0"
+                    text="View Product Table"
+                    style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+            <Button fx:id="btnUsers" layoutY="201.0" mnemonicParsing="false"
+                    prefHeight="201.0" prefWidth="280.0"
+                    text="View User Table"/>
+            <Button fx:id="btnOrders" layoutY="402.0" mnemonicParsing="false"
+                    prefHeight="202.0" prefWidth="280.0"
+                    text="View Order Table"/>
+        </AnchorPane>
+
+        <AnchorPane fx:id="tableContainer" prefHeight="605" prefWidth="840">
+            <!-- Las tablas se crearán dinámicamente en el controlador -->
+        </AnchorPane>
+    </SplitPane>
+</Pane>

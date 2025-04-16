@@ -1,14 +1,17 @@
 package com.danieljoaco.storeapp;
 
+import com.danieljoaco.storeapp.menu.adminMenu.AdminWin;
 import com.danieljoaco.storeapp.menu.loginIn.LoginIn;
 import com.danieljoaco.storeapp.menu.signUp.SignUpMenu;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class MainController {
 
+    public VBox mainBox;
     @FXML
     private Button btnRegister;
 
@@ -32,8 +35,10 @@ public class MainController {
 
     @FXML
     private void handleLogin(ActionEvent event) {
-        LoginIn loginIn = new LoginIn();
-        loginIn.show(primaryStage);
+        //LoginIn loginIn = new LoginIn();
+        //loginIn.show(primaryStage);
+        AdminWin adminWin = new AdminWin();
+        adminWin.start(primaryStage);
     }
 
     @FXML

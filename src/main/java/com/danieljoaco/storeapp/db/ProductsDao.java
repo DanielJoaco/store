@@ -143,25 +143,26 @@ public class ProductsDao {
     }
 
     // Obtener un producto por ID
-    public Products getProductByRef(String ref) {
+    public static Products getProductByRef(String ref) {
         String sql = """
-                    SELECT
-                        p.name,
-                        p.ref,
-                        p.cost,
-                        p.price,
-                        p.stock,
-                        p.bill,
-                        p.date,
-                        c.name AS category,  -- Obtener la categoría
-                        s.name AS subcategory -- Obtener la subcategoría
-                    FROM products p
-                    LEFT JOIN subcategories s ON p.subcategory_id = s.id
-                    LEFT JOIN categories c ON s.category_id = c.id
-                    WHERE p.ref = ?
-                """;
+                SELECT
+                    pr.name,
+                    p.product_ref AS ref,
+                    p.cost,
+                    p.price,
+                    p.stock,
+                    p.bill,
+                    p.date,
+                    c.name AS category,
+                    s.name AS subcategory
+                FROM products p
+                JOIN product_references pr ON p.product_ref = pr.ref
+                LEFT JOIN subcategories s ON pr.subcategory_id = s.id
+                LEFT JOIN categories c ON s.category_id = c.id
+                WHERE p.product_ref = ?
+            """;
 
-        try (Connection conn = DatabaseManager.connectProducts(); // Usamos connectProducts()
+        try (Connection conn = DatabaseManager.connectProducts();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, ref);
             ResultSet rs = pstmt.executeQuery();
@@ -180,29 +181,31 @@ public class ProductsDao {
             }
         } catch (SQLException e) {
             System.out.println("Error al obtener el producto: " + e.getMessage());
+            e.printStackTrace();
         }
-        return null;  // Retorna null si no se encuentra el producto
+        return null;
     }
 
     // Listar todos los productos
-    public List<Products> getAllProducts() {
+    public static List<Products> getAllProducts() {
         String sql = """
-                SELECT
-                    p.name,
-                    p.ref,
-                    p.cost,
-                    p.price,
-                    p.stock,
-                    p.bill,
-                    p.date,
-                    c.name AS category,
-                    s.name AS subcategory
-                FROM products p
-                LEFT JOIN subcategories s ON p.subcategory_id = s.id
-                LEFT JOIN categories c ON s.category_id = c.id
-            """;
+            SELECT
+                pr.name,           -- Get name from product_references table
+                p.product_ref AS ref,  -- Get ref from products table
+                p.cost,
+                p.price,
+                p.stock,
+                p.bill,
+                p.date,
+                c.name AS category,
+                s.name AS subcategory
+            FROM products p
+            JOIN product_references pr ON p.product_ref = pr.ref  -- Join with product_references
+            LEFT JOIN subcategories s ON pr.subcategory_id = s.id  -- Join subcategories with product_references
+            LEFT JOIN categories c ON s.category_id = c.id
+        """;
         List<Products> productsList = new ArrayList<>();
-        try (Connection conn = DatabaseManager.connectProducts(); // Usamos connectProducts()
+        try (Connection conn = DatabaseManager.connectProducts();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
@@ -222,35 +225,75 @@ public class ProductsDao {
             }
         } catch (SQLException e) {
             System.out.println("Error al obtener los productos: " + e.getMessage());
+            e.printStackTrace(); // Add this to get more details about the error
         }
         return productsList;
     }
 
     // Actualizar la información de un producto
-    public void updateProduct(Products product) {
-        String sql = "UPDATE products SET name = ?, price = ?, quantity = ?, category = ?, subcategory = ? WHERE id = ?";
+    public static void updateProduct(Products product) {
+        Connection conn = null;
+        boolean originalAutoCommit = true;
 
-        try (Connection conn = DatabaseManager.connectProducts(); // Usamos connectProducts()
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, product.getName());
-            pstmt.setDouble(2, product.getPrice());
-            pstmt.setInt(3, product.getStock());
-            pstmt.setString(4, product.getCategory());
-            pstmt.setString(5, product.getSubCategory());
-            pstmt.setString(6, product.getId());
-            pstmt.executeUpdate();
+        try {
+            conn = DatabaseManager.connectProducts();
+            originalAutoCommit = conn.getAutoCommit();
+            conn.setAutoCommit(false); // Start transaction
+
+            // Update product_references table (name and categories)
+            long categoryId = getOrCreateCategory(conn, product.getCategory());
+            long subcategoryId = getOrCreateSubcategory(conn, product.getSubCategory(), categoryId);
+
+            String updateRef = "UPDATE product_references SET name = ?, subcategory_id = ? WHERE ref = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(updateRef)) {
+                pstmt.setString(1, product.getName());
+                pstmt.setLong(2, subcategoryId);
+                pstmt.setString(3, product.getRef());
+                pstmt.executeUpdate();
+            }
+
+            // Update products table (price, stock, etc.)
+            String updateProd = "UPDATE products SET cost = ?, price = ?, stock = ? WHERE product_ref = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(updateProd)) {
+                pstmt.setDouble(1, product.getCost());
+                pstmt.setDouble(2, product.getPrice());
+                pstmt.setInt(3, product.getStock());
+                pstmt.setString(4, product.getRef());
+                pstmt.executeUpdate();
+            }
+
+            conn.commit();
+            System.out.println("Producto actualizado exitosamente: " + product.getRef());
         } catch (SQLException e) {
             System.out.println("Error al actualizar el producto: " + e.getMessage());
+            e.printStackTrace();
+            try {
+                if (conn != null) {
+                    conn.rollback();
+                    System.err.println("Transacción revertida.");
+                }
+            } catch (SQLException ex) {
+                System.err.println("Error durante el rollback: " + ex.getMessage());
+            }
+        } finally {
+            try {
+                if (conn != null) {
+                    conn.setAutoCommit(originalAutoCommit);
+                    conn.close();
+                }
+            } catch (SQLException ex) {
+                System.err.println("Error al cerrar la conexión: " + ex.getMessage());
+            }
         }
     }
 
     // Eliminar un producto por ID
-    public void deleteProduct(String id) {
-        String sql = "DELETE FROM products WHERE id = ?";
+    public static void deleteProductToDb(String ref) {
+        String sql = "DELETE FROM products WHERE ref = ?";
 
         try (Connection conn = DatabaseManager.connectProducts(); // Usamos connectProducts()
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, id);
+            pstmt.setString(1, ref);
             pstmt.executeUpdate();
         } catch (SQLException e) {
             System.out.println("Error al eliminar el producto: " + e.getMessage());
