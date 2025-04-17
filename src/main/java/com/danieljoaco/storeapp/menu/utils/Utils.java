@@ -175,4 +175,14 @@ public class Utils {
         }
     }
 
+    public static String capitalize(String text) {
+        if (text == null || text.isEmpty()) {
+            return text;
+        }
+        String lowerCase = text.toLowerCase();
+        lowerCase = lowerCase.replaceAll("_", " ");
+
+        return lowerCase.substring(0, 1).toUpperCase() + lowerCase.substring(1);
+    }
+
 }

@@ -1,22 +1,34 @@
 package com.danieljoaco.storeapp.menu.adminMenu;
 
 import com.danieljoaco.storeapp.products.Products;
+import com.danieljoaco.storeapp.users.Admin;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
+
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import java.util.Objects;
 import java.util.ResourceBundle;
 import javafx.geometry.Pos;
 import javafx.scene.control.TableCell;
+import javafx.stage.Stage;
 
 import static com.danieljoaco.storeapp.db.ProductsDao.*;
+import static com.danieljoaco.storeapp.menu.utils.Utils.setupStage;
 
 public class AdminWinController implements Initializable {
+
+    @FXML
+    private MenuItem menuNewProduct;
 
     @FXML
     private Button btnProducts, btnUsers, btnOrders;
@@ -33,17 +45,30 @@ public class AdminWinController implements Initializable {
 
     // Lista observable para los productos
     private final ObservableList<Products> productsList = FXCollections.observableArrayList();
+    private Admin adminLogin;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+
+        setupMenu();
+
         // Inicializar los botones
         setupButtons();
 
         // Inicializar las tablas
         setupTables();
 
-        // Por defecto, mostrar la tabla de productos
-        showProductsTable();
+    }
+
+    public void loggedInAdmin(Admin adminLogin) {
+        // Aquí puedes usar el adminLogin como necesites
+        // Por ejemplo, guardarlo como una variable de clase
+        this.adminLogin = adminLogin;
+    }
+
+
+    private void setupMenu(){
+        menuNewProduct.setOnAction(event -> createNewProduct());
     }
 
     private void setupButtons() {
@@ -62,6 +87,35 @@ public class AdminWinController implements Initializable {
         tableProducts.setVisible(false);
         tableUsers.setVisible(false);
         tableOrders.setVisible(false);
+    }
+
+    public void createNewProduct() {
+        try {
+            String title = "New product";
+            Stage newProductStage = setupStage(title);
+
+            // Load FXML file
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/new-product.fxml"));
+            Parent root = loader.load();
+
+            // Get the controller and configure it
+            NewProductController controller = loader.getController();
+            controller.initialize(newProductStage);
+
+            // Configure the scene
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(
+                    Objects.requireNonNull(getClass().getResource("/styles/manuMainStyles.css")).toExternalForm()
+            );
+            newProductStage.setScene(scene);
+
+            // Show the dialog and wait
+            newProductStage.showAndWait();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Error loading new product form: " + e.getMessage());
+        }
     }
 
     private void createProductsTable() {

@@ -53,36 +53,27 @@ public class NewProductController {
 
         // Initialize category ComboBox
         categoryComboBox.getItems().addAll(Arrays.stream(Category.Categories.values())
-                .map(category -> {
-                    String name = category.name().toLowerCase();
-                    if (!name.isEmpty()) {
-                        return name.substring(0, 1).toUpperCase() + name.substring(1);
-                    } else {
-                        return name;
-                    }
-                })
-                .toList());
+                        .map(category -> capitalize(category.name()))
+                        .toList());
 
         // Add listener for category selection to update subcategories
         categoryComboBox.setOnAction(event -> {
             try {
-                String selectedCategory = categoryComboBox.getSelectionModel().getSelectedItem().toUpperCase();
+                String selectedItem = categoryComboBox.getSelectionModel().getSelectedItem();
+                if (selectedItem == null) {
+                    showError(lblError, "Please select a category");
+                    return;
+                }
+                
+                String selectedCategory = selectedItem.toUpperCase();
                 subcategoryComboBox.getItems().clear();
                 subcategoryComboBox.getItems().addAll(Arrays.stream(SubCategory.SubCategories.valueOf(selectedCategory).getItems())
-                        .map(item -> {
-                            String name = item.replace("_", " ");
-                            String lowerCaseName = name.toLowerCase();
-                            if (!lowerCaseName.isEmpty()) {
-                                return lowerCaseName.substring(0, 1).toUpperCase() + lowerCaseName.substring(1);
-                            } else {
-                                return lowerCaseName;
-                            }
-                        })
+                        .map(item -> capitalize(item))
                         .toList());
                 subcategoryComboBox.setPromptText("Select a subcategory");
                 showSuccess(lblError, "");
-            } catch (Exception e) {
-                showError(lblError, "Don´t found subcategory for selected category.");
+            } catch (IllegalArgumentException e) {
+                showError(lblError, "No subcategories found for the selected category.");
             }
         });
     }

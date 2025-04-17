@@ -191,7 +191,7 @@ public class ProductsDao {
         String sql = """
             SELECT
                 pr.name,           -- Get name from product_references table
-                p.product_ref AS ref,  -- Get ref from products table
+                p.product_ref AS ref,  -- Get ref from the product table
                 p.cost,
                 p.price,
                 p.stock,
@@ -240,7 +240,7 @@ public class ProductsDao {
             originalAutoCommit = conn.getAutoCommit();
             conn.setAutoCommit(false); // Start transaction
 
-            // Update product_references table (name and categories)
+            // Update the product_references table (name and categories)
             long categoryId = getOrCreateCategory(conn, product.getCategory());
             long subcategoryId = getOrCreateSubcategory(conn, product.getSubCategory(), categoryId);
 
@@ -287,16 +287,28 @@ public class ProductsDao {
         }
     }
 
-    // Eliminar un producto por ID
-    public static void deleteProductToDb(String ref) {
-        String sql = "DELETE FROM products WHERE ref = ?";
+    // Eliminar un producto por ref
 
-        try (Connection conn = DatabaseManager.connectProducts(); // Usamos connectProducts()
+    public static void deleteProductToDb(String ref) {
+        String sql = "DELETE FROM product_references WHERE ref = ?";
+
+        try (Connection conn = DatabaseManager.connectProducts();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, ref);
-            pstmt.executeUpdate();
+
+            conn.setAutoCommit(false); // Iniciamos una transacción
+
+            try {
+                pstmt.setString(1, ref);
+                pstmt.executeUpdate();
+                conn.commit(); // Confirmamos la transacción
+                System.out.println("Producto eliminado exitosamente: " + ref);
+            } catch (SQLException e) {
+                conn.rollback(); // Revertimos la transacción en caso de error
+                System.out.println("Error al eliminar el producto: " + e.getMessage());
+                throw e; // Re-lanzamos la excepción para manejarla en el nivel superior
+            }
         } catch (SQLException e) {
-            System.out.println("Error al eliminar el producto: " + e.getMessage());
+            System.out.println("Error en la operación de base de datos: " + e.getMessage());
         }
     }
 }

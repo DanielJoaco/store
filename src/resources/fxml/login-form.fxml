@@ -6,7 +6,7 @@
 <?import javafx.scene.text.Font?>
 
 <VBox fx:id="loginFormRoot" alignment="CENTER" prefWidth="500" prefHeight="300"
-      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.danieljoaco.storeapp.menu.loginIn.LoginFormController">
 
     <GridPane fx:id="formGrid" alignment="CENTER" hgap="15" vgap="15">

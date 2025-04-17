@@ -101,6 +101,14 @@ public class Products {
         }
     }
 
+    public void setDate(LocalDate date, Admin admin){
+        if (admin.isAdmin()){
+            this.date = date;
+        } else {
+            throw new IllegalArgumentException("Only admins can change the date of a product.");
+        }
+    }
+
      public void setSubCategory(String category, String subcategory, Admin admin){
         if (admin.isAdmin()){
             this.subCategory = new SubCategory(category, subcategory);

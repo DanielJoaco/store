@@ -6,7 +6,7 @@
 <?import javafx.scene.text.Font?>
 
 <VBox fx:id="confirmationRoot" alignment="CENTER" spacing="20" prefWidth="300" prefHeight="200"
-      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.danieljoaco.storeapp.menu.utils.ConfirmationDialogController">
     <padding>
         <Insets top="20" right="20" bottom="20" left="20" />

@@ -35,10 +35,9 @@ public class MainController {
 
     @FXML
     private void handleLogin(ActionEvent event) {
-        //LoginIn loginIn = new LoginIn();
-        //loginIn.show(primaryStage);
-        AdminWin adminWin = new AdminWin();
-        adminWin.start(primaryStage);
+        LoginIn loginIn = new LoginIn();
+        loginIn.show(primaryStage);
+
     }
 
     @FXML

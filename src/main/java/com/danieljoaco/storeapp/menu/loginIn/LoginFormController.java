@@ -100,8 +100,9 @@ public class LoginFormController {
                     loginInMenuStage.close();
                     switch (userType) {
                         case "ADMIN": {
-                            AdminMenu adminMenu = new AdminMenu();
-                            adminMenu.showMenu((Admin) userLogin, primaryStage);
+                            AdminWin adminWin = new AdminWin();
+                            Admin adminLogin = (Admin) userLogin;
+                            adminWin.start(primaryStage, adminLogin);
                             break;
                         }
                         case "SUPPORT_AGENT": {

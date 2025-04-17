@@ -1,5 +1,7 @@
 package com.danieljoaco.storeapp.products;
 
+import static com.danieljoaco.storeapp.menu.utils.Utils.capitalize;
+
 public abstract class   Category {
     
     private final String name;
@@ -18,7 +20,7 @@ public abstract class   Category {
     }
 
     public String getCategoryName(){
-        return this.name;
+        return capitalize(this.name);
     }
 
 }
