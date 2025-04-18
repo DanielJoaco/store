@@ -20,7 +20,7 @@ public abstract class   Category {
     }
 
     public String getCategoryName(){
-        return capitalize(this.name);
+        return this.name;
     }
 
 }

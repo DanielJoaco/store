@@ -1,9 +1,15 @@
 package com.danieljoaco.storeapp.db;
 
 import com.danieljoaco.storeapp.products.Products;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ProductsDao {
 
@@ -143,31 +149,44 @@ public class ProductsDao {
     }
 
     // Obtener un producto por ID
-    public static Products getProductByRef(String ref) {
+    public static ObservableList<Products> searchProducts(String ref) {
+        ObservableList<Products> results = FXCollections.observableArrayList();
+        String searchPattern = "%" + ref.replace("_", "\\_").replace("%", "\\%") + "%";
+
         String sql = """
-                SELECT
-                    pr.name,
-                    p.product_ref AS ref,
-                    p.cost,
-                    p.price,
-                    p.stock,
-                    p.bill,
-                    p.date,
-                    c.name AS category,
-                    s.name AS subcategory
-                FROM products p
-                JOIN product_references pr ON p.product_ref = pr.ref
-                LEFT JOIN subcategories s ON pr.subcategory_id = s.id
-                LEFT JOIN categories c ON s.category_id = c.id
-                WHERE p.product_ref = ?
+            SELECT
+                pr.name,
+                p.product_ref AS ref,
+                p.cost,
+                p.price,
+                p.stock,
+                p.bill,
+                p.date,
+                c.name AS category,
+                s.name AS subcategory
+            FROM products p
+            JOIN product_references pr ON p.product_ref = pr.ref
+            LEFT JOIN subcategories s ON pr.subcategory_id = s.id
+            LEFT JOIN categories c ON s.category_id = c.id
+            WHERE p.product_ref LIKE ? ESCAPE '\\'
+            OR p.product_ref LIKE ? ESCAPE '\\'
+            OR pr.name LIKE ? ESCAPE '\\'
             """;
 
         try (Connection conn = DatabaseManager.connectProducts();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, ref);
+
+            // Búsqueda por patrones similares
+            pstmt.setString(1, searchPattern);
+            pstmt.setString(2, "%" + ref.replaceAll("[^a-zA-Z0-9]", "") + "%");
+            pstmt.setString(3, "%" + ref + "%");
+
             ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                return new Products(
+
+            Map<Products, Integer> productScores = new HashMap<>();
+
+            while (rs.next()) {
+                Products product = new Products(
                         rs.getString("name"),
                         rs.getString("ref"),
                         rs.getDouble("cost"),
@@ -178,12 +197,55 @@ public class ProductsDao {
                         rs.getString("category"),
                         rs.getString("subcategory")
                 );
+
+                // Calcular puntuación de similitud
+                int score = calculateSimilarityScore(ref, product.getRef());
+                productScores.put(product, score);
             }
+
+            // Filtrar y ordenar resultados por puntuación
+            productScores.entrySet().stream()
+                    .filter(entry -> entry.getValue() >= 80) // Umbral de similitud del 80%
+                    .sorted(Map.Entry.<Products, Integer>comparingByValue().reversed())
+                    .map(Map.Entry::getKey)
+                    .forEach(results::add);
+
         } catch (SQLException e) {
-            System.out.println("Error al obtener el producto: " + e.getMessage());
+            System.out.println("Error al buscar productos similares: " + e.getMessage());
             e.printStackTrace();
         }
-        return null;
+
+        return results;
+    }
+
+    private static int calculateSimilarityScore(String search, String target) {
+        search = search.toLowerCase();
+        target = target.toLowerCase();
+
+        // Distancia de Levenshtein
+        int[][] dp = new int[search.length() + 1][target.length() + 1];
+
+        for (int i = 0; i <= search.length(); i++) {
+            dp[i][0] = i;
+        }
+        for (int j = 0; j <= target.length(); j++) {
+            dp[0][j] = j;
+        }
+
+        for (int i = 1; i <= search.length(); i++) {
+            for (int j = 1; j <= target.length(); j++) {
+                if (search.charAt(i - 1) == target.charAt(j - 1)) {
+                    dp[i][j] = dp[i - 1][j - 1];
+                } else {
+                    dp[i][j] = Math.min(dp[i - 1][j - 1], Math.min(dp[i - 1][j], dp[i][j - 1])) + 1;
+                }
+            }
+        }
+
+        // Convertir la distancia en una puntuación de similitud (0-100)
+        int maxLength = Math.max(search.length(), target.length());
+        int distance = dp[search.length()][target.length()];
+        return (int) ((1 - (double) distance / maxLength) * 100);
     }
 
     // Listar todos los productos

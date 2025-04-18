@@ -1,27 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Menu?>
-<?import javafx.scene.control.MenuBar?>
-<?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.SplitPane?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
-      prefHeight="630" prefWidth="1120.0"
-      xmlns="http://javafx.com/javafx/21"
-      xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.danieljoaco.storeapp.menu.adminMenu.AdminWinController">
+<AnchorPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.danieljoaco.storeapp.menu.adminMenu.AdminWinController">
 
-    <MenuBar prefHeight="25" prefWidth="1120">
+    <MenuBar AnchorPane.topAnchor="0.0"
+             AnchorPane.leftAnchor="0.0"
+             AnchorPane.rightAnchor="0.0">
         <Menu mnemonicParsing="false" text="Product">
             <MenuItem fx:id="menuNewProduct" mnemonicParsing="false" text="New product"/>
             <MenuItem fx:id="menuEditProduct" mnemonicParsing="false" text="Edit product"/>
             <MenuItem fx:id="menuDeleteProduct" mnemonicParsing="false" text="Delete product"/>
         </Menu>
         <Menu mnemonicParsing="false" text="User">
-            <MenuItem fx:id="menuNewUser" mnemonicParsing="false" text="New user"/>
+            <Menu mnemonicParsing="false" text="New user">
+                <MenuItem fx:id="newCustomer" text="New _customer"/>
+                <MenuItem fx:id="newSupportAgent" mnemonicParsing="false" text="New support Agent"/>
+                <MenuItem fx:id="newAdmin" mnemonicParsing="false" text="New Admin"/>
+            </Menu>
             <MenuItem fx:id="menuEditUser" mnemonicParsing="false" text="Edit user"/>
             <MenuItem fx:id="menuDeleteUser" mnemonicParsing="false" text="Delete user"/>
         </Menu>
@@ -32,21 +31,27 @@
         </Menu>
     </MenuBar>
 
-    <SplitPane dividerPositions="0.25" layoutY="25.0" prefHeight="605" prefWidth="1120">
-        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="605" prefWidth="280">
-            <Button fx:id="btnProducts" mnemonicParsing="false"
-                    prefHeight="202.0" prefWidth="280.0"
-                    text="View Product Table"/>
-            <Button fx:id="btnUsers" layoutY="201.0" mnemonicParsing="false"
-                    prefHeight="201.0" prefWidth="280.0"
-                    text="View User Table"/>
-            <Button fx:id="btnOrders" layoutY="402.0" mnemonicParsing="false"
-                    prefHeight="202.0" prefWidth="280.0"
-                    text="View Order Table"/>
-        </AnchorPane>
+    <SplitPane dividerPositions="0.25"
+               AnchorPane.topAnchor="25.0"
+               AnchorPane.bottomAnchor="0.0"
+               AnchorPane.leftAnchor="0.0"
+               AnchorPane.rightAnchor="0.0">
 
-        <AnchorPane fx:id="tableContainer" prefHeight="605" prefWidth="840">
-            <!-- Las tablas se crearán dinámicamente en el controlador -->
-        </AnchorPane>
+        <VBox maxWidth="250">
+            <Button fx:id="btnProducts"
+                    maxWidth="Infinity"
+                    VBox.vgrow="ALWAYS"
+                    text="View Product Table"/>
+            <Button fx:id="btnUsers"
+                    maxWidth="Infinity"
+                    VBox.vgrow="ALWAYS"
+                    text="View User Table"/>
+            <Button fx:id="btnOrders"
+                    maxWidth="Infinity"
+                    VBox.vgrow="ALWAYS"
+                    text="View Order Table"/>
+        </VBox>
+
+        <AnchorPane fx:id="tableContainer"/>
     </SplitPane>
-</Pane>
+</AnchorPane>

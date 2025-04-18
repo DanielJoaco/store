@@ -48,6 +48,6 @@ public class SubCategory extends Category {
     }
 
     public String getName() {
-        return capitalize(this.name);
+        return this.name;
     }
 }

@@ -109,20 +109,15 @@ public class SignUpMenuController {
     }
 
     private void newUser(String typeUser) {
-        String title = switch (typeUser) {
-            case "FIRST_ADMIN" -> "Create first admin";
-            case "ADMIN" -> "Create new admin";
-            case "SUPPORT_AGENT" -> "Create new support agent";
-            case "CUSTOMER" -> "Create new customer";
-            default -> throw new IllegalStateException("Unexpected value: " + typeUser);
-        };
+
+        String title = userTittle(typeUser);
 
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/new-user-form.fxml"));
             Parent root = loader.load();
 
             NewUserFormController controller = loader.getController();
-            controller.setup(title, typeUser, adminLogin);
+            controller.setup(title, typeUser, this.adminLogin);
 
             Stage newUserStage = setupStage(title);
             Scene scene = new Scene(root);
@@ -135,5 +130,39 @@ public class SignUpMenuController {
         } catch (IOException e) {
             showError(lblError, "Error loading form: " + e.getMessage());
         }
+    }
+
+    public static void newUser(String typeUser, Admin adminLogin) {
+
+        String title = userTittle(typeUser);
+
+        try {
+            FXMLLoader loader = new FXMLLoader(SignUpMenuController.class.getResource("/fxml/new-user-form.fxml"));
+            Parent root = loader.load();
+
+            NewUserFormController controller = loader.getController();
+            controller.setup(title, typeUser, adminLogin);
+
+            Stage newUserStage = setupStage(title);
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(
+                    Objects.requireNonNull(SignUpMenuController.class.getResource("/styles/manuMainStyles.css")).toExternalForm()
+            );
+            newUserStage.setScene(scene);
+            newUserStage.showAndWait();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static String userTittle(String typeUser){
+        return switch (typeUser) {
+            case "FIRST_ADMIN" -> "Create first admin";
+            case "ADMIN" -> "Create new admin";
+            case "SUPPORT_AGENT" -> "Create new support agent";
+            case "CUSTOMER" -> "Create new customer";
+            default -> throw new IllegalStateException("Unexpected value: " + typeUser);
+        };
     }
 }

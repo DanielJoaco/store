@@ -2,6 +2,9 @@ package com.danieljoaco.storeapp.menu.adminMenu;
 
 import com.danieljoaco.storeapp.products.Products;
 import com.danieljoaco.storeapp.users.Admin;
+import com.danieljoaco.storeapp.users.Users;
+import com.danieljoaco.storeapp.menu.adminMenu.SearchEngineController.SearchType;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -23,12 +26,13 @@ import javafx.scene.control.TableCell;
 import javafx.stage.Stage;
 
 import static com.danieljoaco.storeapp.db.ProductsDao.*;
+import static com.danieljoaco.storeapp.menu.signUp.SignUpMenuController.newUser;
 import static com.danieljoaco.storeapp.menu.utils.Utils.setupStage;
 
 public class AdminWinController implements Initializable {
 
     @FXML
-    private MenuItem menuNewProduct;
+    private MenuItem menuNewProduct, menuEditProduct, newCustomer, newSupportAgent, newAdmin;
 
     @FXML
     private Button btnProducts, btnUsers, btnOrders;
@@ -69,6 +73,11 @@ public class AdminWinController implements Initializable {
 
     private void setupMenu(){
         menuNewProduct.setOnAction(event -> createNewProduct());
+        menuEditProduct.setOnAction(event -> editProduct());
+
+        newCustomer.setOnAction(event -> newUser(Users.UserType.CUSTOMER.name(), null));
+        newSupportAgent.setOnAction(event -> newUser(Users.UserType.SUPPORT_AGENT.name(), adminLogin));
+        newAdmin.setOnAction(event -> newUser(Users.UserType.ADMIN.name(), adminLogin));
     }
 
     private void setupButtons() {
@@ -100,7 +109,7 @@ public class AdminWinController implements Initializable {
 
             // Get the controller and configure it
             NewProductController controller = loader.getController();
-            controller.initialize(newProductStage);
+            controller.initialize(newProductStage, this.adminLogin);
 
             // Configure the scene
             Scene scene = new Scene(root);
@@ -200,8 +209,7 @@ public class AdminWinController implements Initializable {
                     setText(null);
                 } else {
                     editButton.setOnAction(event -> {
-                        Products product = getTableView().getItems().get(getIndex());
-                        editProduct(product);
+                        //Se debe buscar el producto con base él id
                     });
                     setGraphic(editButton);
                     setText(null);
@@ -345,13 +353,65 @@ public class AdminWinController implements Initializable {
         }
     }
 
-    private void editProduct(Products product) {
-        // En un escenario real, aquí se abriría un diálogo para editar el producto
-        System.out.println("Editando producto: " + product.getName() + " (Ref: " + product.getRef() + ")");
+    private void editProduct() {
+        try {
+            String title = SearchType.PRODUCT.getTittle();
+            String searchText = SearchType.PRODUCT.getSearchText();
+            Stage searchStage = setupStage(title);
 
-        // TODO: Implementar la apertura de un diálogo de edición
-        // Por ejemplo: openEditProductDialog(product);
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/search-engine.fxml"));
+            Parent root = loader.load();
+
+            SearchEngineController searchEngine = loader.getController();
+            searchEngine.initialize(searchStage, title, searchText);
+
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(
+                    Objects.requireNonNull(getClass().getResource("/styles/manuMainStyles.css")).toExternalForm()
+            );
+            searchStage.setScene(scene);
+
+            // Mostrar el diálogo y esperar
+            searchStage.showAndWait();
+
+            // Verificar si se seleccionó un producto
+            Products selectedProduct = searchEngine.getSelectedProduct();
+            if (selectedProduct != null) {
+                // Abrir formulario de edición con el producto seleccionado
+                openEditForm(selectedProduct);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Error al cargar el formulario de búsqueda: " + e.getMessage());
+        }
     }
+
+    private void openEditForm(Products product) {
+        try {
+            Stage editStage = setupStage("Edit Product");
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/new-product.fxml"));
+            Parent root = loader.load();
+
+            NewProductController controller = loader.getController();
+            controller.initialize(editStage, this.adminLogin);
+            controller.setEditMode(product);
+
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(
+                    Objects.requireNonNull(getClass().getResource("/styles/manuMainStyles.css")).toExternalForm()
+            );
+            editStage.setScene(scene);
+            editStage.showAndWait();
+
+            // Recargar la tabla después de la edición
+            loadProducts();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Error al cargar el formulario de edición: " + e.getMessage());
+        }
+    }
+
 
     private void deleteProduct(Products product) {
         // Mostrar un diálogo de confirmación

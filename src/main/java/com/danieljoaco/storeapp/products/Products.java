@@ -8,7 +8,7 @@ public class Products {
     
     private final String id;
     private String name;
-    private String ref;
+    private final String ref;
     private double cost;
     private double price;
     private int stock;
@@ -58,14 +58,6 @@ public class Products {
             this.name = name;
         } else {
             throw new IllegalArgumentException("Only admins can change the name of a product.");
-        }
-    }
-
-    public void setRef(String ref, Admin admin){
-        if (admin.isAdmin()){
-            this.ref = ref;
-        } else {
-            throw new IllegalArgumentException("Only admins can change the reference of a product.");
         }
     }
 
@@ -158,4 +150,10 @@ public class Products {
         return this.rating;
     }
 
-}   
+    @Override
+    public String toString(){
+        return String.format("The product name is: %s and the reference is: %s", this.name, this.ref);
+    }
+
+
+}
