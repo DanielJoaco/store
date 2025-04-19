@@ -1,5 +1,6 @@
 package com.danieljoaco.storeapp.menu.adminMenu;
 
+import com.danieljoaco.storeapp.products.ProductReference;
 import com.danieljoaco.storeapp.products.Products;
 import com.danieljoaco.storeapp.users.Admin;
 import com.danieljoaco.storeapp.users.Users;
@@ -73,7 +74,7 @@ public class AdminWinController implements Initializable {
 
     private void setupMenu(){
         menuNewProduct.setOnAction(event -> createNewProduct());
-        menuEditProduct.setOnAction(event -> editProduct());
+        menuEditProduct.setOnAction(event -> editProductByRef());
 
         newCustomer.setOnAction(event -> newUser(Users.UserType.CUSTOMER.name(), null));
         newSupportAgent.setOnAction(event -> newUser(Users.UserType.SUPPORT_AGENT.name(), adminLogin));
@@ -141,6 +142,7 @@ public class AdminWinController implements Initializable {
         TableColumn<Products, String> colProductBill = new TableColumn<>("Bill");
         TableColumn<Products, String> colProductCategory = new TableColumn<>("Cat.");
         TableColumn<Products, String> colProductSubcategory = new TableColumn<>("Subcat.");
+        TableColumn<Products, String> colProductDate = new TableColumn<>("Date");
         TableColumn<Products, String> colProductEdit = new TableColumn<>("Edit");
         TableColumn<Products, String> colProductDelete = new TableColumn<>("Delete");
 
@@ -153,6 +155,7 @@ public class AdminWinController implements Initializable {
         colProductBill.setCellValueFactory(new PropertyValueFactory<>("bill"));
         colProductCategory.setCellValueFactory(new PropertyValueFactory<>("category"));
         colProductSubcategory.setCellValueFactory(new PropertyValueFactory<>("subCategory"));
+        colProductDate.setCellValueFactory(new PropertyValueFactory<>("formattedDate"));
 
         // Configurar columnas de acción (Editar y Eliminar)
         setupEditColumn(colProductEdit);
@@ -160,15 +163,17 @@ public class AdminWinController implements Initializable {
 
         // Ajustar ancho de columnas
         colProductRef.setPrefWidth(60);
-        colProductName.setPrefWidth(175);
-        colProductStock.setPrefWidth(40);
-        colProductCost.setPrefWidth(70);
-        colProductPrice.setPrefWidth(70);
-        colProductBill.setPrefWidth(120);
+        colProductName.setPrefWidth(150);
+        colProductStock.setPrefWidth(45);
+        colProductCost.setPrefWidth(60);
+        colProductPrice.setPrefWidth(60);
+        colProductBill.setPrefWidth(90);
         colProductCategory.setPrefWidth(70);
         colProductSubcategory.setPrefWidth(100);
-        colProductEdit.setPrefWidth(50);
+        colProductDate.setPrefWidth(60);
+        colProductEdit.setPrefWidth(40);
         colProductDelete.setPrefWidth(50);
+
 
         // Añadir columnas a la tabla individualmente en lugar de usar addAll
         tableProducts.getColumns().add(colProductRef);
@@ -179,6 +184,8 @@ public class AdminWinController implements Initializable {
         tableProducts.getColumns().add(colProductBill);
         tableProducts.getColumns().add(colProductCategory);
         tableProducts.getColumns().add(colProductSubcategory);
+        tableProducts.getColumns().add(colProductDate);
+
         tableProducts.getColumns().add(colProductEdit);
         tableProducts.getColumns().add(colProductDelete);
 
@@ -198,7 +205,7 @@ public class AdminWinController implements Initializable {
 
     private void setupEditColumn(TableColumn<Products, String> column) {
         column.setCellFactory(param -> new TableCell<Products, String>() {
-            final Button editButton = new Button("✏️");
+            final Button editButton = new Button("📝");
 
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -209,7 +216,8 @@ public class AdminWinController implements Initializable {
                     setText(null);
                 } else {
                     editButton.setOnAction(event -> {
-                        //Se debe buscar el producto con base él id
+                        Products product = getTableView().getItems().get(getIndex());
+                        editProductEntry(product);
                     });
                     setGraphic(editButton);
                     setText(null);
@@ -353,7 +361,7 @@ public class AdminWinController implements Initializable {
         }
     }
 
-    private void editProduct() {
+    private void editProductByRef() {
         try {
             String title = SearchType.PRODUCT.getTittle();
             String searchText = SearchType.PRODUCT.getSearchText();
@@ -375,7 +383,7 @@ public class AdminWinController implements Initializable {
             searchStage.showAndWait();
 
             // Verificar si se seleccionó un producto
-            Products selectedProduct = searchEngine.getSelectedProduct();
+            ProductReference selectedProduct = searchEngine.getSelectedProduct();
             if (selectedProduct != null) {
                 // Abrir formulario de edición con el producto seleccionado
                 openEditForm(selectedProduct);
@@ -387,15 +395,41 @@ public class AdminWinController implements Initializable {
         }
     }
 
-    private void openEditForm(Products product) {
-        try {
-            Stage editStage = setupStage("Edit Product");
+    private void editProductEntry(Products product) {
+        try{
+            String title = SearchType.PRODUCT.getTittle();
+            Stage searchStage = setupStage(title);
+
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/new-product.fxml"));
             Parent root = loader.load();
 
-            NewProductController controller = loader.getController();
-            controller.initialize(editStage, this.adminLogin);
-            controller.setEditMode(product);
+            NewProductController newProductController = loader.getController();
+            newProductController.initialize(searchStage, this.adminLogin);
+            newProductController.editProduct(product);
+
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(
+                    Objects.requireNonNull(getClass().getResource("/styles/manuMainStyles.css")).toExternalForm()
+            );
+            searchStage.setScene(scene);
+
+            // Mostrar el diálogo y esperar
+            searchStage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Error al cargar el formulario de búsqueda: " + e.getMessage());
+        }
+
+    }
+
+    private void openEditForm(ProductReference productToEdit) {
+        try {
+            Stage editStage = setupStage("Edit Product");
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/edit-product.fxml"));
+            Parent root = loader.load();
+
+            EditProductController controller = loader.getController();
+            controller.initialize(editStage, productToEdit, this.adminLogin);
 
             Scene scene = new Scene(root);
             scene.getStylesheets().add(

@@ -11,7 +11,11 @@
              AnchorPane.leftAnchor="0.0"
              AnchorPane.rightAnchor="0.0">
         <Menu mnemonicParsing="false" text="Product">
-            <MenuItem fx:id="menuNewProduct" mnemonicParsing="false" text="New product"/>
+            <Menu mnemonicParsing="false" text="New">
+                <MenuItem fx:id="menuNewProduct" mnemonicParsing="false" text="New product"/>
+                <MenuItem fx:id="menuNewEntry" mnemonicParsing="false" text="New product entry"/>
+            </Menu>
+
             <MenuItem fx:id="menuEditProduct" mnemonicParsing="false" text="Edit product"/>
             <MenuItem fx:id="menuDeleteProduct" mnemonicParsing="false" text="Delete product"/>
         </Menu>

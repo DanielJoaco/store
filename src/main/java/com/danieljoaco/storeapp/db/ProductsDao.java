@@ -1,15 +1,15 @@
 package com.danieljoaco.storeapp.db;
 
+import com.danieljoaco.storeapp.products.ProductReference;
 import com.danieljoaco.storeapp.products.Products;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class ProductsDao {
 
@@ -148,14 +148,13 @@ public class ProductsDao {
         return id;
     }
 
-    // Obtener un producto por ID
-    public static ObservableList<Products> searchProducts(String ref) {
-        ObservableList<Products> results = FXCollections.observableArrayList();
-        String searchPattern = "%" + ref.replace("_", "\\_").replace("%", "\\%") + "%";
+    public static Products getProductEntryById(String id) {
+        Products product = null;
 
         String sql = """
             SELECT
                 pr.name,
+                p.id,
                 p.product_ref AS ref,
                 p.cost,
                 p.price,
@@ -168,25 +167,18 @@ public class ProductsDao {
             JOIN product_references pr ON p.product_ref = pr.ref
             LEFT JOIN subcategories s ON pr.subcategory_id = s.id
             LEFT JOIN categories c ON s.category_id = c.id
-            WHERE p.product_ref LIKE ? ESCAPE '\\'
-            OR p.product_ref LIKE ? ESCAPE '\\'
-            OR pr.name LIKE ? ESCAPE '\\'
+            WHERE p.id = ?
             """;
 
         try (Connection conn = DatabaseManager.connectProducts();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            // Búsqueda por patrones similares
-            pstmt.setString(1, searchPattern);
-            pstmt.setString(2, "%" + ref.replaceAll("[^a-zA-Z0-9]", "") + "%");
-            pstmt.setString(3, "%" + ref + "%");
-
+            pstmt.setString(1, id);
             ResultSet rs = pstmt.executeQuery();
 
-            Map<Products, Integer> productScores = new HashMap<>();
-
-            while (rs.next()) {
-                Products product = new Products(
+            if (rs.next()) {
+                product = new Products(
+                        rs.getString("id"),
                         rs.getString("name"),
                         rs.getString("ref"),
                         rs.getDouble("cost"),
@@ -197,21 +189,69 @@ public class ProductsDao {
                         rs.getString("category"),
                         rs.getString("subcategory")
                 );
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error al buscar producto por ID: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return product;
+    }
+
+    public static ObservableList<ProductReference> searchProductReferences(String query) {
+        ObservableList<ProductReference> results = FXCollections.observableArrayList();
+        String searchPattern = "%" + query.replace("_", "\\_").replace("%", "\\%") + "%";
+
+        String sql = """
+            SELECT DISTINCT
+                pr.ref,
+                pr.name,
+                c.name AS category,
+                s.name AS subcategory
+            FROM product_references pr
+            LEFT JOIN subcategories s ON pr.subcategory_id = s.id
+            LEFT JOIN categories c ON s.category_id = c.id
+            LEFT JOIN products p ON pr.ref = p.product_ref
+            WHERE pr.ref LIKE ? ESCAPE '\\'
+            OR pr.name LIKE ? ESCAPE '\\'
+            """;
+
+        try (Connection conn = DatabaseManager.connectProducts();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, searchPattern);
+            pstmt.setString(2, searchPattern);
+
+            ResultSet rs = pstmt.executeQuery();
+
+            Map<ProductReference, Integer> referenceScores = new HashMap<>();
+
+            while (rs.next()) {
+                ProductReference reference = new ProductReference(
+                        rs.getString("ref"),
+                        rs.getString("name"),
+                        rs.getString("category"),
+                        rs.getString("subcategory")
+                );
 
                 // Calcular puntuación de similitud
-                int score = calculateSimilarityScore(ref, product.getRef());
-                productScores.put(product, score);
+                int nameScore = calculateSimilarityScore(query, reference.getName());
+                int refScore = calculateSimilarityScore(query, reference.getRef());
+                int maxScore = Math.max(nameScore, refScore);
+
+                referenceScores.put(reference, maxScore);
             }
 
             // Filtrar y ordenar resultados por puntuación
-            productScores.entrySet().stream()
-                    .filter(entry -> entry.getValue() >= 80) // Umbral de similitud del 80%
-                    .sorted(Map.Entry.<Products, Integer>comparingByValue().reversed())
+            referenceScores.entrySet().stream()
+                    .filter(entry -> entry.getValue() >= 60) // Umbral de similitud menos estricto
+                    .sorted(Map.Entry.<ProductReference, Integer>comparingByValue().reversed())
                     .map(Map.Entry::getKey)
                     .forEach(results::add);
 
         } catch (SQLException e) {
-            System.out.println("Error al buscar productos similares: " + e.getMessage());
+            System.out.println("Error al buscar referencias de productos: " + e.getMessage());
             e.printStackTrace();
         }
 
@@ -254,6 +294,7 @@ public class ProductsDao {
             SELECT
                 pr.name,           -- Get name from product_references table
                 p.product_ref AS ref,  -- Get ref from the product table
+                p.id,
                 p.cost,
                 p.price,
                 p.stock,
@@ -273,6 +314,7 @@ public class ProductsDao {
 
             while (rs.next()) {
                 Products product = new Products(
+                        rs.getString("id"),
                         rs.getString("name"),
                         rs.getString("ref"),
                         rs.getDouble("cost"),
@@ -292,8 +334,62 @@ public class ProductsDao {
         return productsList;
     }
 
+    public static void updateProductReference(ProductReference productReference) {
+        Connection conn = null;
+        boolean originalAutoCommit = true;
+
+        try {
+            conn = DatabaseManager.connectProducts();
+            originalAutoCommit = conn.getAutoCommit();
+            conn.setAutoCommit(false); // Iniciar transacción
+
+            // Paso 1: Obtener o crear ID de categoría
+            long categoryId = getOrCreateCategory(conn, productReference.getCategory());
+
+            // Paso 2: Obtener o crear ID de subcategoría
+            long subcategoryId = getOrCreateSubcategory(conn, productReference.getSubcategory(), categoryId);
+
+            // Paso 3: Actualizar la referencia del producto
+            String sql = "UPDATE product_references SET name = ?, subcategory_id = ? WHERE ref = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setString(1, productReference.getName());
+                pstmt.setLong(2, subcategoryId);
+                pstmt.setString(3, productReference.getRef());
+
+                int rowsAffected = pstmt.executeUpdate();
+                if (rowsAffected > 0) {
+                    System.out.println("Referencia de producto actualizada exitosamente: " + productReference.getRef());
+                } else {
+                    System.out.println("No se encontró la referencia de producto: " + productReference.getRef());
+                }
+            }
+
+            conn.commit();
+        } catch (SQLException e) {
+            System.out.println("Error al actualizar la referencia de producto: " + e.getMessage());
+            e.printStackTrace();
+            try {
+                if (conn != null) {
+                    conn.rollback();
+                    System.err.println("Transacción revertida.");
+                }
+            } catch (SQLException ex) {
+                System.err.println("Error durante el rollback: " + ex.getMessage());
+            }
+        } finally {
+            try {
+                if (conn != null) {
+                    conn.setAutoCommit(originalAutoCommit);
+                    conn.close();
+                }
+            } catch (SQLException ex) {
+                System.err.println("Error al cerrar la conexión: " + ex.getMessage());
+            }
+        }
+    }
+
     // Actualizar la información de un producto
-    public static void updateProduct(Products product) {
+    public static void updateProductEntry(Products product) {
         Connection conn = null;
         boolean originalAutoCommit = true;
 
@@ -315,12 +411,14 @@ public class ProductsDao {
             }
 
             // Update products table (price, stock, etc.)
-            String updateProd = "UPDATE products SET cost = ?, price = ?, stock = ? WHERE product_ref = ?";
+            String updateProd = "UPDATE products SET cost = ?, price = ?, stock = ?, bill = ?, date = ? WHERE id = ?";
             try (PreparedStatement pstmt = conn.prepareStatement(updateProd)) {
                 pstmt.setDouble(1, product.getCost());
                 pstmt.setDouble(2, product.getPrice());
                 pstmt.setInt(3, product.getStock());
-                pstmt.setString(4, product.getRef());
+                pstmt.setString(4, product.getBill());
+                pstmt.setDate(5, Date.valueOf(product.getDate()));
+                pstmt.setString(6, product.getId());
                 pstmt.executeUpdate();
             }
 

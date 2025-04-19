@@ -5,21 +5,20 @@ import com.danieljoaco.storeapp.products.Category;
 import com.danieljoaco.storeapp.products.Products;
 import com.danieljoaco.storeapp.products.SubCategory;
 import com.danieljoaco.storeapp.users.Admin;
+
+import static com.danieljoaco.storeapp.db.ProductsDao.addProduct;
+import static com.danieljoaco.storeapp.db.ProductsDao.updateProductEntry;
+import static com.danieljoaco.storeapp.menu.utils.Utils.*;
+import static com.danieljoaco.storeapp.utils.UserValidator.isValidProductsInputs;
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
-
 import java.util.Arrays;
-
-import static com.danieljoaco.storeapp.db.ProductsDao.addProduct;
-import static com.danieljoaco.storeapp.db.ProductsDao.updateProduct;
-import static com.danieljoaco.storeapp.menu.utils.Utils.*;
-import static com.danieljoaco.storeapp.utils.UserValidator.isValidProductsInputs;
 
 public class NewProductController {
 
@@ -44,12 +43,16 @@ public class NewProductController {
         this.newProductStage = stage;
         this.adminLogin = adminLogin;
 
-        // Initialize category ComboBox
-        categoryComboBox.getItems().addAll(Arrays.stream(Category.Categories.values())
-                        .map(category -> capitalize(category.name()))
-                        .toList());
+        initializeCategoryComboBox(this.categoryComboBox, this.subcategoryComboBox, this.lblError);
+    }
 
-        // Add listener for category selection to update subcategories
+    static void initializeCategoryComboBox(ComboBox<String> categoryComboBox, ComboBox<String> subcategoryComboBox, Label lblError) {
+        // Inicializar el ComboBox de categorías
+        categoryComboBox.getItems().addAll(Arrays.stream(Category.Categories.values())
+                .map(category -> capitalize(category.name()))
+                .toList());
+
+        // Agregar listener para actualizar subcategorías al seleccionar una categoría
         categoryComboBox.setOnAction(event -> {
             try {
                 String selectedItem = categoryComboBox.getSelectionModel().getSelectedItem();
@@ -57,7 +60,7 @@ public class NewProductController {
                     showError(lblError, "Please select a category");
                     return;
                 }
-                
+
                 String selectedCategory = selectedItem.toUpperCase();
                 subcategoryComboBox.getItems().clear();
                 subcategoryComboBox.getItems().addAll(Arrays.stream(SubCategory.SubCategories.valueOf(selectedCategory).getItems())
@@ -71,7 +74,7 @@ public class NewProductController {
         });
     }
 
-    public void setEditMode(Products product) {
+    public void editProduct(Products product) {
         this.isEditMode = true;
         this.productToEdit = product;
 
@@ -164,12 +167,10 @@ public class NewProductController {
                 productToEdit.setPrice(price, adminLogin);
                 productToEdit.setBill(bill, adminLogin);
                 productToEdit.setSubCategory(category, subCategory, adminLogin);
-                System.out.println(productToEdit);
 
                 try {
-                    updateProduct(productToEdit);
-                    showSuccess(lblError, "Product updated successfully!");
-                    closeAfterDelay(newProductStage);
+                    updateProductEntry(productToEdit);
+
                 } catch (Exception e) {
                     showError(lblError, "Error updating product: " + e.getMessage());
                 }
@@ -197,12 +198,10 @@ public class NewProductController {
         billField.setDisable(true);
         categoryComboBox.setDisable(true);
         subcategoryComboBox.setDisable(true);
-
-        // Disable the create button
-        ((Node) event.getSource()).setDisable(true);
+        createButton.setDisable(true);
 
         showSuccess(lblError, name + " product successfully added!");
-        boolean continueCreate = askConfirmation("Create another product");
+        boolean continueCreate = askConfirmation("Create another product?");
         closeAfterDelay(newProductStage);
 
     }

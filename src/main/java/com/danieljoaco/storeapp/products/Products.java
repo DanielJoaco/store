@@ -150,6 +150,10 @@ public class Products {
         return this.rating;
     }
 
+    public String getFormattedDate() {
+        return this.date != null ? this.date.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yy")) : "";
+    }
+
     @Override
     public String toString(){
         return String.format("The product name is: %s and the reference is: %s", this.name, this.ref);

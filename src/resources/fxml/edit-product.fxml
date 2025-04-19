@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" spacing="15" xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.danieljoaco.storeapp.menu.adminMenu.EditProductController">
+    <padding>
+        <Insets bottom="30" left="30" right="30" top="30" />
+    </padding>
+
+    <GridPane alignment="CENTER" hgap="10" vgap="10">
+
+        <Label prefHeight="42.0" prefWidth="129.0" styleClass="title-label"
+               text="Edit product parameters" GridPane.columnSpan="2"
+               GridPane.halignment="CENTER" GridPane.rowIndex="0" />
+
+        <Label styleClass="fieldName" text="Name:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+        <TextField fx:id="nameField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+        <Label styleClass="fieldRef" text="Ref:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+        <TextField fx:id="refField" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+        <Label styleClass="fieldCategory" text="Category:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+        <ComboBox fx:id="categoryComboBox" prefWidth="250" promptText="Select a category" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+
+        <Label styleClass="fieldSubcategory" text="Subcategory:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+        <ComboBox fx:id="subcategoryComboBox" prefWidth="250" promptText="Select a subcategory" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+
+        <Button fx:id="btnUpdate" onAction="#updateProduct" text="Update" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="8" />
+
+        <Label fx:id="lblError" styleClass="lblError" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="11" />
+    </GridPane>
+</VBox>

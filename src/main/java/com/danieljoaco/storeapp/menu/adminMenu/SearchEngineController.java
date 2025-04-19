@@ -1,13 +1,13 @@
 package com.danieljoaco.storeapp.menu.adminMenu;
 
+import com.danieljoaco.storeapp.products.ProductReference;
 import com.danieljoaco.storeapp.products.Products;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
-import java.util.List;
 
-import static com.danieljoaco.storeapp.db.ProductsDao.searchProducts;
+import static com.danieljoaco.storeapp.db.ProductsDao.searchProductReferences;
 import static com.danieljoaco.storeapp.menu.utils.Utils.closeAfterDelay;
 
 public class SearchEngineController {
@@ -22,7 +22,7 @@ public class SearchEngineController {
     private Button btnSearch;
 
     private Stage searchEngineStage;
-    private Products selectedProduct;
+    private ProductReference selectedProduct;
 
 
     public enum SearchType {
@@ -56,7 +56,7 @@ public class SearchEngineController {
             String searchText = tfSearch.getText();
             switch (tittle) {
                 case "Search Product": {
-                    ObservableList<Products> productsList = searchProducts(searchText);
+                    ObservableList<ProductReference> productsList = searchProductReferences(searchText);
                     if (productsList.isEmpty()) {
                         lblError.setText("No se encontraron productos para: " + searchText);
                     } else if (productsList.size() == 1) {
@@ -75,12 +75,12 @@ public class SearchEngineController {
         });
     }
 
-    private void showProductSelectionDialog(ObservableList<Products> products) {
+    private void showProductSelectionDialog(ObservableList<ProductReference> products) {
         // Crear un diálogo simple con lista de productos
-        ListView<Products> listView = new ListView<>(products);
+        ListView<ProductReference> listView = new ListView<>(products);
         listView.setCellFactory(lv -> new ListCell<>() {
             @Override
-            protected void updateItem(Products product, boolean empty) {
+            protected void updateItem(ProductReference product, boolean empty) {
                 super.updateItem(product, empty);
                 if (empty || product == null) {
                     setText(null);
@@ -90,7 +90,7 @@ public class SearchEngineController {
             }
         });
 
-        Dialog<Products> dialog = new Dialog<>();
+        Dialog<ProductReference> dialog = new Dialog<>();
         dialog.setTitle("Seleccionar Producto");
         dialog.setHeaderText("Múltiples productos encontrados. Por favor, seleccione uno:");
 
@@ -114,9 +114,8 @@ public class SearchEngineController {
     }
 
 
-public Products getSelectedProduct() {
+public ProductReference getSelectedProduct() {
         return selectedProduct;
     }
-
 
 }

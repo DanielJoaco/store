@@ -1,7 +1,5 @@
 package com.danieljoaco.storeapp.products;
 
-import static com.danieljoaco.storeapp.menu.utils.Utils.capitalize;
-
 public class SubCategory extends Category {
 
     private  final String name;
