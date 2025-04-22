@@ -14,17 +14,17 @@ import static com.danieljoaco.storeapp.utils.UserValidator.isValidProductsInputs
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.stage.Stage;
 import java.util.Arrays;
 
 public class NewProductController {
 
     @FXML
-    private TextField nameField, refField, costField, priceField, stockField, billField;
+    private TextField nameField, brandField, refField, costField, priceField, stockField, billField;
+
+    @FXML
+    private TextArea descriptionField;
 
     @FXML
     private ComboBox<String> categoryComboBox, subcategoryComboBox;
@@ -85,6 +85,9 @@ public class NewProductController {
         nameField.setText(newProductEntry.getName());
         nameField.setDisable(true);
 
+        brandField.setText(newProductEntry.getBrand());
+        brandField.setDisable(true);
+
         refField.setText(newProductEntry.getRef());
         refField.setDisable(true);
 
@@ -93,6 +96,8 @@ public class NewProductController {
 
         subcategoryComboBox.setValue(capitalize(newProductEntry.getSubcategory()));
         subcategoryComboBox.setDisable(true);
+
+        descriptionField.setVisible(false);
 
         createButton.setText("New entry");
     }
@@ -105,10 +110,12 @@ public class NewProductController {
         refField.setDisable(true);
 
         nameField.setText(product.getName());
+        brandField.setText(product.getBrand());
         stockField.setText(String.valueOf(product.getStock()));
         costField.setText(String.valueOf(product.getCost()));
         priceField.setText(String.valueOf(product.getPrice()));
         billField.setText(product.getBill());
+        descriptionField.setText(product.getDescription());
 
         categoryComboBox.setValue(capitalize(product.getCategory()));
         subcategoryComboBox.setValue(capitalize(product.getSubCategory()));
@@ -142,16 +149,18 @@ public class NewProductController {
 
     private ProductFormData collectFormData() {
         String name = nameField.getText();
+        String brand = brandField.getText();
         String ref = refField.getText();
         String costText = costField.getText();
         String priceText = priceField.getText();
         String stockText = stockField.getText();
         String bill = billField.getText();
+        String description = descriptionField.getText();
 
         String category = categoryComboBox.getSelectionModel().getSelectedItem();
         String subCategory = subcategoryComboBox.getSelectionModel().getSelectedItem();
 
-        validateInputs(name, ref, costText, priceText, stockText, bill, category, subCategory);
+        validateInputs(name,  brand, ref, costText, priceText, stockText, bill, category, subCategory, description);
 
         // Process category and subcategory
         if (category != null) {
@@ -165,11 +174,11 @@ public class NewProductController {
         double price = Double.parseDouble(priceText);
         int stock = Integer.parseInt(stockText);
 
-        return new ProductFormData(name, ref, cost, price, stock, bill, category, subCategory);
+        return new ProductFormData(name, brand, ref, cost, price, stock, bill, category, subCategory, description);
     }
 
-    private void validateInputs(String name, String ref, String costText, String priceText,
-                                String stockText, String bill, String category, String subCategory) {
+    private void validateInputs(String name, String brand, String ref, String costText, String priceText,
+                                String stockText, String bill, String category, String subCategory, String description) {
         // Check for empty fields
         if (costText.isEmpty() || priceText.isEmpty() || stockText.isEmpty()) {
             throw new IllegalArgumentException("Cost, price, and stock fields cannot be empty.");
@@ -202,8 +211,10 @@ public class NewProductController {
         // Validate product inputs format
         try {
             isValidProductsInputs(name);
+            isValidProductsInputs(brand);
             isValidProductsInputs(ref);
             isValidProductsInputs(bill);
+            isValidProductsInputs(description);
         } catch (Exception e) {
             throw new IllegalArgumentException("Only use alphanumeric characters or _ for name, reference and bill.");
         }
@@ -212,11 +223,13 @@ public class NewProductController {
     private void updateExistingProduct(ProductFormData formData) {
         try {
             productToEdit.setName(formData.name, adminLogin);
+            productToEdit.setBrand(formData.brand, adminLogin);
             productToEdit.setStock(formData.stock, adminLogin);
             productToEdit.setCost(formData.cost, adminLogin);
             productToEdit.setPrice(formData.price, adminLogin);
             productToEdit.setBill(formData.bill, adminLogin);
             productToEdit.setSubCategory(formData.category, formData.subCategory, adminLogin);
+            productToEdit.setDescription(formData.description, adminLogin);
 
             updateProductEntry(productToEdit);
         } catch (Exception e) {
@@ -228,8 +241,8 @@ public class NewProductController {
         try {
             if (adminLogin.isAdmin()) {
                 Products newProduct = new Products(
-                        formData.name, formData.ref, formData.cost, formData.price,
-                        formData.stock, formData.bill, formData.category, formData.subCategory
+                        formData.name, formData.brand, formData.ref, formData.cost, formData.price,
+                        formData.stock, formData.bill, formData.category, formData.subCategory, formData.description
                 );
                 addProduct(newProduct);
             }
@@ -250,27 +263,6 @@ public class NewProductController {
         createButton.setDisable(true);
     }
 
-    // Helper class to store form data
-    private static class ProductFormData {
-        final String name;
-        final String ref;
-        final double cost;
-        final double price;
-        final int stock;
-        final String bill;
-        final String category;
-        final String subCategory;
-
-        ProductFormData(String name, String ref, double cost, double price, int stock,
-                        String bill, String category, String subCategory) {
-            this.name = name;
-            this.ref = ref;
-            this.cost = cost;
-            this.price = price;
-            this.stock = stock;
-            this.bill = bill;
-            this.category = category;
-            this.subCategory = subCategory;
-        }
-    }
+        private record ProductFormData(String name, String brand, String ref, double cost, double price, int stock,
+                                       String bill, String category, String subCategory, String description) {}
 }

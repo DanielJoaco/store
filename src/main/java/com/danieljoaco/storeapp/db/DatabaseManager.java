@@ -11,39 +11,43 @@ public class DatabaseManager {
     private static final String KEY = "MiClaveDeCifrado123";
     private static final String URL_PRODUCTS = "jdbc:sqlite:products.db";
 
+    /**
+     * Static block to load the SQLite JDBC driver.
+     * This is necessary for the SQLite connection to work.
+     */
     static {
         try {
-            // Asegúrate de que el driver está disponible, el registro es automático
             Class.forName("org.sqlite.JDBC");
         } catch (ClassNotFoundException e) {
-            logger.error("El driver JDBC de SQLite no está en el classpath", e);
-            throw new RuntimeException("El driver JDBC de SQLite no está en el classpath", e);
+            logger.error("SQLite's JDBC driver is not at Classpath", e);
+            throw new RuntimeException("SQLite's JDBC driver is not at Classpath", e);
         }
     }
 
-
     /**
-     * Conecta a la base de datos de usuarios con cifrado.
+     * Connects to the user database and applies encryption settings.
+     * @return a Connection object to the user database.
+     * @throws SQLException if there is an error connecting to the database.
      */
     public static Connection connectUsers() throws SQLException {
         try {
             Connection conn = DriverManager.getConnection(URL_USERS);
 
-            // Aplicar las configuraciones de cifrado específicas
             applyEncryptionPragmas(conn);
 
-            // Crear tabla en caso de que no exista
             createUsersTable(conn);
 
             return conn;
         } catch (SQLException e) {
-            logger.error("Error al conectar a la base de datos de usuarios", e);
+            logger.error("Error connecting to the user database", e);
             throw e;
         }
     }
 
     /**
-     * Aplica las configuraciones de cifrado a una conexión SQLite.
+     * Applies encryption settings to the SQLite database.
+     * @param conn the Connection object to the database.
+     * @throws SQLException if there is an error applying the settings.
      */
     private static void applyEncryptionPragmas(Connection conn) throws SQLException {
         try (Statement stat = conn.createStatement()) {
@@ -51,34 +55,59 @@ public class DatabaseManager {
             stat.execute("PRAGMA cipher_page_size = 4096;");
             stat.execute("PRAGMA kdf_iter = 64000;");
         } catch (SQLException e) {
-            logger.error("Error al aplicar las configuraciones de cifrado", e);
+            logger.error("Error when applying encryption settings", e);
             throw e;
         }
     }
 
     /**
-     * Crea la tabla de usuarios si no existe.
+     * Creates the user tables if they do not exist.
+     * @param conn the Connection object to the database.
+     * @throws SQLException if there is an error creating the tables.
      */
     private static void createUsersTable(Connection conn) throws SQLException {
         try (Statement stat = conn.createStatement()) {
             stat.execute("""
-                CREATE TABLE IF NOT EXISTS users (
-                    id TEXT PRIMARY KEY,
-                    email TEXT UNIQUE NOT NULL,
-                    password TEXT NOT NULL,
-                    typeUser TEXT NOT NULL CHECK (typeUser IN ('CUSTOMER', 'ADMIN', 'SUPPORT_AGENT')),
-                    name TEXT,
-                    balance REAL DEFAULT 0.0
-                );
+            CREATE TABLE IF NOT EXISTS user_types (
+                id INTEGER PRIMARY KEY,
+                type_name TEXT UNIQUE NOT NULL
+            );
+        """);
+
+            stat.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id TEXT PRIMARY KEY,
+                email TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL,
+                type_id INTEGER NOT NULL,
+                name TEXT NOT NULL,
+                created_at DATE NOT NULL,
+                balance REAL DEFAULT 0.0,
+                FOREIGN KEY (type_id) REFERENCES user_types(id)
+            );
+        """);
+
+            ResultSet rs = stat.executeQuery("SELECT COUNT(*) FROM user_types;");
+            int count = rs.getInt(1);
+
+            if (count == 0) {
+                stat.execute("""
+                INSERT INTO user_types (id, type_name) VALUES
+                (1, 'ADMIN'),
+                (2, 'SUPPORT_AGENT'),
+                (3, 'CUSTOMER');
             """);
+            }
         }
     }
 
     /**
-     * Conecta a la base de datos de productos.
+     * Connects to the product database and creates the necessary tables.
+     * @return a Connection object to the product database.
+     * @throws SQLException if there is an error connecting to the database.
      */
     public static Connection connectProducts() throws SQLException {
-        logger.info("Conectando a la base de datos de productos...");
+        logger.info("Connecting to the product database ...");
         try {
             Connection conn = DriverManager.getConnection(URL_PRODUCTS);
 
@@ -86,13 +115,15 @@ public class DatabaseManager {
 
             return conn;
         } catch (SQLException e) {
-            logger.error("Error al conectar a la base de datos de productos", e);
+            logger.error("Error connecting to the product database.", e);
             throw e;
         }
     }
 
     /**
-     * Crea las tablas relacionadas con productos si no existen.
+     * Creates the product tables if they do not exist.
+     * @param conn the Connection object to the database.
+     * @throws SQLException if there is an error creating the tables.
      */
     private static void createProductTables(Connection conn) throws SQLException {
         try (Statement stat = conn.createStatement()) {
@@ -115,6 +146,8 @@ public class DatabaseManager {
                 CREATE TABLE IF NOT EXISTS product_references (
                     ref TEXT PRIMARY KEY,
                     name TEXT NOT NULL,
+                    brand TEXT NOT NULL,
+                    description TEXT NOT NULL,
                     subcategory_id INTEGER NOT NULL,
                     FOREIGN KEY (subcategory_id) REFERENCES subcategories(id) ON DELETE RESTRICT
                 );
@@ -142,9 +175,9 @@ public class DatabaseManager {
                     FOREIGN KEY (product_ref) REFERENCES product_references(ref) ON DELETE CASCADE
                 );
             """);
-            logger.info("Tablas de productos verificadas/creadas.");
+            logger.info("Verified/created products tables.");
         } catch (SQLException e) {
-            logger.error("Error al crear tablas de productos", e);
+            logger.error("Error creating/verifying product tables", e);
             throw e;
         }
     }

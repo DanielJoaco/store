@@ -13,7 +13,11 @@ import java.util.Map;
 
 public class ProductsDao {
 
-    // Crear un nuevo producto en la base de datos
+    /**
+     * Adds a new product to the database.
+     *
+     * @param productData The product data to be added.
+     */
     public static void addProduct(Products productData) {
         Connection conn = null;
         boolean originalAutoCommit = true;
@@ -21,26 +25,22 @@ public class ProductsDao {
         try {
             conn = DatabaseManager.connectProducts();
             originalAutoCommit = conn.getAutoCommit();
-            conn.setAutoCommit(false); // Iniciar transacción
+            conn.setAutoCommit(false);
 
-            // --- PASO 1: Obtener o crear Category ID ---
             long categoryId = getOrCreateCategory(conn, productData.getCategory());
 
-            // --- PASO 2: Obtener o crear Subcategory ID ---
             long subcategoryId = getOrCreateSubcategory(conn, productData.getSubCategory(), categoryId);
 
-            // --- PASO 3: Crear o verificar Product Reference ---
-            // Usamos INSERT OR IGNORE (SQLite) para simplificar: si ya existe la ref, no hace nada.
-            // Si tuvieras que actualizar el nombre o subcategoría si la ref ya existe, la lógica sería más compleja.
-            String sqlRef = "INSERT OR IGNORE INTO product_references (ref, name, subcategory_id) VALUES (?, ?, ?)";
+            String sqlRef = "INSERT OR IGNORE INTO product_references (ref, name, brand, description, subcategory_id) VALUES (?, ?, ?, ?, ?)";
             try (PreparedStatement pstmtRef = conn.prepareStatement(sqlRef)) {
                 pstmtRef.setString(1, productData.getRef());
                 pstmtRef.setString(2, productData.getName());
-                pstmtRef.setLong(3, subcategoryId);
+                pstmtRef.setString(3, productData.getBrand());
+                pstmtRef.setString(4, productData.getDescription());
+                pstmtRef.setLong(5, subcategoryId);
                 pstmtRef.executeUpdate();
             }
 
-            // --- PASO 4: Insertar la entrada de stock en Products ---
             String sqlProd = "INSERT INTO products (id, product_ref, cost, price, stock, bill, date) VALUES (?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement pstmtProd = conn.prepareStatement(sqlProd)) {
 
@@ -55,18 +55,18 @@ public class ProductsDao {
             }
 
             conn.commit();
-            System.out.println("Producto/Entrada de stock creado exitosamente para ref: " + productData.getRef());
+            System.out.println("Stock product/input created successfully for REF: " + productData.getRef());
 
         } catch (SQLException e) {
-            System.err.println("Error al crear el producto: " + e.getMessage());
+            System.err.println("Error when creating the product: " + e.getMessage());
             e.printStackTrace(); // Imprime más detalles del error
             try {
                 if (conn != null) {
                     conn.rollback(); // Revertir transacción en caso de error
-                    System.err.println("Transacción revertida.");
+                    System.err.println("Reversal transaction.");
                 }
             } catch (SQLException ex) {
-                System.err.println("Error durante el rollback: " + ex.getMessage());
+                System.err.println("Error during the rollback: " + ex.getMessage());
             }
         } finally {
             try {
@@ -75,23 +75,39 @@ public class ProductsDao {
                     conn.close(); // Cerrar conexión
                 }
             } catch (SQLException ex) {
-                System.err.println("Error al cerrar la conexión: " + ex.getMessage());
+                System.err.println("Error when closing the connection: " + ex.getMessage());
             }
         }
     }
 
+    /**
+     * Obtains or creates a category in the database.
+     *
+     * @param conn         The connection to the database.
+     * @param categoryName The name of the category to obtain or create.
+     * @return The ID of the category.
+     * @throws SQLException If there is an error accessing the database.
+     */
     private static long getOrCreateCategory(Connection conn, String categoryName) throws SQLException {
         String selectSql = "SELECT id FROM categories WHERE name = ?";
         String insertSql = "INSERT INTO categories (name) VALUES (?)";
         return getOrCreateId(conn, selectSql, insertSql, categoryName);
     }
 
+    /**
+     * Obtains or creates a subcategory in the database.
+     *
+     * @param conn          The connection to the database.
+     * @param subcategoryName The name of the subcategory to obtain or create.
+     * @param categoryId    The ID of the category to which the subcategory belongs.
+     * @return The ID of the subcategory.
+     * @throws SQLException If there is an error accessing the database.
+     */
     private static long getOrCreateSubcategory(Connection conn, String subcategoryName, long categoryId) throws SQLException {
         String selectSql = "SELECT id FROM subcategories WHERE name = ? AND category_id = ?";
         String insertSql = "INSERT INTO subcategories (name, category_id) VALUES (?, ?)";
 
         long id = -1;
-        // Intentar seleccionar
         try (PreparedStatement pstmtSelect = conn.prepareStatement(selectSql)) {
             pstmtSelect.setString(1, subcategoryName);
             pstmtSelect.setLong(2, categoryId);
@@ -101,7 +117,6 @@ public class ProductsDao {
             }
         }
 
-        // Si no existe, insertar
         if (id == -1) {
             try (PreparedStatement pstmtInsert = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                 pstmtInsert.setString(1, subcategoryName);
@@ -111,15 +126,24 @@ public class ProductsDao {
                 if (generatedKeys.next()) {
                     id = generatedKeys.getLong(1);
                 } else {
-                    throw new SQLException("Fallo al crear subcategoría, no se obtuvo ID.");
+                    throw new SQLException("Failure when creating subcategory, ID was not obtained.");
                 }
             }
         }
-        if (id == -1) throw new SQLException("No se pudo obtener o crear el ID de la subcategoría.");
+        if (id == -1) throw new SQLException("The ID of the subcategory could not be obtained or created.");
         return id;
     }
 
-    // Función genérica para obtener o crear ID basado en un valor único (como el nombre de categoría)
+    /**
+     * Obtains or creates an ID in the database.
+     *
+     * @param conn        The connection to the database.
+     * @param selectSql   The SQL query to select the ID.
+     * @param insertSql   The SQL query to insert a new ID.
+     * @param value       The value to be used for the ID.
+     * @return The ID of the entity.
+     * @throws SQLException If there is an error accessing the database.
+     */
     private static long getOrCreateId(Connection conn, String selectSql, String insertSql, String value) throws SQLException {
         long id = -1;
         // Intentar seleccionar
@@ -140,65 +164,20 @@ public class ProductsDao {
                 if (generatedKeys.next()) {
                     id = generatedKeys.getLong(1);
                 } else {
-                    throw new SQLException("Fallo al crear la entidad [" + value + "], no se obtuvo ID.");
+                    throw new SQLException("Failure to create the entity [" + value + "], ID was not obtained.");
                 }
             }
         }
-        if (id == -1) throw new SQLException("No se pudo obtener o crear el ID para [" + value + "].");
+        if (id == -1) throw new SQLException("The ID could not be obtained or created for [" + value + "].");
         return id;
     }
 
-    public static Products getProductEntryById(String id) {
-        Products product = null;
-
-        String sql = """
-            SELECT
-                pr.name,
-                p.id,
-                p.product_ref AS ref,
-                p.cost,
-                p.price,
-                p.stock,
-                p.bill,
-                p.date,
-                c.name AS category,
-                s.name AS subcategory
-            FROM products p
-            JOIN product_references pr ON p.product_ref = pr.ref
-            LEFT JOIN subcategories s ON pr.subcategory_id = s.id
-            LEFT JOIN categories c ON s.category_id = c.id
-            WHERE p.id = ?
-            """;
-
-        try (Connection conn = DatabaseManager.connectProducts();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, id);
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                product = new Products(
-                        rs.getString("id"),
-                        rs.getString("name"),
-                        rs.getString("ref"),
-                        rs.getDouble("cost"),
-                        rs.getDouble("price"),
-                        rs.getInt("stock"),
-                        rs.getString("bill"),
-                        rs.getDate("date").toLocalDate(),
-                        rs.getString("category"),
-                        rs.getString("subcategory")
-                );
-            }
-
-        } catch (SQLException e) {
-            System.out.println("Error al buscar producto por ID: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        return product;
-    }
-
+    /**
+     * Searches for product references in the database based on a query.
+     *
+     * @param query The search query.
+     * @return A list of matching product references.
+     */
     public static ObservableList<ProductReference> searchProductReferences(String query) {
         ObservableList<ProductReference> results = FXCollections.observableArrayList();
         String searchPattern = "%" + query.replace("_", "\\_").replace("%", "\\%") + "%";
@@ -207,14 +186,17 @@ public class ProductsDao {
             SELECT DISTINCT
                 pr.ref,
                 pr.name,
+                pr.brand,
                 c.name AS category,
-                s.name AS subcategory
+                s.name AS subcategory,
+                pr.description
             FROM product_references pr
             LEFT JOIN subcategories s ON pr.subcategory_id = s.id
             LEFT JOIN categories c ON s.category_id = c.id
             LEFT JOIN products p ON pr.ref = p.product_ref
             WHERE pr.ref LIKE ? ESCAPE '\\'
             OR pr.name LIKE ? ESCAPE '\\'
+            OR pr.brand LIKE ? ESCAPE '\\'
             """;
 
         try (Connection conn = DatabaseManager.connectProducts();
@@ -231,33 +213,43 @@ public class ProductsDao {
                 ProductReference reference = new ProductReference(
                         rs.getString("ref"),
                         rs.getString("name"),
+                        rs.getString("brand"),
                         rs.getString("category"),
-                        rs.getString("subcategory")
+                        rs.getString("subcategory"),
+                        rs.getString("description")
                 );
 
                 // Calcular puntuación de similitud
                 int nameScore = calculateSimilarityScore(query, reference.getName());
                 int refScore = calculateSimilarityScore(query, reference.getRef());
-                int maxScore = Math.max(nameScore, refScore);
+                int brandScore = calculateSimilarityScore(query, reference.getBrand());
+                int maxScore = Math.max(Math.max(nameScore, refScore), brandScore);
 
                 referenceScores.put(reference, maxScore);
             }
 
             // Filtrar y ordenar resultados por puntuación
             referenceScores.entrySet().stream()
-                    .filter(entry -> entry.getValue() >= 60) // Umbral de similitud menos estricto
+                    .filter(entry -> entry.getValue() >= 80)
                     .sorted(Map.Entry.<ProductReference, Integer>comparingByValue().reversed())
                     .map(Map.Entry::getKey)
                     .forEach(results::add);
 
         } catch (SQLException e) {
-            System.out.println("Error al buscar referencias de productos: " + e.getMessage());
+            System.out.println("Error looking for products: " + e.getMessage());
             e.printStackTrace();
         }
 
         return results;
     }
 
+    /**
+     * Calculates the similarity score between two strings using the Levenshtein distance.
+     *
+     * @param search The search string.
+     * @param target The target string.
+     * @return A similarity score between 0 and 100.
+     */
     private static int calculateSimilarityScore(String search, String target) {
         search = search.toLowerCase();
         target = target.toLowerCase();
@@ -288,12 +280,18 @@ public class ProductsDao {
         return (int) ((1 - (double) distance / maxLength) * 100);
     }
 
-    // Listar todos los productos
+    /**
+     * Obtains all products from the database.
+     *
+     * @return A list of all products.
+     */
     public static List<Products> getAllProducts() {
         String sql = """
             SELECT
-                pr.name,           -- Get name from product_references table
-                p.product_ref AS ref,  -- Get ref from the product table
+                pr.name,
+                pr.brand,
+                pr.description,
+                p.product_ref AS ref,
                 p.id,
                 p.cost,
                 p.price,
@@ -303,10 +301,11 @@ public class ProductsDao {
                 c.name AS category,
                 s.name AS subcategory
             FROM products p
-            JOIN product_references pr ON p.product_ref = pr.ref  -- Join with product_references
-            LEFT JOIN subcategories s ON pr.subcategory_id = s.id  -- Join subcategories with product_references
+            JOIN product_references pr ON p.product_ref = pr.ref
+            LEFT JOIN subcategories s ON pr.subcategory_id = s.id
             LEFT JOIN categories c ON s.category_id = c.id
         """;
+
         List<Products> productsList = new ArrayList<>();
         try (Connection conn = DatabaseManager.connectProducts();
              Statement stmt = conn.createStatement();
@@ -316,6 +315,7 @@ public class ProductsDao {
                 Products product = new Products(
                         rs.getString("id"),
                         rs.getString("name"),
+                        rs.getString("brand"),
                         rs.getString("ref"),
                         rs.getDouble("cost"),
                         rs.getDouble("price"),
@@ -323,17 +323,21 @@ public class ProductsDao {
                         rs.getString("bill"),
                         rs.getDate("date").toLocalDate(),
                         rs.getString("category"),
-                        rs.getString("subcategory")
+                        rs.getString("subcategory"),
+                        rs.getString("description")
                 );
                 productsList.add(product);
             }
         } catch (SQLException e) {
-            System.out.println("Error al obtener los productos: " + e.getMessage());
-            e.printStackTrace(); // Add this to get more details about the error
+            System.out.println("Error obtaining the products: " + e.getMessage());
+            e.printStackTrace();
         }
         return productsList;
     }
 
+    /**
+     * Updates a product reference in the database.
+     */
     public static void updateProductReference(ProductReference productReference) {
         Connection conn = null;
         boolean originalAutoCommit = true;
@@ -341,40 +345,39 @@ public class ProductsDao {
         try {
             conn = DatabaseManager.connectProducts();
             originalAutoCommit = conn.getAutoCommit();
-            conn.setAutoCommit(false); // Iniciar transacción
+            conn.setAutoCommit(false);
 
-            // Paso 1: Obtener o crear ID de categoría
             long categoryId = getOrCreateCategory(conn, productReference.getCategory());
 
-            // Paso 2: Obtener o crear ID de subcategoría
             long subcategoryId = getOrCreateSubcategory(conn, productReference.getSubcategory(), categoryId);
 
-            // Paso 3: Actualizar la referencia del producto
-            String sql = "UPDATE product_references SET name = ?, subcategory_id = ? WHERE ref = ?";
+            String sql = "UPDATE product_references SET name = ?, brand = ?, description = ?, subcategory_id = ? WHERE ref = ?";
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 pstmt.setString(1, productReference.getName());
-                pstmt.setLong(2, subcategoryId);
-                pstmt.setString(3, productReference.getRef());
+                pstmt.setString(2, productReference.getBrand());
+                pstmt.setString(3, productReference.getDescription());
+                pstmt.setLong(4, subcategoryId);
+                pstmt.setString(5, productReference.getRef());
 
                 int rowsAffected = pstmt.executeUpdate();
                 if (rowsAffected > 0) {
-                    System.out.println("Referencia de producto actualizada exitosamente: " + productReference.getRef());
+                    System.out.println("Successfully updated product reference:" + productReference.getRef());
                 } else {
-                    System.out.println("No se encontró la referencia de producto: " + productReference.getRef());
+                    System.out.println("The product reference was not found:" + productReference.getRef());
                 }
             }
 
             conn.commit();
         } catch (SQLException e) {
-            System.out.println("Error al actualizar la referencia de producto: " + e.getMessage());
+            System.out.println("Error when updating the product reference:" + e.getMessage());
             e.printStackTrace();
             try {
                 if (conn != null) {
                     conn.rollback();
-                    System.err.println("Transacción revertida.");
+                    System.err.println("Reversal transaction.");
                 }
             } catch (SQLException ex) {
-                System.err.println("Error durante el rollback: " + ex.getMessage());
+                System.err.println("Error during the rollback:" + ex.getMessage());
             }
         } finally {
             try {
@@ -383,12 +386,16 @@ public class ProductsDao {
                     conn.close();
                 }
             } catch (SQLException ex) {
-                System.err.println("Error al cerrar la conexión: " + ex.getMessage());
+                System.err.println("Error closing the connection:" + ex.getMessage());
             }
         }
     }
 
-    // Actualizar la información de un producto
+    /**
+     * Updates a product entry in the database.
+     *
+     * @param product The product to be updated.
+     */
     public static void updateProductEntry(Products product) {
         Connection conn = null;
         boolean originalAutoCommit = true;
@@ -396,44 +403,43 @@ public class ProductsDao {
         try {
             conn = DatabaseManager.connectProducts();
             originalAutoCommit = conn.getAutoCommit();
-            conn.setAutoCommit(false); // Start transaction
+            conn.setAutoCommit(false);
 
-            // Update the product_references table (name and categories)
             long categoryId = getOrCreateCategory(conn, product.getCategory());
             long subcategoryId = getOrCreateSubcategory(conn, product.getSubCategory(), categoryId);
 
-            String updateRef = "UPDATE product_references SET name = ?, subcategory_id = ? WHERE ref = ?";
+            String updateRef = "UPDATE product_references SET name = ?, brand = ?, description = ?, subcategory_id = ? WHERE ref = ?";
             try (PreparedStatement pstmt = conn.prepareStatement(updateRef)) {
                 pstmt.setString(1, product.getName());
-                pstmt.setLong(2, subcategoryId);
-                pstmt.setString(3, product.getRef());
+                pstmt.setString(2, product.getBrand());
+                pstmt.setString(3, product.getDescription());
+                pstmt.setLong(4, subcategoryId);
+                pstmt.setString(5, product.getRef());
                 pstmt.executeUpdate();
             }
 
-            // Update products table (price, stock, etc.)
-            String updateProd = "UPDATE products SET cost = ?, price = ?, stock = ?, bill = ?, date = ? WHERE id = ?";
+            String updateProd = "UPDATE products SET cost = ?, price = ?, stock = ?, bill = ? WHERE id = ?";
             try (PreparedStatement pstmt = conn.prepareStatement(updateProd)) {
                 pstmt.setDouble(1, product.getCost());
                 pstmt.setDouble(2, product.getPrice());
                 pstmt.setInt(3, product.getStock());
                 pstmt.setString(4, product.getBill());
-                pstmt.setDate(5, Date.valueOf(product.getDate()));
-                pstmt.setString(6, product.getId());
+                pstmt.setString(5, product.getId());
                 pstmt.executeUpdate();
             }
 
             conn.commit();
-            System.out.println("Producto actualizado exitosamente: " + product.getRef());
+            System.out.println("Successfully updated product:" + product.getRef());
         } catch (SQLException e) {
-            System.out.println("Error al actualizar el producto: " + e.getMessage());
+            System.out.println("Error when updating the product:" + e.getMessage());
             e.printStackTrace();
             try {
                 if (conn != null) {
                     conn.rollback();
-                    System.err.println("Transacción revertida.");
+                    System.err.println("Reversal transaction.");
                 }
             } catch (SQLException ex) {
-                System.err.println("Error durante el rollback: " + ex.getMessage());
+                System.err.println("Error during the rollback:" + ex.getMessage());
             }
         } finally {
             try {
@@ -442,33 +448,36 @@ public class ProductsDao {
                     conn.close();
                 }
             } catch (SQLException ex) {
-                System.err.println("Error al cerrar la conexión: " + ex.getMessage());
+                System.err.println("Error closing the connection:" + ex.getMessage());
             }
         }
     }
 
-    // Eliminar un producto por ref
-
+    /**
+     * Deletes a product from the database based on its reference.
+     * Warning: This method deletes all entries related to the product in the database.
+     * @param ref The reference of the product to be deleted.
+     */
     public static void deleteProductToDb(String ref) {
         String sql = "DELETE FROM product_references WHERE ref = ?";
 
         try (Connection conn = DatabaseManager.connectProducts();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            conn.setAutoCommit(false); // Iniciamos una transacción
+            conn.setAutoCommit(false);
 
             try {
                 pstmt.setString(1, ref);
                 pstmt.executeUpdate();
-                conn.commit(); // Confirmamos la transacción
-                System.out.println("Producto eliminado exitosamente: " + ref);
+                conn.commit();
+                System.out.println("Successfully eliminated product:" + ref);
             } catch (SQLException e) {
-                conn.rollback(); // Revertimos la transacción en caso de error
-                System.out.println("Error al eliminar el producto: " + e.getMessage());
-                throw e; // Re-lanzamos la excepción para manejarla en el nivel superior
+                conn.rollback();
+                System.out.println("Error eliminating the product:" + e.getMessage());
+                throw e;
             }
         } catch (SQLException e) {
-            System.out.println("Error en la operación de base de datos: " + e.getMessage());
+            System.out.println("Error in the database operation:" + e.getMessage());
         }
     }
 }

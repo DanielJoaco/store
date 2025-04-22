@@ -9,21 +9,25 @@ import java.sql.*;
 public class UserDao {
     private static final Logger logger = LoggerFactory.getLogger(UserDao.class);
 
-    // Método para guardar un usuario
+    /**
+     * Save a user in the database.
+     * Validates if the user already exists by checking the ID and email.
+     * @param user User to save.
+     */
     public static void saveUser(Users user) {
-        String userType;
+        int userType;
         switch (user) {
-            case Admin admin -> userType = Users.UserType.ADMIN.name();
-            case SupportAgent supportAgent -> userType = Users.UserType.SUPPORT_AGENT.name();
-            case Customer customer -> userType = Users.UserType.CUSTOMER.name();
+            case Admin admin -> userType = 1;
+            case SupportAgent supportAgent -> userType = 2;
+            case Customer customer -> userType = 3;
             case null, default -> {
-                logger.error("❌ Tipo de usuario no válido.");
-                throw new IllegalArgumentException("Tipo de usuario no válido.");
+                logger.error("❌ User type of user.");
+                throw new IllegalArgumentException("User type of user.");
             }
         }
 
         String checkSql  = "SELECT COUNT(*) FROM users WHERE id = ? OR email = ?";
-        String insertSql = "INSERT INTO users (id, name, email, password, typeUser) VALUES (?, ?, ?, ?, ?)";
+        String insertSql = "INSERT INTO users (id, name, email, password, type_id, created_at) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseManager.connectUsers()) {
             // 1) Comprueba duplicados
@@ -32,36 +36,39 @@ public class UserDao {
                 checkStmt.setString(2, user.getEmail());
                 try (ResultSet rs = checkStmt.executeQuery()) {
                     if (rs.next() && rs.getInt(1) > 0) {
-                        logger.warn("⚠️ Error: El ID o el email ya están registrados.");
+                        logger.warn("⚠️ Error: The ID or the email are already registered.");
                         return;
                     }
                 }
             }
 
-            // 2) Inserta el usuario
             try (PreparedStatement pstmt = conn.prepareStatement(insertSql)) {
                 pstmt.setString(1, user.getId());
                 pstmt.setString(2, user.getName());
                 pstmt.setString(3, user.getEmail());
                 pstmt.setString(4, user.getPasswordHash());
-                pstmt.setString(5, userType);
+                pstmt.setInt(5, userType);
+                pstmt.setDate(6, Date.valueOf(user.getCreatedAt()));
 
                 int rows = pstmt.executeUpdate();
                 if (rows > 0) {
-                    logger.info("✅ Usuario guardado: {}", user.getEmail());
+                    logger.info("✅ Saved user: {}", user.getEmail());
                 } else {
-                    logger.warn("⚠️ No se insertó el usuario.");
+                    logger.warn("⚠️ The user was not inserted.");
                 }
             }
 
         } catch (SQLException e) {
-            logger.error("❌ Error al guardar usuario: {}", e.getMessage());
+            logger.error("❌ Error when saving user: {}", e.getMessage());
         }
     }
 
-    // Verificar si ya existe un Admin en la base de datos
+    /**
+     * Verifies if an admin user exists in the database.
+     * @return true if an admin user exists, false otherwise.
+     */
     public static boolean adminExists() {
-        String sql = "SELECT COUNT(*) FROM users WHERE typeUser = 'ADMIN'";
+        String sql = "SELECT COUNT(*) FROM users WHERE type_id = 1";
         try (Connection conn = DatabaseManager.connectUsers();
              PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
@@ -69,12 +76,12 @@ public class UserDao {
                 return rs.getInt(1) > 0;
             }
         } catch (SQLException e) {
-            logger.error("❌ Error verificando admin: {}", e.getMessage());
+            logger.error("❌ Error verifying admin: {}", e.getMessage());
         }
         return false;
     }
 
-    // Obtener usuario por ID
+
     public static ResultSet findUserById(String id) throws SQLException  {
         String sql = "SELECT * FROM users WHERE id = ?";
         Connection conn = DatabaseManager.connectUsers();
@@ -83,7 +90,11 @@ public class UserDao {
         return pstmt.executeQuery();
     }
 
-    // Obtener usuario por Email
+    /**
+     * Finds a user by their email address.
+     * @param email the email address of the user to find.
+     * @return the user object if found, null otherwise.
+     */
     public static Users findUserByEmail(String email) {
 
         String sql = "SELECT * FROM users WHERE email = ?";
@@ -99,18 +110,18 @@ public class UserDao {
                     String id       = rs.getString("id");
                     String name     = rs.getString("name");
                     String pwdHash  = rs.getString("password");
-                    String typeUser = rs.getString("typeUser").toUpperCase();
+                    int typeUser = rs.getInt("type_id");
 
                     return switch (typeUser) {
-                        case "ADMIN"         -> Admin.createAdminFromDb(id, email, pwdHash, name);
-                        case "SUPPORT_AGENT" -> SupportAgent.createAgentFromDb(id, email, pwdHash, name);
-                        case "CUSTOMER"      -> new Customer(id, email, pwdHash, name);
-                        default              -> throw new IllegalStateException("Unknown type: " + typeUser);
+                        case 1  -> Admin.createAdminFromDb(id, email, pwdHash, name);
+                        case 2  -> SupportAgent.createAgentFromDb(id, email, pwdHash, name);
+                        case 3  -> new Customer(id, email, pwdHash, name);
+                        default -> throw new IllegalStateException("Unknown type: " + typeUser);
                     };
                 }
             }
         } catch (SQLException e) {
-            logger.error("❌ Error al buscar usuario: {}", e.getMessage());
+            logger.error("❌ ERROR When looking for a user: {}", e.getMessage());
         }
         return null;
     }

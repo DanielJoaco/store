@@ -8,30 +8,35 @@ public class Products {
     
     private final String id;
     private String name;
+    private String brand;
     private final String ref;
     private double cost;
     private double price;
     private int stock;
     private String bill;
-    private LocalDate date;
+    private final LocalDate date;
     private SubCategory subCategory;
+    private String description;
     private Rating rating;
     
-    public Products(String name, String ref, double cost, double price, int stock, String bill, String category, String subcategory){
-            this.id = UUID.randomUUID().toString();
-            this.name = name;
-            this.ref = ref;
-            this.cost = cost;
-            this.price = price;
-            this.stock = stock;
-            this.bill = bill;
-            this.date = LocalDate.now();
-            this.subCategory = new SubCategory(category, subcategory);
+    public Products(String name, String brand, String ref, double cost, double price, int stock, String bill, String category, String subcategory, String description) {
+        this.id = UUID.randomUUID().toString();
+        this.name = name;
+        this.brand = brand;
+        this.ref = ref;
+        this.cost = cost;
+        this.price = price;
+        this.stock = stock;
+        this.bill = bill;
+        this.date = LocalDate.now();
+        this.subCategory = new SubCategory(category, subcategory);
+        this.description = description;
     }
 
-    public Products(String id, String name, String ref, double cost, double price, int stock, String bill, LocalDate date, String category, String subcategory){
+    public Products(String id, String name, String brand, String ref, double cost, double price, int stock, String bill, LocalDate date, String category, String subcategory, String description) {
         this.id = id;
         this.name = name;
+        this.brand = brand;
         this.ref = ref;
         this.cost = cost;
         this.price = price;
@@ -39,8 +44,8 @@ public class Products {
         this.bill = bill;
         this.date = date;
         this.subCategory = new SubCategory(category, subcategory);
+        this.description = description;
     }
-
     public void setName(String name, Admin admin){
         if (admin.isAdmin()){
             this.name = name;
@@ -48,7 +53,13 @@ public class Products {
             throw new IllegalArgumentException("Only admins can change the name of a product.");
         }
     }
-
+    public void setBrand(String brand, Admin admin){
+        if (admin.isAdmin()){
+            this.brand = brand;
+        } else {
+            throw new IllegalArgumentException("Only admins can change the brand of a product.");
+        }
+    }
     public void setCost(double cost, Admin admin){
         if (admin.isAdmin()){
             this.cost = cost;
@@ -56,7 +67,6 @@ public class Products {
             throw new IllegalArgumentException("Only admins can change the cost of a product.");
         }
     }
-
     public void setPrice(double price, Admin admin){
         if (admin.isAdmin()){
             this.price = price;
@@ -64,7 +74,6 @@ public class Products {
             throw new IllegalArgumentException("Only admins can change the price of a product.");
         }
     }
-
     public void setStock(int stock, Admin admin){
         if (admin.isAdmin()){
             this.stock = stock;
@@ -72,7 +81,6 @@ public class Products {
             throw new IllegalArgumentException("Only admins can change the quantity of a product.");
         }
     }
-
     public void setBill(String bill, Admin admin){
         if (admin.isAdmin()){
             this.bill = bill;
@@ -80,15 +88,6 @@ public class Products {
             throw new IllegalArgumentException("Only admins can change the bill of a product.");
         }
     }
-
-    public void setDate(LocalDate date, Admin admin){
-        if (admin.isAdmin()){
-            this.date = date;
-        } else {
-            throw new IllegalArgumentException("Only admins can change the date of a product.");
-        }
-    }
-
      public void setSubCategory(String category, String subcategory, Admin admin){
         if (admin.isAdmin()){
             this.subCategory = new SubCategory(category, subcategory);
@@ -96,56 +95,35 @@ public class Products {
             throw new IllegalArgumentException("Only admins can change the subcategory of a product.");
         }
      }
-
      public void addRating(int rating, String comment, Customer customer){
         if (customer.isCustomer()){
             this.rating = new Rating(rating, comment, customer.getName());
         }
      }
+    public void setDescription(String description, Admin admin){
+            if (admin.isAdmin()){
+                this.description = description;
+            } else {
+                throw new IllegalArgumentException("Only admins can change the description of a product.");
+            }
+        }
 
-     public String getId(){
-        return this.id;
-     }
-
-    public String getName(){
-        return this.name;
-    }
-    public String getRef(){
-        return this.ref;
-    }
-    public double getCost(){
-        return this.cost;
-    }
-    public double getPrice(){
-        return this.price;
-    }
-    public int getStock(){
-        return this.stock;
-    }
-    public String getBill(){
-        return this.bill;
-    }
-    public LocalDate getDate(){
-        return this.date;
-    }
-    public String getSubCategory(){
-        return this.subCategory.getName();
-    }
-    public String getCategory(){
-        return this.subCategory.getCategoryName();
-    }
-    public Rating getRating(){
-        return this.rating;
-    }
-
-    public String getFormattedDate() {
-        return this.date != null ? this.date.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yy")) : "";
-    }
+    public String getId(){return this.id;}
+    public String getName(){return this.name;}
+    public String getBrand(){return this.brand;}
+    public String getRef(){return this.ref;}
+    public double getCost(){return this.cost;}
+    public double getPrice(){return this.price;}
+    public int getStock(){return this.stock;}
+    public String getBill(){return this.bill;}
+    public LocalDate getDate(){return this.date;}
+    public String getSubCategory(){return this.subCategory.getName();}
+    public String getCategory(){return this.subCategory.getCategoryName();}
+    public String getDescription(){return this.description;}
+    public Rating getRating(){return this.rating;}
 
     @Override
     public String toString(){
-        return String.format("The product name is: %s and the reference is: %s", this.name, this.ref);
+        return String.format("The product name is: %s, her brand is: %s and the reference is: %s /nDescription: %s", this.name, this.brand, this.ref, this.description);
     }
-
-
 }

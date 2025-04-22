@@ -3,13 +3,16 @@ package com.danieljoaco.storeapp.users;
 import static com.danieljoaco.storeapp.utils.UserValidator.*;
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.time.LocalDate;
+
 public abstract class Users {
     
     private String id;
     private String name;
     private String email;
     private String passwordHash;
-    private final String typeUser;  
+    private final String typeUser;
+    private final LocalDate createdAt;
 
    
     public Users(String id, String email, String password, String typeUser, String name) {
@@ -21,20 +24,29 @@ public abstract class Users {
         } else {
             throw new IllegalArgumentException("Invalid type of user.");
         }
+        this.createdAt = LocalDate.now();
     }
-    public Users(String id, String email, String password, String typeUser, String name, boolean isIstance) {
+    public Users(String id, String email, String password, String typeUser, String name, boolean isInstance) {
 
-        if(isIstance){
+        if(isInstance){
             this.id = id;
             this.email = email;
             this.passwordHash =  password;
             this.typeUser = typeUser;
             this.name = name;
+            this.createdAt = null;
         } else {
             throw new IllegalArgumentException("Only use this constructor for instances.");
         }
     }
-    
+
+    /**
+     * Validates the fields of the user.
+     * @param id User ID.
+     * @param email User email.
+     * @param password User password.
+     * @param name User name.
+     */
     private void validateFields(String id, String email, String password, String name) {
         
         if (isValidId(id)) {
@@ -62,6 +74,11 @@ public abstract class Users {
         }
     }
 
+    /**
+     * Validates if the type of user is valid.
+     * @param typeUser Type of user.
+     * @return true if the type of user is valid, false otherwise.
+     */
     private boolean isValidTypeUser(String typeUser) {
         try {
             UserType.valueOf(typeUser.toUpperCase());  
@@ -71,25 +88,19 @@ public abstract class Users {
         }
     }
 
+    /**
+     * Enum for user types.
+     */
     public enum UserType {
         ADMIN, CUSTOMER, SUPPORT_AGENT
     }
-   
-    public String getId(){
-        return this.id;
-    }
-    public String getName(){
-        return this.name;
-    }
-    public String getEmail(){
-        return this.email;
-    }
-    public String getTypeUser(){
-        return this.typeUser;
-    }
-    public String getPasswordHash(){
-        return this.passwordHash;
-    }
+
+    public String getId() { return this.id; }
+    public String getName() { return this.name; }
+    public String getEmail() { return this.email; }
+    public String getTypeUser() { return this.typeUser; }
+    public String getPasswordHash() { return this.passwordHash; }
+    public LocalDate getCreatedAt() { return this.createdAt; }
     
     private boolean isPasswordValid(String password) {
         return this.passwordHash != null && this.passwordHash.equals(password);

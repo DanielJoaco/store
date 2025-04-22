@@ -76,6 +76,8 @@ public class EditProductController {
 
         try{
             productToEdit.setName(name, adminLogin);
+            productToEdit.setCategory(category, adminLogin);
+            productToEdit.setSubcategory(subCategory, adminLogin);
             updateProductReference(productToEdit);
 
 
