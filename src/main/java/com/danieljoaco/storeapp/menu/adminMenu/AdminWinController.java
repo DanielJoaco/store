@@ -28,12 +28,13 @@ import javafx.stage.Stage;
 
 import static com.danieljoaco.storeapp.db.ProductsDao.*;
 import static com.danieljoaco.storeapp.menu.signUp.SignUpMenuController.newUser;
+import static com.danieljoaco.storeapp.menu.utils.Utils.alert;
 import static com.danieljoaco.storeapp.menu.utils.Utils.setupStage;
 
 public class AdminWinController implements Initializable {
 
     @FXML
-    private MenuItem menuNewProduct, menuEditProduct, newCustomer, newSupportAgent, newAdmin;
+    private MenuItem menuNewProduct, menuNewEntry, menuEditProduct, newCustomer, newSupportAgent, newAdmin;
 
     @FXML
     private Button btnProducts, btnUsers, btnOrders;
@@ -54,26 +55,18 @@ public class AdminWinController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
         setupMenu();
-
-        // Inicializar los botones
         setupButtons();
-
-        // Inicializar las tablas
         setupTables();
-
     }
 
     public void loggedInAdmin(Admin adminLogin) {
-        // Aquí puedes usar el adminLogin como necesites
-        // Por ejemplo, guardarlo como una variable de clase
         this.adminLogin = adminLogin;
     }
 
-
-    private void setupMenu(){
+    private void setupMenu() {
         menuNewProduct.setOnAction(event -> createNewProduct());
+        menuNewEntry.setOnAction(event -> newEntry());
         menuEditProduct.setOnAction(event -> editProductByRef());
 
         newCustomer.setOnAction(event -> newUser(Users.UserType.CUSTOMER.name(), null));
@@ -88,12 +81,11 @@ public class AdminWinController implements Initializable {
     }
 
     private void setupTables() {
-        // Crear todas las tablas
         createProductsTable();
         createUsersTable();
         createOrdersTable();
 
-        // Asegurar que estén ocultas inicialmente
+        // Ocultar todas las tablas inicialmente
         tableProducts.setVisible(false);
         tableUsers.setVisible(false);
         tableOrders.setVisible(false);
@@ -101,110 +93,66 @@ public class AdminWinController implements Initializable {
 
     public void createNewProduct() {
         try {
-            String title = "New product";
-            Stage newProductStage = setupStage(title);
-
-            // Load FXML file
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/new-product.fxml"));
-            Parent root = loader.load();
-
-            // Get the controller and configure it
-            NewProductController controller = loader.getController();
-            controller.initialize(newProductStage, this.adminLogin);
-
-            // Configure the scene
-            Scene scene = new Scene(root);
-            scene.getStylesheets().add(
-                    Objects.requireNonNull(getClass().getResource("/styles/manuMainStyles.css")).toExternalForm()
-            );
-            newProductStage.setScene(scene);
-
-            // Show the dialog and wait
-            newProductStage.showAndWait();
-
+            openFormWithController("/fxml/new-product.fxml", "New product",
+                    (NewProductController controller, Stage stage) ->
+                            controller.initialize(stage, this.adminLogin));
         } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("Error loading new product form: " + e.getMessage());
+            alert(e);
         }
     }
 
     private void createProductsTable() {
-        // Crear tabla de productos
         tableProducts = new TableView<>();
         tableProducts.setPrefSize(840, 605);
 
-        // Crear columnas para la tabla de productos
-        TableColumn<Products, String> colProductRef = new TableColumn<>("Ref");
-        TableColumn<Products, String> colProductName = new TableColumn<>("Name");
-        TableColumn<Products, Integer> colProductStock = new TableColumn<>("Stock");
-        TableColumn<Products, Double> colProductCost = new TableColumn<>("Cost");
-        TableColumn<Products, Double> colProductPrice = new TableColumn<>("Price");
-        TableColumn<Products, String> colProductBill = new TableColumn<>("Bill");
-        TableColumn<Products, String> colProductCategory = new TableColumn<>("Cat.");
-        TableColumn<Products, String> colProductSubcategory = new TableColumn<>("Subcat.");
-        TableColumn<Products, String> colProductDate = new TableColumn<>("Date");
-        TableColumn<Products, String> colProductEdit = new TableColumn<>("Edit");
-        TableColumn<Products, String> colProductDelete = new TableColumn<>("Delete");
+        // Crear y configurar columnas
+        TableColumn<Products, String> colProductRef = createColumn("Ref", "ref", 60);
+        TableColumn<Products, String> colProductName = createColumn("Name", "name", 150);
+        TableColumn<Products, Integer> colProductStock = createColumn("Stock", "stock", 45);
+        TableColumn<Products, Double> colProductCost = createColumn("Cost", "cost", 60);
+        TableColumn<Products, Double> colProductPrice = createColumn("Price", "price", 60);
+        TableColumn<Products, String> colProductBill = createColumn("Bill", "bill", 90);
+        TableColumn<Products, String> colProductCategory = createColumn("Cat.", "category", 70);
+        TableColumn<Products, String> colProductSubcategory = createColumn("Subcat.", "subCategory", 100);
+        TableColumn<Products, String> colProductDate = createColumn("Date", "formattedDate", 60);
 
-        // Configurar las columnas
-        colProductRef.setCellValueFactory(new PropertyValueFactory<>("ref"));
-        colProductName.setCellValueFactory(new PropertyValueFactory<>("name"));
-        colProductStock.setCellValueFactory(new PropertyValueFactory<>("stock"));
-        colProductCost.setCellValueFactory(new PropertyValueFactory<>("cost"));
-        colProductPrice.setCellValueFactory(new PropertyValueFactory<>("price"));
-        colProductBill.setCellValueFactory(new PropertyValueFactory<>("bill"));
-        colProductCategory.setCellValueFactory(new PropertyValueFactory<>("category"));
-        colProductSubcategory.setCellValueFactory(new PropertyValueFactory<>("subCategory"));
-        colProductDate.setCellValueFactory(new PropertyValueFactory<>("formattedDate"));
-
-        // Configurar columnas de acción (Editar y Eliminar)
+        // Columnas de acción
+        TableColumn<Products, String> colProductEdit = createActionColumn("Edit", 40);
         setupEditColumn(colProductEdit);
+
+        TableColumn<Products, String> colProductDelete = createActionColumn("Delete", 50);
         setupDeleteColumn(colProductDelete);
 
-        // Ajustar ancho de columnas
-        colProductRef.setPrefWidth(60);
-        colProductName.setPrefWidth(150);
-        colProductStock.setPrefWidth(45);
-        colProductCost.setPrefWidth(60);
-        colProductPrice.setPrefWidth(60);
-        colProductBill.setPrefWidth(90);
-        colProductCategory.setPrefWidth(70);
-        colProductSubcategory.setPrefWidth(100);
-        colProductDate.setPrefWidth(60);
-        colProductEdit.setPrefWidth(40);
-        colProductDelete.setPrefWidth(50);
+        // Añadir columnas a la tabla
+        tableProducts.getColumns().addAll(
+                colProductRef, colProductName, colProductStock, colProductCost,
+                colProductPrice, colProductBill, colProductCategory, colProductSubcategory,
+                colProductDate, colProductEdit, colProductDelete
+        );
 
-
-        // Añadir columnas a la tabla individualmente en lugar de usar addAll
-        tableProducts.getColumns().add(colProductRef);
-        tableProducts.getColumns().add(colProductName);
-        tableProducts.getColumns().add(colProductStock);
-        tableProducts.getColumns().add(colProductCost);
-        tableProducts.getColumns().add(colProductPrice);
-        tableProducts.getColumns().add(colProductBill);
-        tableProducts.getColumns().add(colProductCategory);
-        tableProducts.getColumns().add(colProductSubcategory);
-        tableProducts.getColumns().add(colProductDate);
-
-        tableProducts.getColumns().add(colProductEdit);
-        tableProducts.getColumns().add(colProductDelete);
-
-        // Configurar datos (inicialmente vacío)
+        // Configurar datos y políticas de redimensionamiento
         tableProducts.setItems(productsList);
-
-        // Permitir scroll vertical
         tableProducts.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
 
         // Añadir la tabla al contenedor
-        AnchorPane.setTopAnchor(tableProducts, 0.0);
-        AnchorPane.setRightAnchor(tableProducts, 0.0);
-        AnchorPane.setBottomAnchor(tableProducts, 0.0);
-        AnchorPane.setLeftAnchor(tableProducts, 0.0);
-        tableContainer.getChildren().add(tableProducts);
+        addTableToContainer(tableProducts);
+    }
+
+    private <T> TableColumn<Products, T> createColumn(String title, String propertyName, double width) {
+        TableColumn<Products, T> column = new TableColumn<>(title);
+        column.setCellValueFactory(new PropertyValueFactory<>(propertyName));
+        column.setPrefWidth(width);
+        return column;
+    }
+
+    private TableColumn<Products, String> createActionColumn(String title, double width) {
+        TableColumn<Products, String> column = new TableColumn<>(title);
+        column.setPrefWidth(width);
+        return column;
     }
 
     private void setupEditColumn(TableColumn<Products, String> column) {
-        column.setCellFactory(param -> new TableCell<Products, String>() {
+        column.setCellFactory(param -> new TableCell<>() {
             final Button editButton = new Button("📝");
 
             @Override
@@ -228,7 +176,7 @@ public class AdminWinController implements Initializable {
     }
 
     private void setupDeleteColumn(TableColumn<Products, String> column) {
-        column.setCellFactory(param -> new TableCell<Products, String>() {
+        column.setCellFactory(param -> new TableCell<>() {
             final Button deleteButton = new Button("❌");
 
             @Override
@@ -252,108 +200,79 @@ public class AdminWinController implements Initializable {
     }
 
     private void createUsersTable() {
-        // Crear tabla de usuarios (simple para este ejemplo)
         tableUsers = new TableView<>();
         tableUsers.setPrefSize(840, 605);
 
-        // Añadir algunas columnas básicas
-        TableColumn<Object, String> colUserId = new TableColumn<>("ID");
-        TableColumn<Object, String> colUserName = new TableColumn<>("Name");
-        TableColumn<Object, String> colUserEmail = new TableColumn<>("Email");
+        // Añadir columnas básicas
+        tableUsers.getColumns().addAll(
+                new TableColumn<>("ID"),
+                new TableColumn<>("Name"),
+                new TableColumn<>("Email")
+        );
 
-        // Añadir columnas individualmente en lugar de usar addAll
-        tableUsers.getColumns().add(colUserId);
-        tableUsers.getColumns().add(colUserName);
-        tableUsers.getColumns().add(colUserEmail);
-
-        // Añadir la tabla al contenedor
-        AnchorPane.setTopAnchor(tableUsers, 0.0);
-        AnchorPane.setRightAnchor(tableUsers, 0.0);
-        AnchorPane.setBottomAnchor(tableUsers, 0.0);
-        AnchorPane.setLeftAnchor(tableUsers, 0.0);
-        tableContainer.getChildren().add(tableUsers);
+        addTableToContainer(tableUsers);
         tableUsers.setVisible(false);
-
-        // Aquí se cargarían datos reales en una aplicación completa
     }
 
     private void createOrdersTable() {
-        // Crear tabla de órdenes (simple para este ejemplo)
         tableOrders = new TableView<>();
         tableOrders.setPrefSize(840, 605);
 
-        // Añadir algunas columnas básicas
-        TableColumn<Object, String> colOrderId = new TableColumn<>("Order ID");
-        TableColumn<Object, String> colOrderDate = new TableColumn<>("Date");
-        TableColumn<Object, String> colOrderCustomer = new TableColumn<>("Customer");
+        // Añadir columnas básicas
+        tableOrders.getColumns().addAll(
+                new TableColumn<>("Order ID"),
+                new TableColumn<>("Date"),
+                new TableColumn<>("Customer")
+        );
 
-        // Añadir columnas individualmente en lugar de usar addAll
-        tableOrders.getColumns().add(colOrderId);
-        tableOrders.getColumns().add(colOrderDate);
-        tableOrders.getColumns().add(colOrderCustomer);
-
-        // Añadir la tabla al contenedor
-        AnchorPane.setTopAnchor(tableOrders, 0.0);
-        AnchorPane.setRightAnchor(tableOrders, 0.0);
-        AnchorPane.setBottomAnchor(tableOrders, 0.0);
-        AnchorPane.setLeftAnchor(tableOrders, 0.0);
-        tableContainer.getChildren().add(tableOrders);
+        addTableToContainer(tableOrders);
         tableOrders.setVisible(false);
+    }
 
-        // Aquí se cargarían datos reales en una aplicación completa
+    private void addTableToContainer(TableView<?> table) {
+        AnchorPane.setTopAnchor(table, 0.0);
+        AnchorPane.setRightAnchor(table, 0.0);
+        AnchorPane.setBottomAnchor(table, 0.0);
+        AnchorPane.setLeftAnchor(table, 0.0);
+        tableContainer.getChildren().add(table);
     }
 
     private void showProductsTable() {
-        tableProducts.setVisible(true);
-        tableUsers.setVisible(false);
-        tableOrders.setVisible(false);
-
-        // Cargar los productos desde la base de datos
+        setTableVisibility(true, false, false);
         loadProducts();
-
-        // Hacer que el botón de productos se vea seleccionado
-        btnProducts.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
-        btnUsers.setStyle("");
-        btnOrders.setStyle("");
+        setButtonStyles("#4CAF50", "", "");
     }
 
     private void showUsersTable() {
-        tableProducts.setVisible(false);
-        tableUsers.setVisible(true);
-        tableOrders.setVisible(false);
-
-        // Aquí se cargarían los usuarios desde la base de datos
-
-        // Hacer que el botón de usuarios se vea seleccionado
-        btnProducts.setStyle("");
-        btnUsers.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white;");
-        btnOrders.setStyle("");
+        setTableVisibility(false, true, false);
+        setButtonStyles("", "#2196F3", "");
     }
 
     private void showOrdersTable() {
-        tableProducts.setVisible(false);
-        tableUsers.setVisible(false);
-        tableOrders.setVisible(true);
+        setTableVisibility(false, false, true);
+        setButtonStyles("", "", "#FF9800");
+    }
 
-        // Aquí se cargarían las órdenes desde la base de datos
+    private void setTableVisibility(boolean showProducts, boolean showUsers, boolean showOrders) {
+        tableProducts.setVisible(showProducts);
+        tableUsers.setVisible(showUsers);
+        tableOrders.setVisible(showOrders);
+    }
 
-        // Hacer que el botón de órdenes se vea seleccionado
-        btnProducts.setStyle("");
-        btnUsers.setStyle("");
-        btnOrders.setStyle("-fx-background-color: #FF9800; -fx-text-fill: white;");
+    private void setButtonStyles(String productsStyle, String usersStyle, String ordersStyle) {
+        btnProducts.setStyle(productsStyle.isEmpty() ? "" :
+                "-fx-background-color: " + productsStyle + "; -fx-text-fill: white;");
+        btnUsers.setStyle(usersStyle.isEmpty() ? "" :
+                "-fx-background-color: " + usersStyle + "; -fx-text-fill: white;");
+        btnOrders.setStyle(ordersStyle.isEmpty() ? "" :
+                "-fx-background-color: " + ordersStyle + "; -fx-text-fill: white;");
     }
 
     private void loadProducts() {
-        // Limpiar la lista actual
         productsList.clear();
-
-        // Obtener todos los productos de la base de datos
         List<Products> products = getAllProducts();
-
-        // Añadir los productos a la lista observable
         productsList.addAll(products);
 
-        // Si la lista está vacía, mostrar un mensaje
         if (productsList.isEmpty()) {
             System.out.println("No hay productos para mostrar.");
         } else {
@@ -363,92 +282,104 @@ public class AdminWinController implements Initializable {
 
     private void editProductByRef() {
         try {
-            String title = SearchType.PRODUCT.getTittle();
-            String searchText = SearchType.PRODUCT.getSearchText();
-            Stage searchStage = setupStage(title);
+            SearchType searchType = SearchType.PRODUCT;
+            ProductReference selectedProduct = showSearchDialog(searchType.getTittle(), searchType.getSearchText());
 
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/search-engine.fxml"));
-            Parent root = loader.load();
-
-            SearchEngineController searchEngine = loader.getController();
-            searchEngine.initialize(searchStage, title, searchText);
-
-            Scene scene = new Scene(root);
-            scene.getStylesheets().add(
-                    Objects.requireNonNull(getClass().getResource("/styles/manuMainStyles.css")).toExternalForm()
-            );
-            searchStage.setScene(scene);
-
-            // Mostrar el diálogo y esperar
-            searchStage.showAndWait();
-
-            // Verificar si se seleccionó un producto
-            ProductReference selectedProduct = searchEngine.getSelectedProduct();
             if (selectedProduct != null) {
-                // Abrir formulario de edición con el producto seleccionado
                 openEditForm(selectedProduct);
             }
-
         } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("Error al cargar el formulario de búsqueda: " + e.getMessage());
+            alert(e);
         }
     }
 
     private void editProductEntry(Products product) {
-        try{
-            String title = SearchType.PRODUCT.getTittle();
-            Stage searchStage = setupStage(title);
-
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/new-product.fxml"));
-            Parent root = loader.load();
-
-            NewProductController newProductController = loader.getController();
-            newProductController.initialize(searchStage, this.adminLogin);
-            newProductController.editProduct(product);
-
-            Scene scene = new Scene(root);
-            scene.getStylesheets().add(
-                    Objects.requireNonNull(getClass().getResource("/styles/manuMainStyles.css")).toExternalForm()
-            );
-            searchStage.setScene(scene);
-
-            // Mostrar el diálogo y esperar
-            searchStage.showAndWait();
+        try {
+            openFormWithController("/fxml/new-product.fxml", SearchType.PRODUCT.getTittle(),
+                    (NewProductController controller, Stage stage) -> {
+                        controller.initialize(stage, this.adminLogin);
+                        controller.editProduct(product);
+                    });
         } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("Error al cargar el formulario de búsqueda: " + e.getMessage());
+            alert(e);
         }
+    }
 
+    private void newEntry() {
+        try {
+            SearchType searchType = SearchType.PRODUCT;
+            ProductReference selectedProduct = showSearchDialog(searchType.getTittle(), searchType.getSearchText());
+
+            if (selectedProduct != null) {
+                openNewEntry(selectedProduct);
+            }
+        } catch (IOException e) {
+            alert(e);
+        }
+    }
+
+    private ProductReference showSearchDialog(String title, String searchText) throws IOException {
+        Stage searchStage = setupStage(title);
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/search-engine.fxml"));
+        Parent root = loader.load();
+
+        SearchEngineController searchEngine = loader.getController();
+        searchEngine.initialize(searchStage, title, searchText);
+
+        Scene scene = createStyledScene(root);
+        searchStage.setScene(scene);
+        searchStage.showAndWait();
+
+        return searchEngine.getSelectedProduct();
     }
 
     private void openEditForm(ProductReference productToEdit) {
         try {
-            Stage editStage = setupStage("Edit Product");
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/edit-product.fxml"));
-            Parent root = loader.load();
+            openFormWithController("/fxml/edit-product.fxml", "Edit Product",
+                    (EditProductController controller, Stage stage) ->
+                            controller.initialize(stage, productToEdit, this.adminLogin));
 
-            EditProductController controller = loader.getController();
-            controller.initialize(editStage, productToEdit, this.adminLogin);
-
-            Scene scene = new Scene(root);
-            scene.getStylesheets().add(
-                    Objects.requireNonNull(getClass().getResource("/styles/manuMainStyles.css")).toExternalForm()
-            );
-            editStage.setScene(scene);
-            editStage.showAndWait();
-
-            // Recargar la tabla después de la edición
-            loadProducts();
+            loadProducts();  // Recargar la tabla después de la edición
         } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("Error al cargar el formulario de edición: " + e.getMessage());
+            alert(e);
         }
     }
 
+    private void openNewEntry(ProductReference productEntry) {
+        try {
+            openFormWithController("/fxml/new-product.fxml", "New entry Product",
+                    (NewProductController controller, Stage stage) ->
+                            controller.initialize(stage, this.adminLogin, productEntry));
+
+            loadProducts();  // Recargar la tabla después de la edición
+        } catch (IOException e) {
+            alert(e);
+        }
+    }
+
+    private <T> void openFormWithController(String fxmlPath, String title, ControllerInitializer<T> initializer)
+            throws IOException {
+        Stage stage = setupStage(title);
+        FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+        Parent root = loader.load();
+
+        T controller = loader.getController();
+        initializer.initialize(controller, stage);
+
+        Scene scene = createStyledScene(root);
+        stage.setScene(scene);
+        stage.showAndWait();
+    }
+
+    private Scene createStyledScene(Parent root) {
+        Scene scene = new Scene(root);
+        scene.getStylesheets().add(
+                Objects.requireNonNull(getClass().getResource("/styles/manuMainStyles.css")).toExternalForm()
+        );
+        return scene;
+    }
 
     private void deleteProduct(Products product) {
-        // Mostrar un diálogo de confirmación
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmar eliminación");
         alert.setHeaderText("¿Estás seguro que deseas eliminar este producto?");
@@ -456,14 +387,16 @@ public class AdminWinController implements Initializable {
 
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                // Eliminar el producto de la base de datos
                 deleteProductToDb(product.getRef());
-
-                // Eliminar el producto de la tabla
                 productsList.remove(product);
-
                 System.out.println("Producto eliminado: " + product.getName());
             }
         });
+    }
+
+    // Interfaz funcional para inicializar controladores
+    @FunctionalInterface
+    private interface ControllerInitializer<T> {
+        void initialize(T controller, Stage stage);
     }
 }

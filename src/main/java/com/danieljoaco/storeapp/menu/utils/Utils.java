@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -110,4 +111,13 @@ public class Utils {
         return lowerCase.substring(0, 1).toUpperCase() + lowerCase.substring(1);
     }
 
+    public static void alert(IOException e){
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setHeaderText("Error al cargar el formulario de nuevo producto");
+        alert.setContentText("No se pudo cargar el formulario. Detalles: " + e.getMessage());
+        alert.showAndWait();
+        System.err.println("Error loading new product form: " + e.getMessage());
+        System.err.println("Error loading new product form: " + e.getMessage());
+    }
 }

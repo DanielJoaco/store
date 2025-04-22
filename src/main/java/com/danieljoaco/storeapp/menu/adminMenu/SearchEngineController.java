@@ -1,7 +1,6 @@
 package com.danieljoaco.storeapp.menu.adminMenu;
 
 import com.danieljoaco.storeapp.products.ProductReference;
-import com.danieljoaco.storeapp.products.Products;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -113,9 +112,7 @@ public class SearchEngineController {
         });
     }
 
-
 public ProductReference getSelectedProduct() {
         return selectedProduct;
     }
-
 }

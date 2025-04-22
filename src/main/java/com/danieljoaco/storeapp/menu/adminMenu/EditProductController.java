@@ -12,7 +12,7 @@ import javafx.stage.Stage;
 import static com.danieljoaco.storeapp.db.ProductsDao.updateProductReference;
 import static com.danieljoaco.storeapp.menu.adminMenu.NewProductController.initializeCategoryComboBox;
 import static com.danieljoaco.storeapp.menu.utils.Utils.*;
-import static com.danieljoaco.storeapp.utils.UserValidator.isValidProductsInputs;
+        import static com.danieljoaco.storeapp.utils.UserValidator.isValidProductsInputs;
 
 public class EditProductController {
     @FXML

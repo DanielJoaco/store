@@ -2,6 +2,7 @@ package com.danieljoaco.storeapp.menu.adminMenu;
 
 import com.danieljoaco.storeapp.menu.utils.Utils;
 import com.danieljoaco.storeapp.products.Category;
+import com.danieljoaco.storeapp.products.ProductReference;
 import com.danieljoaco.storeapp.products.Products;
 import com.danieljoaco.storeapp.products.SubCategory;
 import com.danieljoaco.storeapp.users.Admin;
@@ -32,7 +33,7 @@ public class NewProductController {
     private Button createButton;
 
     @FXML
-    private Label lblError;
+    private Label lblTittle, lblError;
 
     private Stage newProductStage;
     private boolean isEditMode = false;
@@ -42,69 +43,117 @@ public class NewProductController {
     public void initialize(Stage stage, Admin adminLogin) {
         this.newProductStage = stage;
         this.adminLogin = adminLogin;
-
         initializeCategoryComboBox(this.categoryComboBox, this.subcategoryComboBox, this.lblError);
     }
 
-    static void initializeCategoryComboBox(ComboBox<String> categoryComboBox, ComboBox<String> subcategoryComboBox, Label lblError) {
-        // Inicializar el ComboBox de categorías
+    public void initialize(Stage stage, Admin adminLogin, ProductReference newProductEntry) {
+        initialize(stage, adminLogin);
+        parametersNewEntry(newProductEntry);
+    }
+
+    public static void initializeCategoryComboBox(ComboBox<String> categoryComboBox, ComboBox<String> subcategoryComboBox, Label lblError) {
         categoryComboBox.getItems().addAll(Arrays.stream(Category.Categories.values())
-                .map(category -> capitalize(category.name()))
+                .map(category -> Utils.capitalize(category.toString()))
                 .toList());
 
-        // Agregar listener para actualizar subcategorías al seleccionar una categoría
-        categoryComboBox.setOnAction(event -> {
-            try {
-                String selectedItem = categoryComboBox.getSelectionModel().getSelectedItem();
-                if (selectedItem == null) {
-                    showError(lblError, "Please select a category");
-                    return;
-                }
+        categoryComboBox.setOnAction(event -> updateSubcategories(categoryComboBox, subcategoryComboBox, lblError));
+    }
 
-                String selectedCategory = selectedItem.toUpperCase();
-                subcategoryComboBox.getItems().clear();
-                subcategoryComboBox.getItems().addAll(Arrays.stream(SubCategory.SubCategories.valueOf(selectedCategory).getItems())
-                        .map(Utils::capitalize)
-                        .toList());
-                subcategoryComboBox.setPromptText("Select a subcategory");
-                showSuccess(lblError, "");
-            } catch (IllegalArgumentException e) {
-                showError(lblError, "No subcategories found for the selected category.");
+    private static void updateSubcategories(ComboBox<String> categoryComboBox, ComboBox<String> subcategoryComboBox, Label lblError) {
+        try {
+            String selectedItem = categoryComboBox.getSelectionModel().getSelectedItem();
+            if (selectedItem == null) {
+                showError(lblError, "Please select a category");
+                return;
             }
-        });
+
+            String selectedCategory = selectedItem.toUpperCase();
+            subcategoryComboBox.getItems().clear();
+            subcategoryComboBox.getItems().addAll(Arrays.stream(SubCategory.SubCategories.valueOf(selectedCategory).getItems())
+                    .map(Utils::capitalize)
+                    .toList());
+            subcategoryComboBox.setPromptText("Select a subcategory");
+            showSuccess(lblError, "");
+        } catch (IllegalArgumentException e) {
+            showError(lblError, "No subcategories found for the selected category.");
+        }
+    }
+
+    private void parametersNewEntry(ProductReference newProductEntry) {
+        lblTittle.setText("New entry for " + newProductEntry.getName());
+
+        nameField.setText(newProductEntry.getName());
+        nameField.setDisable(true);
+
+        refField.setText(newProductEntry.getRef());
+        refField.setDisable(true);
+
+        categoryComboBox.setValue(capitalize(newProductEntry.getCategory()));
+        categoryComboBox.setDisable(true);
+
+        subcategoryComboBox.setValue(capitalize(newProductEntry.getSubcategory()));
+        subcategoryComboBox.setDisable(true);
+
+        createButton.setText("New entry");
     }
 
     public void editProduct(Products product) {
         this.isEditMode = true;
         this.productToEdit = product;
 
-        // Pre-cargar los campos con los valores del producto
         refField.setText(product.getRef());
         refField.setDisable(true);
+
         nameField.setText(product.getName());
         stockField.setText(String.valueOf(product.getStock()));
         costField.setText(String.valueOf(product.getCost()));
         priceField.setText(String.valueOf(product.getPrice()));
         billField.setText(product.getBill());
+
         categoryComboBox.setValue(capitalize(product.getCategory()));
         subcategoryComboBox.setValue(capitalize(product.getSubCategory()));
 
-        // Cambiar el texto del botón
         createButton.setText("Update Product");
     }
 
     @FXML
     private void handleCreate(ActionEvent event) {
+        try {
+            // Collect and validate form data
+            ProductFormData formData = collectFormData();
 
+            if (isEditMode) {
+                updateExistingProduct(formData);
+            } else {
+                createNewProduct(formData);
+            }
+
+            // Disable all fields after success
+            disableAllFields();
+            showSuccess(lblError, formData.name + " product successfully added!");
+
+            boolean continueCreate = askConfirmation("Create another product?");
+            closeAfterDelay(newProductStage);
+
+        } catch (IllegalArgumentException e) {
+            showError(lblError, e.getMessage());
+        }
+    }
+
+    private ProductFormData collectFormData() {
         String name = nameField.getText();
         String ref = refField.getText();
         String costText = costField.getText();
         String priceText = priceField.getText();
         String stockText = stockField.getText();
         String bill = billField.getText();
+
         String category = categoryComboBox.getSelectionModel().getSelectedItem();
         String subCategory = subcategoryComboBox.getSelectionModel().getSelectedItem();
 
+        validateInputs(name, ref, costText, priceText, stockText, bill, category, subCategory);
+
+        // Process category and subcategory
         if (category != null) {
             category = category.replace(" ", "_").toUpperCase();
         }
@@ -112,84 +161,84 @@ public class NewProductController {
             subCategory = subCategory.replace(" ", "_").toUpperCase();
         }
 
-        // Validate that fields are not empty
+        double cost = Double.parseDouble(costText);
+        double price = Double.parseDouble(priceText);
+        int stock = Integer.parseInt(stockText);
+
+        return new ProductFormData(name, ref, cost, price, stock, bill, category, subCategory);
+    }
+
+    private void validateInputs(String name, String ref, String costText, String priceText,
+                                String stockText, String bill, String category, String subCategory) {
+        // Check for empty fields
         if (costText.isEmpty() || priceText.isEmpty() || stockText.isEmpty()) {
-            showError(lblError, "Cost, price, and stock fields cannot be empty.");
-            return;
+            throw new IllegalArgumentException("Cost, price, and stock fields cannot be empty.");
         }
 
-        double cost, price;
-        int stock;
-
+        // Validate numeric fields
         try {
-            cost = Double.parseDouble(costText);
-            price = Double.parseDouble(priceText);
-            stock = Integer.parseInt(stockText);
+            double cost = Double.parseDouble(costText);
+            double price = Double.parseDouble(priceText);
+            int stock = Integer.parseInt(stockText);
 
             if (cost <= 0) {
-                showError(lblError, "Cost must be greater than 0.");
-                return;
+                throw new IllegalArgumentException("Cost must be greater than 0.");
             }
             if (price <= 0) {
-                showError(lblError, "Price must be greater than 0.");
-                return;
+                throw new IllegalArgumentException("Price must be greater than 0.");
             }
             if (stock <= 0) {
-                showError(lblError, "Stock cannot be negative or zero.");
-                return;
+                throw new IllegalArgumentException("Stock cannot be negative or zero.");
             }
-
         } catch (NumberFormatException e) {
-            showError(lblError, "Please enter valid numeric values for cost, price, and stock.");
-            return;
+            throw new IllegalArgumentException("Please enter valid numeric values for cost, price, and stock.");
         }
 
+        // Validate other fields
         if (name.isEmpty() || ref.isEmpty() || bill.isEmpty() || category == null || subCategory == null) {
-            showError(lblError, "Please fill all the fields.");
-            return;
-        } else {
-            try {
-                isValidProductsInputs(name);
-                isValidProductsInputs(ref);
-                isValidProductsInputs(bill);
-
-            } catch (Exception e) {
-                showError(lblError, "Only use alphanumeric characters or _ for name, reference and bill" + e.getMessage() + ".");
-                return;
-            }
-
-
-            if (isEditMode) {
-                // Actualizar producto existente
-                productToEdit.setName(name, adminLogin);
-                productToEdit.setStock(stock, adminLogin);
-                productToEdit.setCost(cost, adminLogin);
-                productToEdit.setPrice(price, adminLogin);
-                productToEdit.setBill(bill, adminLogin);
-                productToEdit.setSubCategory(category, subCategory, adminLogin);
-
-                try {
-                    updateProductEntry(productToEdit);
-
-                } catch (Exception e) {
-                    showError(lblError, "Error updating product: " + e.getMessage());
-                }
-
-            } else {
-                try {
-                    if (adminLogin.isAdmin()) {
-                        Products newProduct = new Products(name, ref, cost, price, stock, bill, category, subCategory);
-                        addProduct(newProduct);
-                    }
-                } catch (Exception e) {
-                    showError(lblError, e.getMessage());
-                    return;
-                }
-            }
-
+            throw new IllegalArgumentException("Please fill all the fields.");
         }
 
-        // Disable all fields
+        // Validate product inputs format
+        try {
+            isValidProductsInputs(name);
+            isValidProductsInputs(ref);
+            isValidProductsInputs(bill);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Only use alphanumeric characters or _ for name, reference and bill.");
+        }
+    }
+
+    private void updateExistingProduct(ProductFormData formData) {
+        try {
+            productToEdit.setName(formData.name, adminLogin);
+            productToEdit.setStock(formData.stock, adminLogin);
+            productToEdit.setCost(formData.cost, adminLogin);
+            productToEdit.setPrice(formData.price, adminLogin);
+            productToEdit.setBill(formData.bill, adminLogin);
+            productToEdit.setSubCategory(formData.category, formData.subCategory, adminLogin);
+
+            updateProductEntry(productToEdit);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Error updating product: " + e.getMessage());
+        }
+    }
+
+    private void createNewProduct(ProductFormData formData) {
+        try {
+            if (adminLogin.isAdmin()) {
+                Products newProduct = new Products(
+                        formData.name, formData.ref, formData.cost, formData.price,
+                        formData.stock, formData.bill, formData.category, formData.subCategory
+                );
+                addProduct(newProduct);
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException(e.getMessage());
+        }
+    }
+
+    private void disableAllFields() {
         nameField.setDisable(true);
         refField.setDisable(true);
         costField.setDisable(true);
@@ -199,10 +248,29 @@ public class NewProductController {
         categoryComboBox.setDisable(true);
         subcategoryComboBox.setDisable(true);
         createButton.setDisable(true);
+    }
 
-        showSuccess(lblError, name + " product successfully added!");
-        boolean continueCreate = askConfirmation("Create another product?");
-        closeAfterDelay(newProductStage);
+    // Helper class to store form data
+    private static class ProductFormData {
+        final String name;
+        final String ref;
+        final double cost;
+        final double price;
+        final int stock;
+        final String bill;
+        final String category;
+        final String subCategory;
 
+        ProductFormData(String name, String ref, double cost, double price, int stock,
+                        String bill, String category, String subCategory) {
+            this.name = name;
+            this.ref = ref;
+            this.cost = cost;
+            this.price = price;
+            this.stock = stock;
+            this.bill = bill;
+            this.category = category;
+            this.subCategory = subCategory;
+        }
     }
 }

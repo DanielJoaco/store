@@ -29,18 +29,6 @@ public class Products {
             this.subCategory = new SubCategory(category, subcategory);
     }
 
-    public Products(String name, String ref, double cost, double price, int stock, String bill, LocalDate date, String category, String subcategory){
-        this.id = UUID.randomUUID().toString();
-        this.name = name;
-        this.ref = ref;
-        this.cost = cost;
-        this.price = price;
-        this.stock = stock;
-        this.bill = bill;
-        this.date = date;
-        this.subCategory = new SubCategory(category, subcategory);
-    }
-
     public Products(String id, String name, String ref, double cost, double price, int stock, String bill, LocalDate date, String category, String subcategory){
         this.id = id;
         this.name = name;
@@ -109,7 +97,7 @@ public class Products {
         }
      }
 
-     public void addRating(int rating, String comment, Customer customer, String date){
+     public void addRating(int rating, String comment, Customer customer){
         if (customer.isCustomer()){
             this.rating = new Rating(rating, comment, customer.getName());
         }
