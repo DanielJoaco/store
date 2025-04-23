@@ -33,24 +33,47 @@ public class NewProductController {
     private Button createButton;
 
     @FXML
-    private Label lblTittle, lblError;
+    private Label lblTittle, lblDescription, lblError;
 
     private Stage newProductStage;
-    private boolean isEditMode = false;
+    private boolean isEditEntry;
+    private boolean isNewEntry;
     private Products productToEdit;
     private Admin adminLogin;
 
+    /**
+     * Initializes the controller with the given stage and admin login.
+     *
+     * @param stage the stage to be used for the new product entry
+     * @param adminLogin the admin login information
+     */
     public void initialize(Stage stage, Admin adminLogin) {
         this.newProductStage = stage;
         this.adminLogin = adminLogin;
+        this.isNewEntry = false;
+        this.isEditEntry = false;
         initializeCategoryComboBox(this.categoryComboBox, this.subcategoryComboBox, this.lblError);
     }
 
+    /**
+     * Initializes the controller with the given stage, admin login, and product reference for a new entry.
+     *
+     * @param stage the stage to be used for the new product entry
+     * @param adminLogin the admin login information
+     * @param newProductEntry the product reference for the new entry
+     */
     public void initialize(Stage stage, Admin adminLogin, ProductReference newProductEntry) {
         initialize(stage, adminLogin);
         parametersNewEntry(newProductEntry);
     }
 
+    /**
+     * Initializes the category combo box and sets up the action listener for it.
+     *
+     * @param categoryComboBox the category combo box to be initialized
+     * @param subcategoryComboBox the subcategory combo box to be updated based on the selected category
+     * @param lblError the label to display error messages
+     */
     public static void initializeCategoryComboBox(ComboBox<String> categoryComboBox, ComboBox<String> subcategoryComboBox, Label lblError) {
         categoryComboBox.getItems().addAll(Arrays.stream(Category.Categories.values())
                 .map(category -> Utils.capitalize(category.toString()))
@@ -59,6 +82,13 @@ public class NewProductController {
         categoryComboBox.setOnAction(event -> updateSubcategories(categoryComboBox, subcategoryComboBox, lblError));
     }
 
+    /**
+     * Updates the subcategory combo box based on the selected category.
+     *
+     * @param categoryComboBox the category combo box
+     * @param subcategoryComboBox the subcategory combo box to be updated
+     * @param lblError the label to display error messages
+     */
     private static void updateSubcategories(ComboBox<String> categoryComboBox, ComboBox<String> subcategoryComboBox, Label lblError) {
         try {
             String selectedItem = categoryComboBox.getSelectionModel().getSelectedItem();
@@ -79,7 +109,14 @@ public class NewProductController {
         }
     }
 
+    /**
+     * Sets the parameters for a new product entry.
+     *
+     * @param newProductEntry the product reference for the new entry
+     */
     private void parametersNewEntry(ProductReference newProductEntry) {
+        this.isNewEntry = true;
+
         lblTittle.setText("New entry for " + newProductEntry.getName());
 
         nameField.setText(newProductEntry.getName());
@@ -97,13 +134,19 @@ public class NewProductController {
         subcategoryComboBox.setValue(capitalize(newProductEntry.getSubcategory()));
         subcategoryComboBox.setDisable(true);
 
+        lblDescription.setVisible(false);
         descriptionField.setVisible(false);
 
         createButton.setText("New entry");
     }
 
-    public void editProduct(Products product) {
-        this.isEditMode = true;
+    /**
+     * Sets the parameters for editing an existing product entry.
+     *
+     * @param product the product entry to be edited
+     */
+    public void editProductEntry(Products product) {
+        this.isEditEntry = true;
         this.productToEdit = product;
 
         refField.setText(product.getRef());
@@ -123,30 +166,88 @@ public class NewProductController {
         createButton.setText("Update Product");
     }
 
+    /**
+     * Handles the action of creating or updating a product entry.
+     *
+     * @param event the action event triggered by the button click
+     */
     @FXML
     private void handleCreate(ActionEvent event) {
         try {
-            // Collect and validate form data
             ProductFormData formData = collectFormData();
 
-            if (isEditMode) {
+            if (isEditEntry) {
                 updateExistingProduct(formData);
-            } else {
+                disableAllFields();
+                showSuccess(lblError, formData.name + " product successfully updated!");
+                closeAfterDelay(newProductStage);
+            } else if (isNewEntry) {
                 createNewProduct(formData);
+                disableAllFields();
+                showSuccess(lblError, formData.name + " product successfully added!");
+                closeAfterDelay(newProductStage);
+            } else {
+                // Creating a brand new product
+                createNewProduct(formData);
+                showSuccess(lblError, formData.name + " product successfully added!");
+
+                // Ask if user wants to create another product
+                boolean continueCreate = askConfirmation("Create another product?");
+
+                if (continueCreate) {
+                    // Reset fields for a new product entry
+                    resetFields();
+                } else {
+                    // User doesn't want to continue, disable fields and close
+                    disableAllFields();
+                    closeAfterDelay(newProductStage);
+                }
             }
-
-            // Disable all fields after success
-            disableAllFields();
-            showSuccess(lblError, formData.name + " product successfully added!");
-
-            boolean continueCreate = askConfirmation("Create another product?");
-            closeAfterDelay(newProductStage);
 
         } catch (IllegalArgumentException e) {
             showError(lblError, e.getMessage());
         }
     }
 
+    /**
+     * Resets all input fields to prepare for creating a new product
+     */
+    private void resetFields() {
+        nameField.clear();
+        nameField.setDisable(false);
+
+        brandField.clear();
+        brandField.setDisable(false);
+
+        refField.clear();
+        refField.setDisable(false);
+
+        costField.clear();
+        priceField.clear();
+        stockField.clear();
+        billField.clear();
+        descriptionField.clear();
+
+        // Reset category and subcategory fields
+        categoryComboBox.setValue(null);
+        categoryComboBox.setDisable(false);
+
+        subcategoryComboBox.getItems().clear();
+        subcategoryComboBox.setValue(null);
+        subcategoryComboBox.setDisable(false);
+
+        // Enable create button (just in case)
+        createButton.setDisable(false);
+
+        // Clear any success/error message
+        lblError.setText("");
+    }
+
+    /**
+     * Collects the data from the input fields and validates them.
+     *
+     * @return a ProductFormData object containing the collected data
+     */
     private ProductFormData collectFormData() {
         String name = nameField.getText();
         String brand = brandField.getText();
@@ -177,14 +278,26 @@ public class NewProductController {
         return new ProductFormData(name, brand, ref, cost, price, stock, bill, category, subCategory, description);
     }
 
+    /**
+     * Validates the input fields for creating or updating a product.
+     *
+     * @param name the name of the product
+     * @param brand the brand of the product
+     * @param ref the reference of the product
+     * @param costText the cost of the product as a string
+     * @param priceText the price of the product as a string
+     * @param stockText the stock of the product as a string
+     * @param bill the bill of the product
+     * @param category the category of the product
+     * @param subCategory the subcategory of the product
+     * @param description the description of the product
+     */
     private void validateInputs(String name, String brand, String ref, String costText, String priceText,
                                 String stockText, String bill, String category, String subCategory, String description) {
-        // Check for empty fields
         if (costText.isEmpty() || priceText.isEmpty() || stockText.isEmpty()) {
             throw new IllegalArgumentException("Cost, price, and stock fields cannot be empty.");
         }
 
-        // Validate numeric fields
         try {
             double cost = Double.parseDouble(costText);
             double price = Double.parseDouble(priceText);
@@ -203,23 +316,30 @@ public class NewProductController {
             throw new IllegalArgumentException("Please enter valid numeric values for cost, price, and stock.");
         }
 
-        // Validate other fields
         if (name.isEmpty() || ref.isEmpty() || bill.isEmpty() || category == null || subCategory == null) {
             throw new IllegalArgumentException("Please fill all the fields.");
         }
 
-        // Validate product inputs format
         try {
             isValidProductsInputs(name);
             isValidProductsInputs(brand);
             isValidProductsInputs(ref);
             isValidProductsInputs(bill);
             isValidProductsInputs(description);
+            int maxLengthDescription = 550;
+            if(description.length() > maxLengthDescription) {
+                throw new IllegalArgumentException(String.format("Description cannot exceed %d characters.", maxLengthDescription));
+            }
         } catch (Exception e) {
-            throw new IllegalArgumentException("Only use alphanumeric characters or _ for name, reference and bill.");
+            throw new IllegalArgumentException("Only use alphanumeric characters or _ for name, brand, reference, description and bill.");
         }
     }
 
+    /**
+     * Updates an existing product entry with the new data.
+     *
+     * @param formData the new product data
+     */
     private void updateExistingProduct(ProductFormData formData) {
         try {
             productToEdit.setName(formData.name, adminLogin);
@@ -237,6 +357,11 @@ public class NewProductController {
         }
     }
 
+    /**
+     * Creates a new product entry with the given data.
+     *
+     * @param formData the new product data
+     */
     private void createNewProduct(ProductFormData formData) {
         try {
             if (adminLogin.isAdmin()) {
@@ -251,6 +376,9 @@ public class NewProductController {
         }
     }
 
+    /**
+     * Disable all fields.
+     */
     private void disableAllFields() {
         nameField.setDisable(true);
         refField.setDisable(true);
@@ -263,6 +391,10 @@ public class NewProductController {
         createButton.setDisable(true);
     }
 
-        private record ProductFormData(String name, String brand, String ref, double cost, double price, int stock,
+
+    /**
+     *Record that stores the data entered by the user.
+     */
+    private record ProductFormData(String name, String brand, String ref, double cost, double price, int stock,
                                        String bill, String category, String subCategory, String description) {}
 }

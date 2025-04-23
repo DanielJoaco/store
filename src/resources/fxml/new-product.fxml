@@ -50,11 +50,11 @@
         <Label text="Subcategory:" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="10" />
         <ComboBox fx:id="subcategoryComboBox" prefWidth="250" promptText="Select a subcategory" GridPane.columnIndex="1" GridPane.rowIndex="10" />
 
-        <Label text="Description:" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="11" />
+        <Label  fx:id="lblDescription" text="Description:" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="11" />
         <TextArea fx:id="descriptionField" prefHeight="60.0" prefWidth="250.0" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="11" />
 
         <Button fx:id="createButton" onAction="#handleCreate" text="Create" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="12" />
 
-        <Label fx:id="lblError" styleClass="error-label" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="11" />
+        <Label fx:id="lblError" styleClass="error-label" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="13" />
     </GridPane>
 </VBox>

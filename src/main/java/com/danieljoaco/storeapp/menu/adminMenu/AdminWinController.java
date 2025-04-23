@@ -298,7 +298,7 @@ public class AdminWinController implements Initializable {
             openFormWithController("/fxml/new-product.fxml", SearchType.PRODUCT.getTittle(),
                     (NewProductController controller, Stage stage) -> {
                         controller.initialize(stage, this.adminLogin);
-                        controller.editProduct(product);
+                        controller.editProductEntry(product);
                     });
         } catch (IOException e) {
             alert(e);
