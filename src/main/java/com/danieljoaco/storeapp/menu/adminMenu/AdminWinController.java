@@ -27,6 +27,7 @@ import javafx.scene.control.TableCell;
 import javafx.stage.Stage;
 
 import static com.danieljoaco.storeapp.db.ProductsDao.*;
+import static com.danieljoaco.storeapp.users.UserDao.*;
 import static com.danieljoaco.storeapp.menu.signUp.SignUpMenuController.newUser;
 import static com.danieljoaco.storeapp.menu.utils.Utils.*;
 
@@ -45,11 +46,12 @@ public class AdminWinController implements Initializable {
     private TableView<Products> tableProducts;
 
     // Tablas adicionales
-    private TableView<Object> tableUsers;
+    private TableView<Users> tableUsers;
     private TableView<Object> tableOrders;
 
     // Lista observable para los productos
     private final ObservableList<Products> productsList = FXCollections.observableArrayList();
+    private final ObservableList<Users> usersList = FXCollections.observableArrayList();
     private Admin adminLogin;
 
     @Override
@@ -106,20 +108,21 @@ public class AdminWinController implements Initializable {
         tableProducts = new TableView<>();
         tableProducts.setPrefSize(840, 605);
 
-        TableColumn<Products, String> colProductRef = createColumn("Ref", "ref", 60);
-        TableColumn<Products, String> colProductName = createColumn("Name", "name", 150);
-        TableColumn<Products, Integer> colProductStock = createColumn("Stock", "stock", 45);
-        TableColumn<Products, Double> colProductCost = createColumn("Cost", "cost", 60);
-        TableColumn<Products, Double> colProductPrice = createColumn("Price", "price", 60);
-        TableColumn<Products, String> colProductBill = createColumn("Bill", "bill", 90);
+        TableColumn<Products, String> colProductRef = createColumnProd("Ref", "ref", 50);
+        TableColumn<Products, String> colProductName = createColumnProd("Name", "name", 120);
+        TableColumn<Products, String> colProductBrand = createColumnProd("Brand", "brand", 60);
+        TableColumn<Products, Integer> colProductStock = createColumnProd("Stock", "stock", 45);
+        TableColumn<Products, Double> colProductCost = createColumnProd("Cost", "cost", 50);
+        TableColumn<Products, Double> colProductPrice = createColumnProd("Price", "price", 50);
+        TableColumn<Products, String> colProductBill = createColumnProd("Bill", "bill", 80);
 
-        TableColumn<Products, String> colProductCategory = createColumn("Cat.", "category", 70);
-        configureCapitalizeColumn(colProductCategory);
+        TableColumn<Products, String> colProductCategory = createColumnProd("Cat.", "category", 70);
+        configureCapitalizeProdColumn(colProductCategory);
 
-        TableColumn<Products, String> colProductSubcategory = createColumn("Subcat.", "subCategory", 100);
-        configureCapitalizeColumn(colProductSubcategory);
+        TableColumn<Products, String> colProductSubcategory = createColumnProd("Subcat.", "subCategory", 100);
+        configureCapitalizeProdColumn(colProductSubcategory);
 
-        TableColumn<Products, String> colProductDate = createColumn("Date", "formattedDate", 60);
+        TableColumn<Products, String> colProductDate = createColumnProd("Date", "formattedDate", 60);
 
         // Columnas de acción
         TableColumn<Products, String> colProductEdit = createActionColumn("Edit", 40);
@@ -129,7 +132,7 @@ public class AdminWinController implements Initializable {
         setupDeleteColumn(colProductDelete);
 
         tableProducts.getColumns().addAll(
-                colProductRef, colProductName, colProductStock, colProductCost,
+                colProductRef, colProductName, colProductBrand, colProductStock, colProductCost,
                 colProductPrice, colProductBill, colProductCategory, colProductSubcategory,
                 colProductDate, colProductEdit, colProductDelete
         );
@@ -140,7 +143,7 @@ public class AdminWinController implements Initializable {
         addTableToContainer(tableProducts);
     }
 
-    private void configureCapitalizeColumn(TableColumn<Products, String> column) {
+    private void configureCapitalizeProdColumn(TableColumn<Products, String> column) {
         column.setCellFactory(col -> new TableCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -154,8 +157,32 @@ public class AdminWinController implements Initializable {
         });
     }
 
-    private <T> TableColumn<Products, T> createColumn(String title, String propertyName, double width) {
+    private void configureCapitalizeUsersColumn(TableColumn<Users, String> column) {
+        column.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(capitalize(item));
+                }
+            }
+        });
+    }
+
+
+
+
+    private <T> TableColumn<Products, T> createColumnProd(String title, String propertyName, double width) {
         TableColumn<Products, T> column = new TableColumn<>(title);
+        column.setCellValueFactory(new PropertyValueFactory<>(propertyName));
+        column.setPrefWidth(width);
+        return column;
+    }
+
+    private <T> TableColumn<Users, T> createColumnUsers(String title, String propertyName, double width) {
+        TableColumn<Users, T> column = new TableColumn<>(title);
         column.setCellValueFactory(new PropertyValueFactory<>(propertyName));
         column.setPrefWidth(width);
         return column;
@@ -219,15 +246,19 @@ public class AdminWinController implements Initializable {
         tableUsers = new TableView<>();
         tableUsers.setPrefSize(840, 605);
 
-        // Añadir columnas básicas
-        tableUsers.getColumns().addAll(
-                new TableColumn<>("ID"),
-                new TableColumn<>("Name"),
-                new TableColumn<>("Email")
-        );
+        TableColumn<Users, String> colUserId = createColumnUsers("Id", "id", 80);
+        TableColumn<Users, String> colUserName = createColumnUsers("Name", "name", 160);
+        TableColumn<Users, String> colUserEmail = createColumnUsers("Email", "email", 200);
+        TableColumn<Users, String> colUserType = createColumnUsers("User type", "typeUser", 100);
+        configureCapitalizeUsersColumn(colUserType);
+        TableColumn<Users, String> colUserCreateAt = createColumnUsers("Create at", "formattedDate", 80);
 
+        // Añadir columnas básicas
+        tableUsers.getColumns().addAll(colUserId, colUserName, colUserEmail, colUserType, colUserCreateAt);
+
+        tableUsers.setItems(usersList);
+        tableProducts.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         addTableToContainer(tableUsers);
-        tableUsers.setVisible(false);
     }
 
     private void createOrdersTable() {
@@ -261,6 +292,7 @@ public class AdminWinController implements Initializable {
 
     private void showUsersTable() {
         setTableVisibility(false, true, false);
+        loadUsers();
         setButtonStyles("", "#2196F3", "");
     }
 
@@ -290,9 +322,21 @@ public class AdminWinController implements Initializable {
         productsList.addAll(products);
 
         if (productsList.isEmpty()) {
-            System.out.println("No hay productos para mostrar.");
+            System.out.println("There are no products to show.");
         } else {
-            System.out.println("Se cargaron " + productsList.size() + " productos.");
+            System.out.println("They loaded" + productsList.size() + " products.");
+        }
+    }
+
+    private void loadUsers() {
+        usersList.clear();
+        List<Users> users = getAllUsers();
+        usersList.addAll(users);
+
+        if (usersList.isEmpty()) {
+            System.out.println("There are no users to show.");
+        } else {
+            System.out.println("They loaded" + usersList.size() + " users.");
         }
     }
 
@@ -410,14 +454,14 @@ public class AdminWinController implements Initializable {
     private void deleteProduct(Products product) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirm elimination");
-        alert.setHeaderText("Are you sure you want to eliminate this product?");
-        alert.setContentText(product.getName() + " (Ref: " + product.getRef() + ")");
+        alert.setHeaderText("Are you sure you want to eliminate this product entry?");
+        alert.setContentText(product.getName() + " (Date: " + product.getDate() + ")");
 
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                deleteProductToDb(product.getRef());
+                deleteProductEntryToDb(product.getId());
                 productsList.remove(product);
-                System.out.println("Deleted product:" + product.getName());
+                System.out.println("Deleted product entry.");
             }
         });
     }

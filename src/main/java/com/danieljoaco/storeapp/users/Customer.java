@@ -2,6 +2,8 @@ package com.danieljoaco.storeapp.users;
 
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.time.LocalDate;
+
 public class Customer extends Users {
     
     private double balance;
@@ -11,6 +13,10 @@ public class Customer extends Users {
     public Customer(String id, String email, String password, String name) {
         super(id, email, password, UserType.CUSTOMER.name(), name);
         this.balance = 0.0; 
+    }
+    public Customer(String id, String email, String password, String name, LocalDate createdAt) {
+        super(id, email, password, UserType.CUSTOMER.name(), name, createdAt);
+        this.balance = 0.0;
     }
 
     public static Customer loginCustomer(String emailAccess, String passwordAccess){

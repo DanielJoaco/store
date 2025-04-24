@@ -453,6 +453,31 @@ public class ProductsDao {
         }
     }
 
+
+    public static void deleteProductEntryToDb(String id) {
+        String sql = "DELETE FROM products WHERE id = ?";
+
+        try (Connection conn = DatabaseManager.connectProducts();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            conn.setAutoCommit(false);
+
+            try {
+                pstmt.setString(1, id);
+                pstmt.executeUpdate();
+                conn.commit();
+                System.out.println("Successfully eliminated product entry.");
+            } catch (SQLException e) {
+                conn.rollback();
+                System.out.println("Error eliminating the product:" + e.getMessage());
+                throw e;
+            }
+        } catch (SQLException e) {
+            System.out.println("Error in the database operation:" + e.getMessage());
+        }
+    }
+
+
     /**
      * Deletes a product from the database based on its reference.
      * Warning: This method deletes all entries related to the product in the database.

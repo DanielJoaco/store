@@ -2,10 +2,15 @@ package com.danieljoaco.storeapp.users;
 
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.time.LocalDate;
+
 public class SupportAgent extends Users{
     
     private SupportAgent(String id, String email, String password, String name){
         super(id, email, password, UserType.SUPPORT_AGENT.name(), name);
+    }
+    private SupportAgent(String id, String email, String password, String name, LocalDate createdAt){
+        super(id, email, password, UserType.SUPPORT_AGENT.name(), name, createdAt);
     }
     
     public static SupportAgent createdSupportAgent(String id, String email, String password, String name, Admin creator){
@@ -28,7 +33,7 @@ public class SupportAgent extends Users{
     }
 
     /** Fábrica para cargar un SupportAgent desde la BD. */
-    static SupportAgent createAgentFromDb(String id, String email, String passwordHash, String name) {
-        return new SupportAgent(id, email, passwordHash, name);
+    static SupportAgent createAgentFromDb(String id, String email, String passwordHash, String name, LocalDate createdAt) {
+        return new SupportAgent(id, email, passwordHash, name, createdAt);
     } 
 }

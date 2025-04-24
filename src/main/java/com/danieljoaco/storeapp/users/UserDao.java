@@ -5,6 +5,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.*;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UserDao {
     private static final Logger logger = LoggerFactory.getLogger(UserDao.class);
@@ -111,11 +114,12 @@ public class UserDao {
                     String name     = rs.getString("name");
                     String pwdHash  = rs.getString("password");
                     int typeUser = rs.getInt("type_id");
+                    LocalDate createdAt = rs.getDate("created_at").toLocalDate();
 
                     return switch (typeUser) {
-                        case 1  -> Admin.createAdminFromDb(id, email, pwdHash, name);
-                        case 2  -> SupportAgent.createAgentFromDb(id, email, pwdHash, name);
-                        case 3  -> new Customer(id, email, pwdHash, name);
+                        case 1  -> Admin.createAdminFromDb(id, email, pwdHash, name, createdAt);
+                        case 2  -> SupportAgent.createAgentFromDb(id, email, pwdHash, name, createdAt);
+                        case 3  -> new Customer(id, email, pwdHash, name, createdAt);
                         default -> throw new IllegalStateException("Unknown type: " + typeUser);
                     };
                 }
@@ -124,5 +128,37 @@ public class UserDao {
             logger.error("❌ ERROR When looking for a user: {}", e.getMessage());
         }
         return null;
+    }
+
+    public static List<Users> getAllUsers(){
+        List<Users> usersList = new ArrayList<>();
+        try{
+            String sql = "SELECT * FROM users";
+            Connection conn = DatabaseManager.connectUsers();
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            ResultSet rs = pstmt.executeQuery();
+
+
+            while (rs.next()) {
+                String id       = rs.getString("id");
+                String name     = rs.getString("name");
+                String email    = rs.getString("email");
+                String pwdHash  = rs.getString("password");
+                int typeUser    = rs.getInt("type_id");
+                LocalDate createdAt = rs.getDate("created_at").toLocalDate();
+
+                Users user = switch (typeUser) {
+                    case 1  -> Admin.createAdminFromDb(id, email, pwdHash, name, createdAt);
+                    case 2  -> SupportAgent.createAgentFromDb(id, email, pwdHash, name, createdAt);
+                    case 3  -> new Customer(id, email, pwdHash, name, createdAt);
+                    default -> throw new IllegalStateException("Unknown type: " + typeUser);
+                };
+                usersList.add(user);
+            }
+        } catch (SQLException e) {
+            logger.error("❌ ERROR When looking for all users: {}", e.getMessage());
+        }
+
+        return usersList;
     }
 }

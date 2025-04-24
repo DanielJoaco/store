@@ -4,6 +4,7 @@ import static com.danieljoaco.storeapp.utils.UserValidator.*;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public abstract class Users {
     
@@ -13,6 +14,7 @@ public abstract class Users {
     private String passwordHash;
     private final String typeUser;
     private final LocalDate createdAt;
+    private final String formattedDate;
 
    
     public Users(String id, String email, String password, String typeUser, String name) {
@@ -25,19 +27,18 @@ public abstract class Users {
             throw new IllegalArgumentException("Invalid type of user.");
         }
         this.createdAt = LocalDate.now();
+        this.formattedDate = DateTimeFormatter.ofPattern("dd/MM/yy").format(createdAt);
     }
-    public Users(String id, String email, String password, String typeUser, String name, boolean isInstance) {
+    public Users(String id, String email, String password, String typeUser, String name, LocalDate createdAt) {
 
-        if(isInstance){
-            this.id = id;
-            this.email = email;
-            this.passwordHash =  password;
-            this.typeUser = typeUser;
-            this.name = name;
-            this.createdAt = null;
-        } else {
-            throw new IllegalArgumentException("Only use this constructor for instances.");
-        }
+        this.id = id;
+        this.email = email;
+        this.passwordHash =  password;
+        this.typeUser = typeUser;
+        this.name = name;
+        this.createdAt = createdAt;
+        this.formattedDate = DateTimeFormatter.ofPattern("dd/MM/yy").format(createdAt);
+
     }
 
     /**
@@ -101,6 +102,7 @@ public abstract class Users {
     public String getTypeUser() { return this.typeUser; }
     public String getPasswordHash() { return this.passwordHash; }
     public LocalDate getCreatedAt() { return this.createdAt; }
+    public String getFormattedDate() { return this.formattedDate; }
     
     private boolean isPasswordValid(String password) {
         return this.passwordHash != null && this.passwordHash.equals(password);

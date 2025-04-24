@@ -2,6 +2,7 @@ package com.danieljoaco.storeapp.products;
 import com.danieljoaco.storeapp.users.*;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 public class Products {
@@ -15,6 +16,7 @@ public class Products {
     private int stock;
     private String bill;
     private final LocalDate date;
+    private final String formattedDate;
     private SubCategory subCategory;
     private String description;
     private Rating rating;
@@ -29,6 +31,7 @@ public class Products {
         this.stock = stock;
         this.bill = bill;
         this.date = LocalDate.now();
+        this.formattedDate = DateTimeFormatter.ofPattern("dd/MM/yy").format(date);
         this.subCategory = new SubCategory(category, subcategory);
         this.description = description;
     }
@@ -43,6 +46,7 @@ public class Products {
         this.stock = stock;
         this.bill = bill;
         this.date = date;
+        this.formattedDate = DateTimeFormatter.ofPattern("dd/MM/yy").format(date);
         this.subCategory = new SubCategory(category, subcategory);
         this.description = description;
     }
@@ -117,6 +121,7 @@ public class Products {
     public int getStock(){return this.stock;}
     public String getBill(){return this.bill;}
     public LocalDate getDate(){return this.date;}
+    public String getFormattedDate(){return this.formattedDate;}
     public String getSubCategory(){return this.subCategory.getName();}
     public String getCategory(){return this.subCategory.getCategoryName();}
     public String getDescription(){return this.description;}

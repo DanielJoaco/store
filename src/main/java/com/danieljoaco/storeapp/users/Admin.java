@@ -1,6 +1,8 @@
 package com.danieljoaco.storeapp.users;
 
 import java.sql.SQLException;
+import java.time.LocalDate;
+
 import org.mindrot.jbcrypt.BCrypt;
 
 public class Admin extends Users {
@@ -9,8 +11,8 @@ public class Admin extends Users {
     private Admin(String id, String email, String password, String name) {
         super(id, email, password, UserType.ADMIN.name(), name);
     }
-    private Admin(String id, String email, String password, String name, boolean isIstance) {
-        super(id, email, password, UserType.ADMIN.name(), name, isIstance);
+    private Admin(String id, String email, String password, String name, LocalDate createdAt) {
+        super(id, email, password, UserType.ADMIN.name(), name, createdAt);
     }
 
     public static Admin createFirtsAdmin(
@@ -56,9 +58,8 @@ public class Admin extends Users {
             throw new IllegalStateException("Incorrect credentials.");
         }
     }
-    static Admin createAdminFromDb(String id, String email, String passwordHash, String name) {
-        boolean isInstance = true;
-        return new Admin(id, email, passwordHash, name, isInstance);
+    static Admin createAdminFromDb(String id, String email, String passwordHash, String name, LocalDate createdAt) {
+        return new Admin(id, email, passwordHash, name, createdAt);
     }
     
     @Override
