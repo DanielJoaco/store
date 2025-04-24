@@ -27,7 +27,7 @@ public class SignUpMenu {
             // Configurar la escena
             Scene scene = new Scene(root);
             scene.getStylesheets().add(
-                    Objects.requireNonNull(getClass().getResource("/styles/manuMainStyles.css")).toExternalForm()
+                    Objects.requireNonNull(getClass().getResource("/styles/styles.css")).toExternalForm()
             );
             signUpStage.setScene(scene);
 

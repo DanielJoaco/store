@@ -30,7 +30,7 @@ public class LoginIn {
             // Configurar la escena
             Scene scene = new Scene(root);
             scene.getStylesheets().add(
-                    Objects.requireNonNull(getClass().getResource("/styles/manuMainStyles.css")).toExternalForm()
+                    Objects.requireNonNull(getClass().getResource("/styles/styles.css")).toExternalForm()
             );
             loginInMenuStage.setScene(scene);
 
@@ -68,7 +68,7 @@ public class LoginIn {
             // Configurar la escena
             Scene scene = new Scene(root);
             scene.getStylesheets().add(
-                    Objects.requireNonNull(LoginIn.class.getResource("/styles/manuMainStyles.css")).toExternalForm()
+                    Objects.requireNonNull(LoginIn.class.getResource("/styles/styles.css")).toExternalForm()
             );
             loginStage.setScene(scene);
 

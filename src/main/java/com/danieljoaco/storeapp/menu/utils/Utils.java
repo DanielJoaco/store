@@ -85,7 +85,7 @@ public class Utils {
             Stage stage = setupStage("Continue");
             Scene scene = new Scene(root);
             scene.getStylesheets().add(
-                    Objects.requireNonNull(Utils.class.getResource("/styles/manuMainStyles.css")).toExternalForm()
+                    Objects.requireNonNull(Utils.class.getResource("/styles/styles.css")).toExternalForm()
             );
             stage.setScene(scene);
 

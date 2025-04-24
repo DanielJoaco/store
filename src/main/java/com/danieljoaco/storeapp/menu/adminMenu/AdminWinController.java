@@ -28,13 +28,12 @@ import javafx.stage.Stage;
 
 import static com.danieljoaco.storeapp.db.ProductsDao.*;
 import static com.danieljoaco.storeapp.menu.signUp.SignUpMenuController.newUser;
-import static com.danieljoaco.storeapp.menu.utils.Utils.alert;
-import static com.danieljoaco.storeapp.menu.utils.Utils.setupStage;
+import static com.danieljoaco.storeapp.menu.utils.Utils.*;
 
 public class AdminWinController implements Initializable {
 
     @FXML
-    private MenuItem menuNewProduct, menuNewEntry, menuEditProduct, newCustomer, newSupportAgent, newAdmin;
+    private MenuItem menuNewProduct, menuNewEntry, menuEditProduct, menuDeleteProduct, newCustomer, newSupportAgent, newAdmin;
 
     @FXML
     private Button btnProducts, btnUsers, btnOrders;
@@ -68,6 +67,8 @@ public class AdminWinController implements Initializable {
         menuNewProduct.setOnAction(event -> createNewProduct());
         menuNewEntry.setOnAction(event -> newEntry());
         menuEditProduct.setOnAction(event -> editProductByRef());
+        menuDeleteProduct.setOnAction(actionEvent -> deleteProductbyRef());
+
 
         newCustomer.setOnAction(event -> newUser(Users.UserType.CUSTOMER.name(), null));
         newSupportAgent.setOnAction(event -> newUser(Users.UserType.SUPPORT_AGENT.name(), adminLogin));
@@ -93,8 +94,8 @@ public class AdminWinController implements Initializable {
 
     public void createNewProduct() {
         try {
-            openFormWithController("/fxml/new-product.fxml", "New product",
-                    (NewProductController controller, Stage stage) ->
+            openFormWithController("/fxml/product_form.fxml", "New product",
+                    (ProductFormController controller, Stage stage) ->
                             controller.initialize(stage, this.adminLogin));
         } catch (IOException e) {
             alert(e);
@@ -105,15 +106,19 @@ public class AdminWinController implements Initializable {
         tableProducts = new TableView<>();
         tableProducts.setPrefSize(840, 605);
 
-        // Crear y configurar columnas
         TableColumn<Products, String> colProductRef = createColumn("Ref", "ref", 60);
         TableColumn<Products, String> colProductName = createColumn("Name", "name", 150);
         TableColumn<Products, Integer> colProductStock = createColumn("Stock", "stock", 45);
         TableColumn<Products, Double> colProductCost = createColumn("Cost", "cost", 60);
         TableColumn<Products, Double> colProductPrice = createColumn("Price", "price", 60);
         TableColumn<Products, String> colProductBill = createColumn("Bill", "bill", 90);
+
         TableColumn<Products, String> colProductCategory = createColumn("Cat.", "category", 70);
+        configureCapitalizeColumn(colProductCategory);
+
         TableColumn<Products, String> colProductSubcategory = createColumn("Subcat.", "subCategory", 100);
+        configureCapitalizeColumn(colProductSubcategory);
+
         TableColumn<Products, String> colProductDate = createColumn("Date", "formattedDate", 60);
 
         // Columnas de acción
@@ -123,19 +128,30 @@ public class AdminWinController implements Initializable {
         TableColumn<Products, String> colProductDelete = createActionColumn("Delete", 50);
         setupDeleteColumn(colProductDelete);
 
-        // Añadir columnas a la tabla
         tableProducts.getColumns().addAll(
                 colProductRef, colProductName, colProductStock, colProductCost,
                 colProductPrice, colProductBill, colProductCategory, colProductSubcategory,
                 colProductDate, colProductEdit, colProductDelete
         );
 
-        // Configurar datos y políticas de redimensionamiento
         tableProducts.setItems(productsList);
         tableProducts.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
 
-        // Añadir la tabla al contenedor
         addTableToContainer(tableProducts);
+    }
+
+    private void configureCapitalizeColumn(TableColumn<Products, String> column) {
+        column.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(capitalize(item));
+                }
+            }
+        });
     }
 
     private <T> TableColumn<Products, T> createColumn(String title, String propertyName, double width) {
@@ -286,7 +302,20 @@ public class AdminWinController implements Initializable {
             ProductReference selectedProduct = showSearchDialog(searchType.getTittle(), searchType.getSearchText());
 
             if (selectedProduct != null) {
-                openEditForm(selectedProduct);
+                openEditProdDataForm(selectedProduct);
+            }
+        } catch (IOException e) {
+            alert(e);
+        }
+    }
+
+    private void deleteProductbyRef() {
+        try {
+            SearchType searchType = SearchType.PRODUCT;
+            ProductReference selectedProduct = showSearchDialog(searchType.getTittle(), searchType.getSearchText());
+
+            if (selectedProduct != null) {
+                deleteProduct(selectedProduct);
             }
         } catch (IOException e) {
             alert(e);
@@ -295,10 +324,9 @@ public class AdminWinController implements Initializable {
 
     private void editProductEntry(Products product) {
         try {
-            openFormWithController("/fxml/new-product.fxml", SearchType.PRODUCT.getTittle(),
-                    (NewProductController controller, Stage stage) -> {
-                        controller.initialize(stage, this.adminLogin);
-                        controller.editProductEntry(product);
+            openFormWithController("/fxml/product_form.fxml", SearchType.PRODUCT.getTittle(),
+                    (ProductFormController controller, Stage stage) -> {
+                        controller.initializeForEditProduct(stage, this.adminLogin, product);
                     });
         } catch (IOException e) {
             alert(e);
@@ -333,11 +361,11 @@ public class AdminWinController implements Initializable {
         return searchEngine.getSelectedProduct();
     }
 
-    private void openEditForm(ProductReference productToEdit) {
+    private void openEditProdDataForm(ProductReference productToEdit) {
         try {
-            openFormWithController("/fxml/edit-product.fxml", "Edit Product",
-                    (EditProductController controller, Stage stage) ->
-                            controller.initialize(stage, productToEdit, this.adminLogin));
+            openFormWithController("/fxml/product_form.fxml", "Edit Product data",
+                    (ProductFormController controller, Stage stage) ->
+                            controller.initializeForEditProdData(stage, this.adminLogin, productToEdit));
 
             loadProducts();  // Recargar la tabla después de la edición
         } catch (IOException e) {
@@ -347,9 +375,9 @@ public class AdminWinController implements Initializable {
 
     private void openNewEntry(ProductReference productEntry) {
         try {
-            openFormWithController("/fxml/new-product.fxml", "New entry Product",
-                    (NewProductController controller, Stage stage) ->
-                            controller.initialize(stage, this.adminLogin, productEntry));
+            openFormWithController("/fxml/product_form.fxml", "New entry Product",
+                    (ProductFormController controller, Stage stage) ->
+                            controller.initializeForNewEntry(stage, this.adminLogin, productEntry));
 
             loadProducts();  // Recargar la tabla después de la edición
         } catch (IOException e) {
@@ -374,27 +402,44 @@ public class AdminWinController implements Initializable {
     private Scene createStyledScene(Parent root) {
         Scene scene = new Scene(root);
         scene.getStylesheets().add(
-                Objects.requireNonNull(getClass().getResource("/styles/manuMainStyles.css")).toExternalForm()
+                Objects.requireNonNull(getClass().getResource("/styles/styles.css")).toExternalForm()
         );
         return scene;
     }
 
     private void deleteProduct(Products product) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirmar eliminación");
-        alert.setHeaderText("¿Estás seguro que deseas eliminar este producto?");
+        alert.setTitle("Confirm elimination");
+        alert.setHeaderText("Are you sure you want to eliminate this product?");
         alert.setContentText(product.getName() + " (Ref: " + product.getRef() + ")");
 
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
                 deleteProductToDb(product.getRef());
                 productsList.remove(product);
-                System.out.println("Producto eliminado: " + product.getName());
+                System.out.println("Deleted product:" + product.getName());
             }
         });
     }
 
-    // Interfaz funcional para inicializar controladores
+    private void deleteProduct(ProductReference product) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirm elimination");
+        alert.setHeaderText("Are you sure you want to eliminate this product?");
+        alert.setContentText(product.getName() + " (Ref: " + product.getRef() + ")");
+
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                String refToDelete = product.getRef();
+                deleteProductToDb(refToDelete);
+
+                productsList.removeIf(p -> p.getRef().equals(refToDelete));
+
+                System.out.println("Deleted all entries of product with reference: " + refToDelete);
+            }
+        });
+    }
+
     @FunctionalInterface
     private interface ControllerInitializer<T> {
         void initialize(T controller, Stage stage);

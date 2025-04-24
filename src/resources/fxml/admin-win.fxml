@@ -16,7 +16,7 @@
                 <MenuItem fx:id="menuNewEntry" mnemonicParsing="false" text="New product entry"/>
             </Menu>
 
-            <MenuItem fx:id="menuEditProduct" mnemonicParsing="false" text="Edit product"/>
+            <MenuItem fx:id="menuEditProduct" mnemonicParsing="false" text="Edit product data"/>
             <MenuItem fx:id="menuDeleteProduct" mnemonicParsing="false" text="Delete product"/>
         </Menu>
         <Menu mnemonicParsing="false" text="User">

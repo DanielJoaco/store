@@ -8,9 +8,10 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.ColumnConstraints?>
-
 <?import javafx.scene.control.TextArea?>
-<VBox alignment="CENTER" spacing="15" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.danieljoaco.storeapp.menu.adminMenu.NewProductController">
+
+<VBox alignment="CENTER" spacing="15" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.danieljoaco.storeapp.menu.adminMenu.ProductFormController">
     <padding>
         <Insets bottom="20" left="20" right="20" top="20" />
     </padding>
@@ -21,7 +22,7 @@
             <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="250.0" />
         </columnConstraints>
 
-        <Label fx:id="lblTittle" styleClass="title-label" text="New product" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="0" />
+        <Label fx:id="lblTitle" styleClass="title-label" text="Product Form" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="0" />
 
         <Label text="Name:" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="2" />
         <TextField fx:id="nameField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
@@ -32,29 +33,29 @@
         <Label text="Ref:" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="4" />
         <TextField fx:id="refField" GridPane.columnIndex="1" GridPane.rowIndex="4" />
 
-        <Label text="Cost:" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+        <Label fx:id="lblCost" text="Cost:" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="5" />
         <TextField fx:id="costField" GridPane.columnIndex="1" GridPane.rowIndex="5" />
 
-        <Label text="Price:" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+        <Label fx:id="lblPrice" text="Price:" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="6" />
         <TextField fx:id="priceField" GridPane.columnIndex="1" GridPane.rowIndex="6" />
 
-        <Label text="Stock:" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="7" />
+        <Label fx:id="lblStock" text="Stock:" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="7" />
         <TextField fx:id="stockField" GridPane.columnIndex="1" GridPane.rowIndex="7" />
 
-        <Label text="Bill:" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="8" />
+        <Label fx:id="lblBill" text="Bill:" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="8" />
         <TextField fx:id="billField" GridPane.columnIndex="1" GridPane.rowIndex="8" />
 
-        <Label text="Category:" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="9" />
+        <Label fx:id="lblCategory" text="Category:" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="9" />
         <ComboBox fx:id="categoryComboBox" prefWidth="250" promptText="Select a category" GridPane.columnIndex="1" GridPane.rowIndex="9" />
 
-        <Label text="Subcategory:" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="10" />
+        <Label fx:id="lblSubcategory" text="Subcategory:" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="10" />
         <ComboBox fx:id="subcategoryComboBox" prefWidth="250" promptText="Select a subcategory" GridPane.columnIndex="1" GridPane.rowIndex="10" />
 
-        <Label  fx:id="lblDescription" text="Description:" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="11" />
+        <Label fx:id="lblDescription" text="Description:" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="11" />
         <TextArea fx:id="descriptionField" prefHeight="60.0" prefWidth="250.0" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="11" />
 
-        <Button fx:id="createButton" onAction="#handleCreate" text="Create" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="12" />
+        <Button fx:id="submitButton" onAction="#handleSubmit" text="Submit" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="13" />
 
-        <Label fx:id="lblError" styleClass="error-label" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="13" />
+        <Label fx:id="lblError" styleClass="error-label" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="14" />
     </GridPane>
 </VBox>

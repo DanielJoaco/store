@@ -25,7 +25,7 @@ public class SearchEngineController {
 
 
     public enum SearchType {
-        PRODUCT("Search Product", "Ref: "),
+        PRODUCT("Search Product", "Ref, name \nor brand: "),
         USER ("Search User", "Id: "),
         ORDER ("Search Order", "N°: ");
 
@@ -57,43 +57,28 @@ public class SearchEngineController {
                 case "Search Product": {
                     ObservableList<ProductReference> productsList = searchProductReferences(searchText);
                     if (productsList.isEmpty()) {
-                        lblError.setText("No se encontraron productos para: " + searchText);
+                        lblError.setText("No products were found for:" + searchText);
                     } else if (productsList.size() == 1) {
-                        // Si solo hay un producto, seleccionarlo automáticamente
-                        selectedProduct = productsList.get(0);
-                        lblError.setText("Producto encontrado");
+                        selectedProduct = productsList.getFirst();
+                        lblError.setText("Product found");
                         closeAfterDelay(searchEngineStage);
                     } else {
-                        // Si hay múltiples productos, mostrar diálogo de selección
                         showProductSelectionDialog(productsList);
                     }
                     break;
                 }
-                // ... otros casos ...
             }
         });
     }
 
     private void showProductSelectionDialog(ObservableList<ProductReference> products) {
-        // Crear un diálogo simple con lista de productos
-        ListView<ProductReference> listView = new ListView<>(products);
-        listView.setCellFactory(lv -> new ListCell<>() {
-            @Override
-            protected void updateItem(ProductReference product, boolean empty) {
-                super.updateItem(product, empty);
-                if (empty || product == null) {
-                    setText(null);
-                } else {
-                    setText(product.getName() + " (Ref: " + product.getRef() + ")");
-                }
-            }
-        });
+        ListView<ProductReference> listView = getProductReferenceListView(products);
 
         Dialog<ProductReference> dialog = new Dialog<>();
-        dialog.setTitle("Seleccionar Producto");
-        dialog.setHeaderText("Múltiples productos encontrados. Por favor, seleccione uno:");
+        dialog.setTitle("Select product");
+        dialog.setHeaderText("Multiple products found. Please select one:");
 
-        ButtonType seleccionarButtonType = new ButtonType("Seleccionar", ButtonBar.ButtonData.OK_DONE);
+        ButtonType seleccionarButtonType = new ButtonType("Select", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(seleccionarButtonType, ButtonType.CANCEL);
 
         dialog.getDialogPane().setContent(listView);
@@ -107,12 +92,28 @@ public class SearchEngineController {
 
         dialog.showAndWait().ifPresent(product -> {
             selectedProduct = product;
-            lblError.setText("Producto seleccionado");
+            lblError.setText("Selected product");
             closeAfterDelay(searchEngineStage);
         });
     }
 
-public ProductReference getSelectedProduct() {
+    private static ListView<ProductReference> getProductReferenceListView(ObservableList<ProductReference> products) {
+        ListView<ProductReference> listView = new ListView<>(products);
+        listView.setCellFactory(lv -> new ListCell<>() {
+            @Override
+            protected void updateItem(ProductReference product, boolean empty) {
+                super.updateItem(product, empty);
+                if (empty || product == null) {
+                    setText(null);
+                } else {
+                    setText(product.getName() + " (Ref: " + product.getRef() + ")");
+                }
+            }
+        });
+        return listView;
+    }
+
+    public ProductReference getSelectedProduct() {
         return selectedProduct;
     }
 }

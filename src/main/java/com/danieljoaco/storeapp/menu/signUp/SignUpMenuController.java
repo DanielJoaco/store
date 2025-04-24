@@ -122,7 +122,7 @@ public class SignUpMenuController {
             Stage newUserStage = setupStage(title);
             Scene scene = new Scene(root);
             scene.getStylesheets().add(
-                    Objects.requireNonNull(getClass().getResource("/styles/manuMainStyles.css")).toExternalForm()
+                    Objects.requireNonNull(getClass().getResource("/styles/styles.css")).toExternalForm()
             );
             newUserStage.setScene(scene);
             newUserStage.showAndWait();
@@ -146,7 +146,7 @@ public class SignUpMenuController {
             Stage newUserStage = setupStage(title);
             Scene scene = new Scene(root);
             scene.getStylesheets().add(
-                    Objects.requireNonNull(SignUpMenuController.class.getResource("/styles/manuMainStyles.css")).toExternalForm()
+                    Objects.requireNonNull(SignUpMenuController.class.getResource("/styles/styles.css")).toExternalForm()
             );
             newUserStage.setScene(scene);
             newUserStage.showAndWait();

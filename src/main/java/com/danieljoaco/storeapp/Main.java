@@ -23,7 +23,7 @@ public class Main extends Application {
 
             // Configurar la escena
             Scene scene = new Scene(root);
-            String css = Objects.requireNonNull(getClass().getResource("/styles/manuMainStyles.css")).toExternalForm();
+            String css = Objects.requireNonNull(getClass().getResource("/styles/styles.css")).toExternalForm();
             scene.getStylesheets().add(css);
 
             // Configurar y mostrar el escenario
