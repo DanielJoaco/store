@@ -13,7 +13,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox fx:id="newUserRoot" alignment="CENTER" prefHeight="403.0" prefWidth="553.0" spacing="20" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.danieljoaco.storeapp.menu.signUp.NewUserFormController">
+<VBox fx:id="newUserRoot" alignment="CENTER" prefHeight="403.0" prefWidth="553.0" spacing="20" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.danieljoaco.storeapp.menu.signUp.UserFormController">
     <padding>
         <Insets bottom="20" left="20" right="20" top="20" />
     </padding>
@@ -43,7 +43,7 @@
         <TextField fx:id="txtId" GridPane.columnIndex="1" GridPane.rowIndex="3" />
 
         <!-- Password Field with Toggle -->
-        <Label text="Password:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+        <Label  fx:id="lblPassword" text="Password:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
         <HBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="4">
             <PasswordField fx:id="passwordField" prefHeight="25.0" prefWidth="240.0" promptText="Password" HBox.hgrow="ALWAYS" />
             <TextField fx:id="visiblePasswordField" managed="false" promptText="Password" visible="false" HBox.hgrow="ALWAYS" />
@@ -51,7 +51,7 @@
         </HBox>
 
         <!-- Repeat Password Field -->
-        <Label text="Repeat Password:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+        <Label  fx:id="lblRepeatPassword" text="Repeat Password:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
         <HBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="5">
             <PasswordField fx:id="repeatPasswordField" promptText="Repeat Password" HBox.hgrow="ALWAYS" />
             <TextField fx:id="visibleRepeatPasswordField" managed="false" promptText="Repeat Password" visible="false" HBox.hgrow="ALWAYS" />

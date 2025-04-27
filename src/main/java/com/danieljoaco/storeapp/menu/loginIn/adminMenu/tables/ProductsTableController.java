@@ -1,6 +1,6 @@
-package com.danieljoaco.storeapp.menu.adminMenu.tables;
+package com.danieljoaco.storeapp.menu.loginIn.adminMenu.tables;
 
-import com.danieljoaco.storeapp.menu.adminMenu.ProductFormController;
+import com.danieljoaco.storeapp.menu.loginIn.adminMenu.ProductFormController;
 import com.danieljoaco.storeapp.products.Products;
 import com.danieljoaco.storeapp.users.Admin;
 import javafx.geometry.Pos;
@@ -16,6 +16,7 @@ import java.util.Objects;
 import static com.danieljoaco.storeapp.db.ProductsDao.deleteProductEntryToDb;
 import static com.danieljoaco.storeapp.db.ProductsDao.getAllProducts;
 import static com.danieljoaco.storeapp.menu.utils.Utils.alert;
+import static com.danieljoaco.storeapp.menu.utils.Utils.capitalize;
 
 /**
  * Controller for the products table
@@ -169,7 +170,7 @@ public class ProductsTableController extends BaseTableController<Products> {
      */
     private void editProductEntry(Products product) {
         try {
-            openFormWithController("/fxml/product_form.fxml", "Edit Product",
+            openFormWithController("/fxml/product_form.fxml", "Edit Product entry",
                     (ProductFormController controller, Stage stage) -> {
                         controller.initializeForEditProduct(stage, this.adminLogin, product);
                     });

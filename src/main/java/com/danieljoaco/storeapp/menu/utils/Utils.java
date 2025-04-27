@@ -19,6 +19,15 @@ import static com.danieljoaco.storeapp.utils.UserValidator.isValidId;
 public class Utils {
     private static final int DEFAULT_PAUSE_MS = 1500;
 
+    public static void validateBasicUserInput(String name, String email, String id) {
+        if (Stream.of(name, email, id).anyMatch(String::isEmpty)) {
+            throw new IllegalArgumentException("All fields must be completed.");
+        }
+        if (!isValidName(name)) throw new IllegalArgumentException("Invalid name format.");
+        if (!isValidEmail(email)) throw new IllegalArgumentException("Invalid email format.");
+        if (!isValidId(id)) throw new IllegalArgumentException("Invalid ID format.");
+    }
+
     public static void validateUserInput(String name, String email, String id, String password, String repeatPassword) {
         if (Stream.of(name, email, id, password, repeatPassword).anyMatch(String::isEmpty)) {
             throw new IllegalArgumentException("All fields must be completed.");

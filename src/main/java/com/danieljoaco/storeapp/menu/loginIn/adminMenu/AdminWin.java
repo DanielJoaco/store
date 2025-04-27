@@ -1,41 +1,42 @@
-package com.danieljoaco.storeapp.menu.adminMenu;
+package com.danieljoaco.storeapp.menu.loginIn.adminMenu;
 
-import com.danieljoaco.storeapp.Main;
 import com.danieljoaco.storeapp.users.Admin;
+import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-public class AdminWinDev extends Main {
+import java.io.IOException;
+
+public class AdminWin extends Application {
+    private Admin adminLogin;
+
     @Override
     public void start(Stage primaryStage) {
-        try {
-            // Crear un Admin de prueba para desarrollo
-            Admin testAdmin = Admin.loginAdmin(
-                    "admin@admin",
-                    "admin123"
-            );
+        // Este método es requerido por Application, pero no lo usaremos directamente
+    }
 
-            // Cargar el FXML directamente aquí
+    public void start(Stage primaryStage, Admin adminLogin) {
+        this.adminLogin = adminLogin;
+        try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/admin-win.fxml"));
             Parent root = loader.load();
 
-            // Configurar el controller
             AdminWinController controller = loader.getController();
-            controller.loggedInAdmin(testAdmin);
+            controller.loggedInAdmin(adminLogin);
 
-            // Configurar y mostrar la escena
+
             Scene scene = new Scene(root);
-            primaryStage.setTitle("Store Management Admin (DEV)");
+            primaryStage.setTitle("Store Management Admin");
             primaryStage.setScene(scene);
             primaryStage.setMaximized(false);
             primaryStage.centerOnScreen();
             primaryStage.show();
 
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
-            System.err.println("Error starting development window: " + e.getMessage());
+            System.err.println("Error loading FXML: " + e.getMessage());
         }
     }
 

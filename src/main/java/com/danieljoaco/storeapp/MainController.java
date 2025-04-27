@@ -1,6 +1,5 @@
 package com.danieljoaco.storeapp;
 
-import com.danieljoaco.storeapp.menu.adminMenu.AdminWin;
 import com.danieljoaco.storeapp.menu.loginIn.LoginIn;
 import com.danieljoaco.storeapp.menu.signUp.SignUpMenu;
 import javafx.event.ActionEvent;

@@ -1,4 +1,4 @@
-package com.danieljoaco.storeapp.menu.adminMenu.tables;
+package com.danieljoaco.storeapp.menu.loginIn.adminMenu.tables;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -82,17 +82,5 @@ public abstract class BaseTableController<T> {
      */
     public ObservableList<T> getDataList() {
         return dataList;
-    }
-
-    /**
-     * Helper method to capitalize the first letter of a string
-     * @param str The string to capitalize
-     * @return The capitalized string
-     */
-    protected String capitalize(String str) {
-        if (str == null || str.isEmpty()) {
-            return str;
-        }
-        return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
     }
 }

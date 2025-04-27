@@ -3,7 +3,7 @@ package com.danieljoaco.storeapp.menu.loginIn;
 import static com.danieljoaco.storeapp.menu.utils.Utils.*;
 import static com.danieljoaco.storeapp.utils.UserValidator.*;
 
-import com.danieljoaco.storeapp.menu.adminMenu.*;
+import com.danieljoaco.storeapp.menu.loginIn.adminMenu.AdminWin;
 import com.danieljoaco.storeapp.users.*;
 
 import javafx.event.ActionEvent;

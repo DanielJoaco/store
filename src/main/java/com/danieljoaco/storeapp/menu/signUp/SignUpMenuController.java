@@ -113,10 +113,10 @@ public class SignUpMenuController {
         String title = userTittle(typeUser);
 
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/new-user-form.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/user_form.fxml"));
             Parent root = loader.load();
 
-            NewUserFormController controller = loader.getController();
+            UserFormController controller = loader.getController();
             controller.setup(title, typeUser, this.adminLogin);
 
             Stage newUserStage = setupStage(title);
@@ -137,10 +137,10 @@ public class SignUpMenuController {
         String title = userTittle(typeUser);
 
         try {
-            FXMLLoader loader = new FXMLLoader(SignUpMenuController.class.getResource("/fxml/new-user-form.fxml"));
+            FXMLLoader loader = new FXMLLoader(SignUpMenuController.class.getResource("/fxml/user_form.fxml"));
             Parent root = loader.load();
 
-            NewUserFormController controller = loader.getController();
+            UserFormController controller = loader.getController();
             controller.setup(title, typeUser, adminLogin);
 
             Stage newUserStage = setupStage(title);

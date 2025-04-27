@@ -76,7 +76,8 @@ public class DatabaseManager {
 
             stat.execute("""
             CREATE TABLE IF NOT EXISTS users (
-                id TEXT PRIMARY KEY,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id_user TEXT UNIQUE NOT NULL,
                 email TEXT UNIQUE NOT NULL,
                 password TEXT NOT NULL,
                 type_id INTEGER NOT NULL,

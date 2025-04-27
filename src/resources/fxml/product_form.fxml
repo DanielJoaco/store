@@ -11,7 +11,7 @@
 <?import javafx.scene.control.TextArea?>
 
 <VBox alignment="CENTER" spacing="15" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.danieljoaco.storeapp.menu.adminMenu.ProductFormController">
+      fx:controller="com.danieljoaco.storeapp.menu.loginIn.adminMenu.ProductFormController">
     <padding>
         <Insets bottom="20" left="20" right="20" top="20" />
     </padding>

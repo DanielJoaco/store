@@ -204,6 +204,7 @@ public class ProductsDao {
 
             pstmt.setString(1, searchPattern);
             pstmt.setString(2, searchPattern);
+            pstmt.setString(3, searchPattern);
 
             ResultSet rs = pstmt.executeQuery();
 
@@ -250,7 +251,7 @@ public class ProductsDao {
      * @param target The target string.
      * @return A similarity score between 0 and 100.
      */
-    private static int calculateSimilarityScore(String search, String target) {
+    public static int calculateSimilarityScore(String search, String target) {
         search = search.toLowerCase();
         target = target.toLowerCase();
 

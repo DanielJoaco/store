@@ -1,6 +1,7 @@
-package com.danieljoaco.storeapp.menu.adminMenu;
+package com.danieljoaco.storeapp.menu.loginIn.adminMenu;
 
 import com.danieljoaco.storeapp.products.ProductReference;
+import com.danieljoaco.storeapp.users.UserDao;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -22,6 +23,7 @@ public class SearchEngineController {
 
     private Stage searchEngineStage;
     private ProductReference selectedProduct;
+    private UserDao.BasicUserInfoDb selectedUser;
 
 
     public enum SearchType {
@@ -67,6 +69,18 @@ public class SearchEngineController {
                     }
                     break;
                 }
+                case "Search User":{
+                    ObservableList<UserDao.BasicUserInfoDb> usersList = UserDao.findUser(searchText);
+                    if(usersList.isEmpty()) {
+                        lblError.setText("No User found for:" + searchText);
+                    } else if (usersList.size() == 1) {
+                        selectedUser = usersList.getFirst();
+                        lblError.setText("User found");
+                        closeAfterDelay(searchEngineStage);
+                    }else{
+                        showUserSelectionDialog(usersList);
+                    }
+                }
             }
         });
     }
@@ -97,7 +111,7 @@ public class SearchEngineController {
         });
     }
 
-    private static ListView<ProductReference> getProductReferenceListView(ObservableList<ProductReference> products) {
+    private ListView<ProductReference> getProductReferenceListView(ObservableList<ProductReference> products) {
         ListView<ProductReference> listView = new ListView<>(products);
         listView.setCellFactory(lv -> new ListCell<>() {
             @Override
@@ -107,6 +121,48 @@ public class SearchEngineController {
                     setText(null);
                 } else {
                     setText(product.getName() + " (Ref: " + product.getRef() + ")");
+                }
+            }
+        });
+        return listView;
+    }
+
+    private void showUserSelectionDialog(ObservableList<UserDao.BasicUserInfoDb> users) {
+        ListView<UserDao.BasicUserInfoDb> listView = getUserReferenceListView(users);
+
+        Dialog<UserDao.BasicUserInfoDb> dialog = new Dialog<>();
+        dialog.setTitle("Select user");
+        dialog.setHeaderText("Multiple users found. Please select one:");
+
+        ButtonType seleccionarButtonType = new ButtonType("Select", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(seleccionarButtonType, ButtonType.CANCEL);
+
+        dialog.getDialogPane().setContent(listView);
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == seleccionarButtonType) {
+                return listView.getSelectionModel().getSelectedItem();
+            }
+            return null;
+        });
+
+        dialog.showAndWait().ifPresent(user -> {
+            selectedUser = user;
+            lblError.setText("Selected user");
+            closeAfterDelay(searchEngineStage);
+        });
+    }
+
+    private ListView<UserDao.BasicUserInfoDb> getUserReferenceListView(ObservableList<UserDao.BasicUserInfoDb> users) {
+        ListView<UserDao.BasicUserInfoDb> listView = new ListView<>(users);
+        listView.setCellFactory(lv -> new ListCell<>() {
+            @Override
+            protected void updateItem(UserDao.BasicUserInfoDb user, boolean empty) {
+                super.updateItem(user, empty);
+                if (empty || user == null) {
+                    setText(null);
+                } else {
+                    setText(user.name() + " (Id: " + user.id() + ")");
                 }
             }
         });

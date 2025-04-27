@@ -1,4 +1,4 @@
-package com.danieljoaco.storeapp.menu.adminMenu;
+package com.danieljoaco.storeapp.menu.loginIn.adminMenu;
 
 import com.danieljoaco.storeapp.menu.utils.Utils;
 import com.danieljoaco.storeapp.products.Category;

@@ -93,7 +93,7 @@ public abstract class Users {
      * Enum for user types.
      */
     public enum UserType {
-        ADMIN, CUSTOMER, SUPPORT_AGENT
+        FIRST_ADMIN, ADMIN, CUSTOMER, SUPPORT_AGENT
     }
 
     public String getId() { return this.id; }
