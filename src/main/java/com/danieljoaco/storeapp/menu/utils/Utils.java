@@ -20,7 +20,7 @@ public class Utils {
     private static final int DEFAULT_PAUSE_MS = 1500;
 
     public static void validateBasicUserInput(String name, String email, String id) {
-        if (Stream.of(name, email, id).anyMatch(String::isEmpty)) {
+        if (name.isEmpty() || email.isEmpty() || id.isEmpty()) {
             throw new IllegalArgumentException("All fields must be completed.");
         }
         if (!isValidName(name)) throw new IllegalArgumentException("Invalid name format.");

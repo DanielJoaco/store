@@ -1,7 +1,6 @@
 package com.danieljoaco.storeapp.menu.loginIn.adminMenu.tables;
 
-import com.danieljoaco.storeapp.menu.signUp.UserFormController;
-import com.danieljoaco.storeapp.products.Products;
+import com.danieljoaco.storeapp.menu.forms.UserFormController;
 import com.danieljoaco.storeapp.users.Admin;
 import com.danieljoaco.storeapp.users.Users;
 import javafx.fxml.FXMLLoader;

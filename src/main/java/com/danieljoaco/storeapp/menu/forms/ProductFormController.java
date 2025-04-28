@@ -1,4 +1,4 @@
-package com.danieljoaco.storeapp.menu.loginIn.adminMenu;
+package com.danieljoaco.storeapp.menu.forms;
 
 import com.danieljoaco.storeapp.menu.utils.Utils;
 import com.danieljoaco.storeapp.products.Category;
@@ -18,49 +18,47 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import java.util.Arrays;
 
-public class ProductFormController {
+public class ProductFormController extends FormController {
 
     @FXML
-    private TextField nameField, brandField, refField, costField, priceField, stockField, billField;
+    private TextField txtName, txtBrand, txtRef, txtCost, txtPrice, txtStock, txtBill;
 
     @FXML
-    private TextArea descriptionField;
+    private TextArea txtDescription;
 
     @FXML
     private ComboBox<String> categoryComboBox, subcategoryComboBox;
 
     @FXML
-    private Button submitButton;
+    private Button btnSubmit;
 
     @FXML
     private Label lblTitle, lblCost, lblPrice, lblStock, lblBill, lblCategory, lblSubcategory, lblDescription, lblError;
 
-    private Stage stage;
-    private Admin adminLogin;
+    private Products productToEdit;
+    private ProductReference referenceToEdit;
 
-    // Form operation modes
-    private enum FormMode {
+    private enum ProductFormMode {
         NEW_PRODUCT,         // Creating a completely new product
         NEW_ENTRY,           // Adding a new entry for existing product reference
         EDIT_PRODUCT,        // Editing a full product
-        EDIT_PRODUCT_DATA       // Editing only product reference details
+        EDIT_PRODUCT_DATA    // Editing only product reference details
     }
 
-    private FormMode currentMode;
-    private Products productToEdit;          // For editing a full product
-    private ProductReference referenceToEdit; // For editing just a reference
+    private ProductFormMode productMode;
 
     /**
      * Initializes the controller with the given stage and admin login for new product creation.
      */
+    @Override
     public void initialize(Stage stage, Admin adminLogin) {
-        this.stage = stage;
-        this.adminLogin = adminLogin;
-        this.currentMode = FormMode.NEW_PRODUCT;
+        super.initialize(stage, adminLogin);
+        this.productMode = ProductFormMode.NEW_PRODUCT;
+        this.setErrorLabel(lblError);
         initializeCategoryComboBox();
 
         lblTitle.setText("Create New Product");
-        submitButton.setText("Create Product");
+        btnSubmit.setText("Create Product");
     }
 
     /**
@@ -68,20 +66,20 @@ public class ProductFormController {
      */
     public void initializeForNewEntry(Stage stage, Admin adminLogin, ProductReference productRef) {
         initialize(stage, adminLogin);
-        this.currentMode = FormMode.NEW_ENTRY;
+        this.productMode = ProductFormMode.NEW_ENTRY;
 
         lblTitle.setText("New entry for " + productRef.getName());
-        submitButton.setText("Add Entry");
+        btnSubmit.setText("Add Entry");
 
         // Pre-fill and disable fields from the reference
-        nameField.setText(productRef.getName());
-        nameField.setDisable(true);
+        txtName.setText(productRef.getName());
+        txtName.setDisable(true);
 
-        brandField.setText(productRef.getBrand());
-        brandField.setDisable(true);
+        txtBrand.setText(productRef.getBrand());
+        txtBrand.setDisable(true);
 
-        refField.setText(productRef.getRef());
-        refField.setDisable(true);
+        txtRef.setText(productRef.getRef());
+        txtRef.setDisable(true);
 
         categoryComboBox.setValue(capitalize(productRef.getCategory()));
         categoryComboBox.setDisable(true);
@@ -91,7 +89,7 @@ public class ProductFormController {
 
         // Hide description as it's not needed for new entry
         lblDescription.setVisible(false);
-        descriptionField.setVisible(false);
+        txtDescription.setVisible(false);
     }
 
     /**
@@ -99,22 +97,22 @@ public class ProductFormController {
      */
     public void initializeForEditProduct(Stage stage, Admin adminLogin, Products product) {
         initialize(stage, adminLogin);
-        this.currentMode = FormMode.EDIT_PRODUCT;
+        this.productMode = ProductFormMode.EDIT_PRODUCT;
         this.productToEdit = product;
 
         lblTitle.setText("Edit Product");
-        submitButton.setText("Update Product");
+        btnSubmit.setText("Update Product");
 
         // Fill all fields
-        nameField.setText(product.getName());
-        brandField.setText(product.getBrand());
-        refField.setText(product.getRef());
-        refField.setDisable(true);  // Ref can't be changed
-        stockField.setText(String.valueOf(product.getStock()));
-        costField.setText(String.valueOf(product.getCost()));
-        priceField.setText(String.valueOf(product.getPrice()));
-        billField.setText(product.getBill());
-        descriptionField.setText(product.getDescription());
+        txtName.setText(product.getName());
+        txtBrand.setText(product.getBrand());
+        txtRef.setText(product.getRef());
+        txtRef.setDisable(true);  // Ref can't be changed
+        txtStock.setText(String.valueOf(product.getStock()));
+        txtCost.setText(String.valueOf(product.getCost()));
+        txtPrice.setText(String.valueOf(product.getPrice()));
+        txtBill.setText(product.getBill());
+        txtDescription.setText(product.getDescription());
 
         categoryComboBox.setValue(capitalize(product.getCategory()));
         subcategoryComboBox.setValue(capitalize(product.getSubCategory()));
@@ -125,18 +123,16 @@ public class ProductFormController {
      */
     public void initializeForEditProdData(Stage stage, Admin adminLogin, ProductReference reference) {
         initialize(stage, adminLogin);
-        this.currentMode = FormMode.EDIT_PRODUCT_DATA;
+        this.productMode = ProductFormMode.EDIT_PRODUCT_DATA;
         this.referenceToEdit = reference;
 
         lblTitle.setText("Edit Product Reference");
 
-
         // Fill reference fields
-        nameField.setText(reference.getName());
-        brandField.setText(reference.getBrand());
-        refField.setText(reference.getRef());
-        refField.setDisable(true);  // Ref can't be changed
-
+        txtName.setText(reference.getName());
+        txtBrand.setText(reference.getBrand());
+        txtRef.setText(reference.getRef());
+        txtRef.setDisable(true);  // Ref can't be changed
 
         categoryComboBox.setValue(capitalize(reference.getCategory()));
         GridPane.setRowIndex(lblCategory, 5);
@@ -146,24 +142,24 @@ public class ProductFormController {
         GridPane.setRowIndex(lblSubcategory, 6);
         GridPane.setRowIndex(subcategoryComboBox, 6);
 
-        descriptionField.setText(reference.getDescription());
+        txtDescription.setText(reference.getDescription());
         GridPane.setRowIndex(lblDescription, 7);
-        GridPane.setRowIndex(descriptionField, 7);
+        GridPane.setRowIndex(txtDescription, 7);
 
-        submitButton.setText("Update Reference");
-        GridPane.setRowIndex(submitButton, 8);
+        btnSubmit.setText("Update Reference");
+        GridPane.setRowIndex(btnSubmit, 8);
 
         GridPane.setRowIndex(lblError, 9);
 
         // Hide fields not relevant for references
         lblCost.setVisible(false);
-        costField.setVisible(false);
+        txtCost.setVisible(false);
         lblPrice.setVisible(false);
-        priceField.setVisible(false);
+        txtPrice.setVisible(false);
         lblStock.setVisible(false);
-        stockField.setVisible(false);
+        txtStock.setVisible(false);
         lblBill.setVisible(false);
-        billField.setVisible(false);
+        txtBill.setVisible(false);
     }
 
     /**
@@ -184,7 +180,7 @@ public class ProductFormController {
         try {
             String selectedItem = categoryComboBox.getSelectionModel().getSelectedItem();
             if (selectedItem == null) {
-                showError(lblError, "Please select a category");
+                showFormError("Please select a category");
                 return;
             }
 
@@ -196,7 +192,7 @@ public class ProductFormController {
             subcategoryComboBox.setPromptText("Select a subcategory");
             showSuccess(lblError, "");
         } catch (IllegalArgumentException e) {
-            showError(lblError, "No subcategories found for the selected category.");
+            showFormError("No subcategories found for the selected category.");
         }
     }
 
@@ -206,14 +202,22 @@ public class ProductFormController {
     @FXML
     private void handleSubmit(ActionEvent event) {
         try {
-            switch (currentMode) {
-                case NEW_PRODUCT -> handleNewProduct();
-                case NEW_ENTRY -> handleNewEntry();
-                case EDIT_PRODUCT -> handleEditProduct();
-                case EDIT_PRODUCT_DATA -> handleEditProdData();
-            }
+            handleSubmit();
         } catch (IllegalArgumentException e) {
-            showError(lblError, e.getMessage());
+            showFormError(e.getMessage());
+        }
+    }
+
+    /**
+     * Implementation of abstract method to handle submission.
+     */
+    @Override
+    protected void handleSubmit() {
+        switch (productMode) {
+            case NEW_PRODUCT -> handleNewProduct();
+            case NEW_ENTRY -> handleNewEntry();
+            case EDIT_PRODUCT -> handleEditProduct();
+            case EDIT_PRODUCT_DATA -> handleEditProdData();
         }
     }
 
@@ -225,14 +229,7 @@ public class ProductFormController {
         createNewProduct(formData);
         showSuccess(lblError, formData.name + " product successfully added!");
 
-        boolean continueCreate = askConfirmation("Create another product?");
-
-        if (continueCreate) {
-            resetFields();
-        } else {
-            disableAllFields();
-            closeAfterDelay(stage);
-        }
+        processContinueCreating("product");
     }
 
     /**
@@ -241,9 +238,7 @@ public class ProductFormController {
     private void handleNewEntry() {
         ProductFormData formData = collectFormData(true);
         createNewProduct(formData);
-        disableAllFields();
-        showSuccess(lblError, formData.name + " product successfully added!");
-        closeAfterDelay(stage);
+        showSuccessAndClose(formData.name + " product successfully added!");
     }
 
     /**
@@ -252,9 +247,7 @@ public class ProductFormController {
     private void handleEditProduct() {
         ProductFormData formData = collectFormData(true);
         updateExistingProduct(formData);
-        disableAllFields();
-        showSuccess(lblError, formData.name + " product successfully updated!");
-        closeAfterDelay(stage);
+        showSuccessAndClose(formData.name + " product successfully updated!");
     }
 
     /**
@@ -271,11 +264,24 @@ public class ProductFormController {
             referenceToEdit.setDescription(formData.description, adminLogin);
             updateProductReference(referenceToEdit);
 
-            disableAllFields();
-            showSuccess(lblError, "Product reference updated successfully!");
-            closeAfterDelay(stage);
+            showSuccessAndClose("Product reference updated successfully!");
         } catch (Exception e) {
             throw new IllegalArgumentException(e.getMessage());
+        }
+    }
+
+    /**
+     * Implementation of abstract method to validate form data.
+     */
+    @Override
+    protected boolean validateFormData() {
+        try {
+            boolean validateFullProduct = productMode != ProductFormMode.EDIT_PRODUCT_DATA;
+            collectFormData(validateFullProduct);
+            return true;
+        } catch (IllegalArgumentException e) {
+            showFormError(e.getMessage());
+            return false;
         }
     }
 
@@ -286,10 +292,10 @@ public class ProductFormController {
      * @return a ProductFormData object containing the collected data
      */
     private ProductFormData collectFormData(boolean validateFullProduct) {
-        String name = nameField.getText();
-        String brand = brandField.getText();
-        String ref = refField.getText();
-        String description = descriptionField.getText();
+        String name = txtName.getText();
+        String brand = txtBrand.getText();
+        String ref = txtRef.getText();
+        String description = txtDescription.getText();
 
         String category = categoryComboBox.getSelectionModel().getSelectedItem();
         String subCategory = subcategoryComboBox.getSelectionModel().getSelectedItem();
@@ -301,7 +307,6 @@ public class ProductFormController {
         if (subCategory != null) {
             subCategory = subCategory.replace(" ", "_").toUpperCase();
         }
-
 
         if(name.isEmpty() || brand.isEmpty() || ref.isEmpty() || description.isEmpty()) {
             throw new IllegalArgumentException("Please fill all required fields.");
@@ -316,10 +321,10 @@ public class ProductFormController {
         }
 
         // For full product, validate additional fields
-        String costText = costField.getText();
-        String priceText = priceField.getText();
-        String stockText = stockField.getText();
-        String bill = billField.getText();
+        String costText = txtCost.getText();
+        String priceText = txtPrice.getText();
+        String stockText = txtStock.getText();
+        String bill = txtBill.getText();
 
         validateProductInputs(costText, priceText, stockText, bill);
 
@@ -422,23 +427,24 @@ public class ProductFormController {
     }
 
     /**
-     * Resets all input fields to prepare for creating a new product
+     * Implementation of abstract method to reset all input fields
      */
-    private void resetFields() {
-        nameField.clear();
-        nameField.setDisable(false);
+    @Override
+    protected void resetFields() {
+        txtName.clear();
+        txtName.setDisable(false);
 
-        brandField.clear();
-        brandField.setDisable(false);
+        txtBrand.clear();
+        txtBrand.setDisable(false);
 
-        refField.clear();
-        refField.setDisable(false);
+        txtRef.clear();
+        txtRef.setDisable(false);
 
-        costField.clear();
-        priceField.clear();
-        stockField.clear();
-        billField.clear();
-        descriptionField.clear();
+        txtCost.clear();
+        txtPrice.clear();
+        txtStock.clear();
+        txtBill.clear();
+        txtDescription.clear();
 
         // Reset category and subcategory fields
         categoryComboBox.setValue(null);
@@ -453,23 +459,24 @@ public class ProductFormController {
     }
 
     /**
-     * Disable all fields.
+     * Implementation of abstract method to disable all fields.
      */
-    private void disableAllFields() {
-        nameField.setDisable(true);
-        brandField.setDisable(true);
-        refField.setDisable(true);
+    @Override
+    protected void disableAllFields() {
+        txtName.setDisable(true);
+        txtBrand.setDisable(true);
+        txtRef.setDisable(true);
 
         // Only disable if visible/available
-        if (costField != null && costField.isVisible()) costField.setDisable(true);
-        if (priceField != null && priceField.isVisible()) priceField.setDisable(true);
-        if (stockField != null && stockField.isVisible()) stockField.setDisable(true);
-        if (billField != null && billField.isVisible()) billField.setDisable(true);
+        if (txtCost != null && txtCost.isVisible()) txtCost.setDisable(true);
+        if (txtPrice != null && txtPrice.isVisible()) txtPrice.setDisable(true);
+        if (txtStock != null && txtStock.isVisible()) txtStock.setDisable(true);
+        if (txtBill != null && txtBill.isVisible()) txtBill.setDisable(true);
 
-        descriptionField.setDisable(true);
+        txtDescription.setDisable(true);
         categoryComboBox.setDisable(true);
         subcategoryComboBox.setDisable(true);
-        submitButton.setDisable(true);
+        btnSubmit.setDisable(true);
     }
 
     /**

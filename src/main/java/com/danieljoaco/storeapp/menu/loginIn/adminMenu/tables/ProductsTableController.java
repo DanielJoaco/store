@@ -1,6 +1,6 @@
 package com.danieljoaco.storeapp.menu.loginIn.adminMenu.tables;
 
-import com.danieljoaco.storeapp.menu.loginIn.adminMenu.ProductFormController;
+import com.danieljoaco.storeapp.menu.forms.ProductFormController;
 import com.danieljoaco.storeapp.products.Products;
 import com.danieljoaco.storeapp.users.Admin;
 import javafx.geometry.Pos;

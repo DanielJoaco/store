@@ -172,4 +172,5 @@ public class SearchEngineController {
     public ProductReference getSelectedProduct() {
         return selectedProduct;
     }
+    public UserDao.BasicUserInfoDb getSelectedUser() {return selectedUser;}
 }

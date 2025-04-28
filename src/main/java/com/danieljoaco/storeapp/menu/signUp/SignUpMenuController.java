@@ -4,6 +4,7 @@ import static com.danieljoaco.storeapp.menu.loginIn.LoginIn.*;
 import static com.danieljoaco.storeapp.users.UserDao.*;
 import static com.danieljoaco.storeapp.menu.utils.Utils.*;
 
+import com.danieljoaco.storeapp.menu.forms.UserFormController;
 import com.danieljoaco.storeapp.users.*;
 
 import javafx.event.ActionEvent;
@@ -117,9 +118,8 @@ public class SignUpMenuController {
             Parent root = loader.load();
 
             UserFormController controller = loader.getController();
-            controller.setup(title, typeUser, this.adminLogin);
-
             Stage newUserStage = setupStage(title);
+            controller.setup(newUserStage, title, typeUser, this.adminLogin);
             Scene scene = new Scene(root);
             scene.getStylesheets().add(
                     Objects.requireNonNull(getClass().getResource("/styles/styles.css")).toExternalForm()
@@ -141,9 +141,9 @@ public class SignUpMenuController {
             Parent root = loader.load();
 
             UserFormController controller = loader.getController();
-            controller.setup(title, typeUser, adminLogin);
 
             Stage newUserStage = setupStage(title);
+            controller.setup(newUserStage, title, typeUser, adminLogin);
             Scene scene = new Scene(root);
             scene.getStylesheets().add(
                     Objects.requireNonNull(SignUpMenuController.class.getResource("/styles/styles.css")).toExternalForm()

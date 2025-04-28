@@ -1,11 +1,14 @@
 package com.danieljoaco.storeapp.menu.loginIn.adminMenu;
 
+import com.danieljoaco.storeapp.menu.forms.ProductFormController;
 import com.danieljoaco.storeapp.menu.loginIn.adminMenu.SearchEngineController.SearchType;
 import com.danieljoaco.storeapp.menu.loginIn.adminMenu.tables.OrdersTableController;
 import com.danieljoaco.storeapp.menu.loginIn.adminMenu.tables.ProductsTableController;
 import com.danieljoaco.storeapp.menu.loginIn.adminMenu.tables.UsersTableController;
+import com.danieljoaco.storeapp.menu.forms.UserFormController;
 import com.danieljoaco.storeapp.products.ProductReference;
 import com.danieljoaco.storeapp.users.Admin;
+import com.danieljoaco.storeapp.users.UserDao;
 import com.danieljoaco.storeapp.users.Users;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -28,7 +31,7 @@ import static com.danieljoaco.storeapp.menu.utils.Utils.alert;
 public class AdminWinController implements Initializable {
 
     @FXML
-    private MenuItem menuNewProduct, menuNewEntry, menuEditProduct, menuDeleteProduct, newCustomer, newSupportAgent, newAdmin;
+    private MenuItem menuNewProduct, menuNewEntry, menuEditProduct, menuDeleteProduct, newCustomer, newSupportAgent, newAdmin, menuEditUser, menuDeleteUser;
 
     @FXML
     private Button btnProducts, btnUsers, btnOrders;
@@ -82,11 +85,14 @@ public class AdminWinController implements Initializable {
         menuNewProduct.setOnAction(event -> createNewProduct());
         menuNewEntry.setOnAction(event -> newEntry());
         menuEditProduct.setOnAction(event -> editProductByRef());
-        menuDeleteProduct.setOnAction(actionEvent -> deleteProductbyRef());
+        menuDeleteProduct.setOnAction(actionEvent -> deleteProductByRef());
 
         newCustomer.setOnAction(event -> newUser(Users.UserType.CUSTOMER.name(), null));
         newSupportAgent.setOnAction(event -> newUser(Users.UserType.SUPPORT_AGENT.name(), adminLogin));
         newAdmin.setOnAction(event -> newUser(Users.UserType.ADMIN.name(), adminLogin));
+        menuEditUser.setOnAction(event -> editUser());
+        menuDeleteUser.setOnAction(actionEvent -> deleteUser());
+
     }
 
     private void setupButtons() {
@@ -144,7 +150,7 @@ public class AdminWinController implements Initializable {
     private void editProductByRef() {
         try {
             SearchType searchType = SearchType.PRODUCT;
-            ProductReference selectedProduct = showSearchDialog(searchType.getTittle(), searchType.getSearchText());
+            ProductReference selectedProduct = showSearchDialogProduct(searchType.getTittle(), searchType.getSearchText());
 
             if (selectedProduct != null) {
                 openEditProdDataForm(selectedProduct);
@@ -154,10 +160,23 @@ public class AdminWinController implements Initializable {
         }
     }
 
-    private void deleteProductbyRef() {
+    private void editUser(){
+        try {
+            SearchType searchType = SearchType.USER;
+            UserDao.BasicUserInfoDb selectedUser = showSearchDialogUser(searchType.getTittle(), searchType.getSearchText());
+
+            if (selectedUser != null) {
+                openEditUserForm(selectedUser);
+            }
+        } catch (IOException e) {
+            alert(e);
+        }
+    }
+
+    private void deleteProductByRef() {
         try {
             SearchType searchType = SearchType.PRODUCT;
-            ProductReference selectedProduct = showSearchDialog(searchType.getTittle(), searchType.getSearchText());
+            ProductReference selectedProduct = showSearchDialogProduct(searchType.getTittle(), searchType.getSearchText());
 
             if (selectedProduct != null) {
                 deleteProduct(selectedProduct);
@@ -167,10 +186,23 @@ public class AdminWinController implements Initializable {
         }
     }
 
+    private void deleteUser() {
+        try {
+            SearchType searchType = SearchType.USER;
+            UserDao.BasicUserInfoDb selectedUser = showSearchDialogUser(searchType.getTittle(), searchType.getSearchText());
+
+            if (selectedUser != null) {
+                deleteUserToDb(selectedUser);
+            }
+        } catch (IOException e) {
+            alert(e);
+        }
+    }
+
     private void newEntry() {
         try {
             SearchType searchType = SearchType.PRODUCT;
-            ProductReference selectedProduct = showSearchDialog(searchType.getTittle(), searchType.getSearchText());
+            ProductReference selectedProduct = showSearchDialogProduct(searchType.getTittle(), searchType.getSearchText());
 
             if (selectedProduct != null) {
                 openNewEntry(selectedProduct);
@@ -180,7 +212,7 @@ public class AdminWinController implements Initializable {
         }
     }
 
-    private ProductReference showSearchDialog(String title, String searchText) throws IOException {
+    private ProductReference showSearchDialogProduct(String title, String searchText) throws IOException {
         Stage searchStage = setupStage(title);
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/search-engine.fxml"));
         Parent root = loader.load();
@@ -195,11 +227,52 @@ public class AdminWinController implements Initializable {
         return searchEngine.getSelectedProduct();
     }
 
+    private UserDao.BasicUserInfoDb showSearchDialogUser(String title, String searchText) throws IOException {
+        Stage searchStage = setupStage(title);
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/search-engine.fxml"));
+        Parent root = loader.load();
+
+        SearchEngineController searchEngine = loader.getController();
+        searchEngine.initialize(searchStage, title, searchText);
+
+        Scene scene = createStyledScene(root);
+        searchStage.setScene(scene);
+        searchStage.showAndWait();
+
+        return searchEngine.getSelectedUser();
+    }
+
     private void openEditProdDataForm(ProductReference productToEdit) {
         try {
             openFormWithController("/fxml/product_form.fxml", "Edit Product data",
                     (ProductFormController controller, Stage stage) ->
                             controller.initializeForEditProdData(stage, this.adminLogin, productToEdit));
+
+            // Reload products after editing
+            productsTableController.loadData();
+        } catch (IOException e) {
+            alert(e);
+        }
+    }
+
+    private void openEditUserForm(UserDao.BasicUserInfoDb userInfoDb) {
+        try {
+            openFormWithController("/fxml/user_form.fxml", "Edit user data",
+                    (UserFormController controller, Stage stage) ->
+                            controller.initializeForEditUser(stage, this.adminLogin, userInfoDb));
+
+            // Reload users after editing (no products)
+            usersTableController.loadData();
+        } catch (IOException e) {
+            alert(e);
+        }
+    }
+
+    private void openEditUser(UserDao.BasicUserInfoDb userInfoDb) {
+        try {
+            openFormWithController("/fxml/user_form.fxml", "Edit user data",
+                    (UserFormController controller, Stage stage) ->
+                            controller.initializeForEditUser(stage, this.adminLogin, userInfoDb));
 
             // Reload products after editing
             productsTableController.loadData();
@@ -269,6 +342,25 @@ public class AdminWinController implements Initializable {
         });
     }
 
+    private void deleteUserToDb(UserDao.BasicUserInfoDb userToDelete) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirm elimination");
+        alert.setHeaderText("Are you sure you want to eliminate this user?");
+        alert.setContentText(userToDelete.name() + " (Email: " + userToDelete.email() + ")");
+
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                String idToDelete = userToDelete.id();
+                UserDao.deleteUserToDb(idToDelete);
+
+                // Reload products after deletion
+                usersTableController.loadData();
+
+                System.out.printf("Delete user \nId: %s\nName: %s\nEmail: %s\n",
+                        userToDelete.id(), userToDelete.name(), userToDelete.email());
+            }
+        });
+    }
     @FunctionalInterface
     private interface ControllerInitializer<T> {
         void initialize(T controller, Stage stage);
