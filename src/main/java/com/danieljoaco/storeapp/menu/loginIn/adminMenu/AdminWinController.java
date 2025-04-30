@@ -6,10 +6,10 @@ import com.danieljoaco.storeapp.menu.loginIn.adminMenu.tables.OrdersTableControl
 import com.danieljoaco.storeapp.menu.loginIn.adminMenu.tables.ProductsTableController;
 import com.danieljoaco.storeapp.menu.loginIn.adminMenu.tables.UsersTableController;
 import com.danieljoaco.storeapp.menu.forms.UserFormController;
-import com.danieljoaco.storeapp.products.ProductReference;
-import com.danieljoaco.storeapp.users.Admin;
-import com.danieljoaco.storeapp.users.UserDao;
-import com.danieljoaco.storeapp.users.Users;
+import com.danieljoaco.storeapp.product.ProductInfo;
+import com.danieljoaco.storeapp.user.Admin;
+import com.danieljoaco.storeapp.user.UserDao;
+import com.danieljoaco.storeapp.user.User;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -87,9 +87,9 @@ public class AdminWinController implements Initializable {
         menuEditProduct.setOnAction(event -> editProductByRef());
         menuDeleteProduct.setOnAction(actionEvent -> deleteProductByRef());
 
-        newCustomer.setOnAction(event -> newUser(Users.UserType.CUSTOMER.name(), null));
-        newSupportAgent.setOnAction(event -> newUser(Users.UserType.SUPPORT_AGENT.name(), adminLogin));
-        newAdmin.setOnAction(event -> newUser(Users.UserType.ADMIN.name(), adminLogin));
+        newCustomer.setOnAction(event -> newUser(User.UserType.CUSTOMER.name(), null));
+        newSupportAgent.setOnAction(event -> newUser(User.UserType.SUPPORT_AGENT.name(), adminLogin));
+        newAdmin.setOnAction(event -> newUser(User.UserType.ADMIN.name(), adminLogin));
         menuEditUser.setOnAction(event -> editUser());
         menuDeleteUser.setOnAction(actionEvent -> deleteUser());
 
@@ -150,7 +150,7 @@ public class AdminWinController implements Initializable {
     private void editProductByRef() {
         try {
             SearchType searchType = SearchType.PRODUCT;
-            ProductReference selectedProduct = showSearchDialogProduct(searchType.getTittle(), searchType.getSearchText());
+            ProductInfo selectedProduct = showSearchDialogProduct(searchType.getTittle(), searchType.getSearchText());
 
             if (selectedProduct != null) {
                 openEditProdDataForm(selectedProduct);
@@ -176,7 +176,7 @@ public class AdminWinController implements Initializable {
     private void deleteProductByRef() {
         try {
             SearchType searchType = SearchType.PRODUCT;
-            ProductReference selectedProduct = showSearchDialogProduct(searchType.getTittle(), searchType.getSearchText());
+            ProductInfo selectedProduct = showSearchDialogProduct(searchType.getTittle(), searchType.getSearchText());
 
             if (selectedProduct != null) {
                 deleteProduct(selectedProduct);
@@ -202,7 +202,7 @@ public class AdminWinController implements Initializable {
     private void newEntry() {
         try {
             SearchType searchType = SearchType.PRODUCT;
-            ProductReference selectedProduct = showSearchDialogProduct(searchType.getTittle(), searchType.getSearchText());
+            ProductInfo selectedProduct = showSearchDialogProduct(searchType.getTittle(), searchType.getSearchText());
 
             if (selectedProduct != null) {
                 openNewEntry(selectedProduct);
@@ -212,7 +212,7 @@ public class AdminWinController implements Initializable {
         }
     }
 
-    private ProductReference showSearchDialogProduct(String title, String searchText) throws IOException {
+    private ProductInfo showSearchDialogProduct(String title, String searchText) throws IOException {
         Stage searchStage = setupStage(title);
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/search-engine.fxml"));
         Parent root = loader.load();
@@ -242,7 +242,7 @@ public class AdminWinController implements Initializable {
         return searchEngine.getSelectedUser();
     }
 
-    private void openEditProdDataForm(ProductReference productToEdit) {
+    private void openEditProdDataForm(ProductInfo productToEdit) {
         try {
             openFormWithController("/fxml/product_form.fxml", "Edit Product data",
                     (ProductFormController controller, Stage stage) ->
@@ -281,7 +281,7 @@ public class AdminWinController implements Initializable {
         }
     }
 
-    private void openNewEntry(ProductReference productEntry) {
+    private void openNewEntry(ProductInfo productEntry) {
         try {
             openFormWithController("/fxml/product_form.fxml", "New entry Product",
                     (ProductFormController controller, Stage stage) ->
@@ -323,7 +323,7 @@ public class AdminWinController implements Initializable {
         return scene;
     }
 
-    private void deleteProduct(ProductReference product) {
+    private void deleteProduct(ProductInfo product) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirm elimination");
         alert.setHeaderText("Are you sure you want to eliminate this product?");

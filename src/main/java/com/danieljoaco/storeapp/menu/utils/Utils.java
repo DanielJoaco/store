@@ -13,8 +13,8 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import static com.danieljoaco.storeapp.utils.UserValidator.*;
-import static com.danieljoaco.storeapp.utils.UserValidator.isValidId;
+import static com.danieljoaco.storeapp.utils.FieldsValidator.*;
+import static com.danieljoaco.storeapp.utils.FieldsValidator.isValidId;
 
 public class Utils {
     private static final int DEFAULT_PAUSE_MS = 1500;
@@ -23,20 +23,37 @@ public class Utils {
         if (name.isEmpty() || email.isEmpty() || id.isEmpty()) {
             throw new IllegalArgumentException("All fields must be completed.");
         }
-        if (!isValidName(name)) throw new IllegalArgumentException("Invalid name format.");
-        if (!isValidEmail(email)) throw new IllegalArgumentException("Invalid email format.");
-        if (!isValidId(id)) throw new IllegalArgumentException("Invalid ID format.");
+        if (!isValidAlphabeticInput(name)) {
+            throw new IllegalArgumentException("Invalid name format. The name must only contain alphabetic characters (letters).");
+        }
+        if (!isValidEmail(email)) {
+            throw new IllegalArgumentException("Invalid email format. The email must follow the format: example@example.com. ");
+        }
+        if (!isValidId(id)) throw new IllegalArgumentException("Invalid ID format, it must be between 5 and 15 digits.");
     }
 
     public static void validateUserInput(String name, String email, String id, String password, String repeatPassword) {
         if (Stream.of(name, email, id, password, repeatPassword).anyMatch(String::isEmpty)) {
             throw new IllegalArgumentException("All fields must be completed.");
         }
-        if (!isValidName(name)) throw new IllegalArgumentException("Invalid name format.");
-        if (!isValidEmail(email)) throw new IllegalArgumentException("Invalid email format.");
-        if (!isValidPassword(password)) throw new IllegalArgumentException("Password must meet complexity requirements.");
+        if (!isValidAlphabeticInput(name)) {
+            throw new IllegalArgumentException("Invalid name format. The name must only contain alphabetic characters (letters).");
+        }
+        if (!isValidEmail(email)) {
+            throw new IllegalArgumentException("Invalid email format. The email must follow the format: example@example.com. ");
+        }
+        if (!isValidId(id)) throw new IllegalArgumentException("Invalid ID format, it must be between 5 and 15 digits.");
+        if (!isValidPassword(password)) throw new IllegalArgumentException("Password must be between 8 and 30 characters, contain at least one letter and one number, and can include especial characters.");
         if (!password.equals(repeatPassword)) throw new IllegalArgumentException("Passwords do not match.");
-        if (!isValidId(id)) throw new IllegalArgumentException("Invalid ID format.");
+    }
+
+    public static void isValidPhoneNumber(String phoneNumber) {
+        if (phoneNumber.isEmpty()) {
+            throw new IllegalArgumentException("Phone number cannot be empty.");
+        }
+        if (!isValidPhone(phoneNumber)) {
+            throw new IllegalArgumentException("Invalid phone number format, it must be between 5 and 15 digits and can include + and -.");
+        }
     }
 
     public static Stage setupStage(String title) {
@@ -123,8 +140,8 @@ public class Utils {
     public static void alert(IOException e){
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Error");
-        alert.setHeaderText("Error al cargar el formulario de nuevo producto");
-        alert.setContentText("No se pudo cargar el formulario. Detalles: " + e.getMessage());
+        alert.setHeaderText("Error when loading the new product form.");
+        alert.setContentText("The form could not be loaded. Details: " + e.getMessage());
         alert.showAndWait();
         System.err.println("Error loading new product form: " + e.getMessage());
         System.err.println("Error loading new product form: " + e.getMessage());

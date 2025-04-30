@@ -1,13 +1,12 @@
 package com.danieljoaco.storeapp.menu.loginIn;
 
 import com.danieljoaco.storeapp.menu.utils.Utils;
+import com.danieljoaco.storeapp.user.User;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
-
-import com.danieljoaco.storeapp.users.Users;
 
 public class LoginInController {
 
@@ -36,17 +35,17 @@ public class LoginInController {
 
     @FXML
     private void handleLoginAdmin(ActionEvent event) {
-        LoginIn.loginInUsers(Users.UserType.ADMIN.name(), primaryStage, loginInMenuStage);
+        LoginIn.loginInUsers(User.UserType.ADMIN.name(), primaryStage, loginInMenuStage);
     }
 
     @FXML
     private void handleLoginSupportAgent(ActionEvent event) {
-        LoginIn.loginInUsers(Users.UserType.SUPPORT_AGENT.name(), primaryStage, loginInMenuStage);
+        LoginIn.loginInUsers(User.UserType.SUPPORT_AGENT.name(), primaryStage, loginInMenuStage);
     }
 
     @FXML
     private void handleLoginCustomer(ActionEvent event) {
-        LoginIn.loginInUsers(Users.UserType.CUSTOMER.name(), primaryStage, loginInMenuStage);
+        LoginIn.loginInUsers(User.UserType.CUSTOMER.name(), primaryStage, loginInMenuStage);
     }
 
     @FXML

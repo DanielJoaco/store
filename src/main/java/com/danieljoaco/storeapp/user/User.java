@@ -1,12 +1,12 @@
-package com.danieljoaco.storeapp.users;
+package com.danieljoaco.storeapp.user;
 
-import static com.danieljoaco.storeapp.utils.UserValidator.*;
+import static com.danieljoaco.storeapp.utils.FieldsValidator.*;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-public abstract class Users {
+public abstract class User {
     
     private String id;
     private String name;
@@ -17,7 +17,7 @@ public abstract class Users {
     private final String formattedDate;
 
    
-    public Users(String id, String email, String password, String typeUser, String name) {
+    public User(String id, String email, String password, String typeUser, String name) {
         
         validateFields(id, email, password, name);
 
@@ -29,7 +29,7 @@ public abstract class Users {
         this.createdAt = LocalDate.now();
         this.formattedDate = DateTimeFormatter.ofPattern("dd/MM/yy").format(createdAt);
     }
-    public Users(String id, String email, String password, String typeUser, String name, LocalDate createdAt) {
+    public User(String id, String email, String password, String typeUser, String name, LocalDate createdAt) {
 
         this.id = id;
         this.email = email;
@@ -68,7 +68,7 @@ public abstract class Users {
         } else {
             throw new IllegalArgumentException("The password must be between 8 and 20 characters, at least one letter and one number, and can contain alphanumeric characters and the symbols &%$#_.-");
         }
-        if (isValidName(name)) {
+        if (isValidAlphabeticInput(name)) {
             this.name = name;
         } else {
             throw new IllegalArgumentException("The name can only contain alphabetic characters.");

@@ -1,6 +1,4 @@
-package com.danieljoaco.storeapp.products;
-
-import static com.danieljoaco.storeapp.menu.utils.Utils.capitalize;
+package com.danieljoaco.storeapp.product;
 
 public abstract class   Category {
     

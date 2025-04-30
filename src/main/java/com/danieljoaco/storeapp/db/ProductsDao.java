@@ -1,7 +1,7 @@
 package com.danieljoaco.storeapp.db;
 
-import com.danieljoaco.storeapp.products.ProductReference;
-import com.danieljoaco.storeapp.products.Products;
+import com.danieljoaco.storeapp.product.ProductInfo;
+import com.danieljoaco.storeapp.product.Product;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -18,12 +18,12 @@ public class ProductsDao {
      *
      * @param productData The product data to be added.
      */
-    public static void addProduct(Products productData) {
+    public static void addProduct(Product productData) {
         Connection conn = null;
         boolean originalAutoCommit = true;
 
         try {
-            conn = DatabaseManager.connectProducts();
+            conn = DatabaseManager.connect();
             originalAutoCommit = conn.getAutoCommit();
             conn.setAutoCommit(false);
 
@@ -178,8 +178,8 @@ public class ProductsDao {
      * @param query The search query.
      * @return A list of matching product references.
      */
-    public static ObservableList<ProductReference> searchProductReferences(String query) {
-        ObservableList<ProductReference> results = FXCollections.observableArrayList();
+    public static ObservableList<ProductInfo> searchProductReferences(String query) {
+        ObservableList<ProductInfo> results = FXCollections.observableArrayList();
         String searchPattern = "%" + query.replace("_", "\\_").replace("%", "\\%") + "%";
 
         String sql = """
@@ -199,7 +199,7 @@ public class ProductsDao {
             OR pr.brand LIKE ? ESCAPE '\\'
             """;
 
-        try (Connection conn = DatabaseManager.connectProducts();
+        try (Connection conn = DatabaseManager.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, searchPattern);
@@ -208,10 +208,10 @@ public class ProductsDao {
 
             ResultSet rs = pstmt.executeQuery();
 
-            Map<ProductReference, Integer> referenceScores = new HashMap<>();
+            Map<ProductInfo, Integer> referenceScores = new HashMap<>();
 
             while (rs.next()) {
-                ProductReference reference = new ProductReference(
+                ProductInfo reference = new ProductInfo(
                         rs.getString("ref"),
                         rs.getString("name"),
                         rs.getString("brand"),
@@ -232,7 +232,7 @@ public class ProductsDao {
             // Filtrar y ordenar resultados por puntuación
             referenceScores.entrySet().stream()
                     .filter(entry -> entry.getValue() >= 80)
-                    .sorted(Map.Entry.<ProductReference, Integer>comparingByValue().reversed())
+                    .sorted(Map.Entry.<ProductInfo, Integer>comparingByValue().reversed())
                     .map(Map.Entry::getKey)
                     .forEach(results::add);
 
@@ -286,7 +286,7 @@ public class ProductsDao {
      *
      * @return A list of all products.
      */
-    public static List<Products> getAllProducts() {
+    public static List<Product> getAllProducts() {
         String sql = """
             SELECT
                 pr.name,
@@ -307,13 +307,13 @@ public class ProductsDao {
             LEFT JOIN categories c ON s.category_id = c.id
         """;
 
-        List<Products> productsList = new ArrayList<>();
-        try (Connection conn = DatabaseManager.connectProducts();
+        List<Product> productsList = new ArrayList<>();
+        try (Connection conn = DatabaseManager.connect();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
-                Products product = new Products(
+                Product product = new Product(
                         rs.getString("id"),
                         rs.getString("name"),
                         rs.getString("brand"),
@@ -339,12 +339,12 @@ public class ProductsDao {
     /**
      * Updates a product reference in the database.
      */
-    public static void updateProductReference(ProductReference productReference) {
+    public static void updateProductReference(ProductInfo productReference) {
         Connection conn = null;
         boolean originalAutoCommit = true;
 
         try {
-            conn = DatabaseManager.connectProducts();
+            conn = DatabaseManager.connect();
             originalAutoCommit = conn.getAutoCommit();
             conn.setAutoCommit(false);
 
@@ -397,12 +397,12 @@ public class ProductsDao {
      *
      * @param product The product to be updated.
      */
-    public static void updateProductEntry(Products product) {
+    public static void updateProductEntry(Product product) {
         Connection conn = null;
         boolean originalAutoCommit = true;
 
         try {
-            conn = DatabaseManager.connectProducts();
+            conn = DatabaseManager.connect();
             originalAutoCommit = conn.getAutoCommit();
             conn.setAutoCommit(false);
 
@@ -458,7 +458,7 @@ public class ProductsDao {
     public static void deleteProductEntryToDb(String id) {
         String sql = "DELETE FROM products WHERE id = ?";
 
-        try (Connection conn = DatabaseManager.connectProducts();
+        try (Connection conn = DatabaseManager.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             conn.setAutoCommit(false);
@@ -487,7 +487,7 @@ public class ProductsDao {
     public static void deleteProductToDb(String ref) {
         String sql = "DELETE FROM product_references WHERE ref = ?";
 
-        try (Connection conn = DatabaseManager.connectProducts();
+        try (Connection conn = DatabaseManager.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             conn.setAutoCommit(false);

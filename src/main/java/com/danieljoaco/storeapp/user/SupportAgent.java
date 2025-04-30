@@ -1,10 +1,10 @@
-package com.danieljoaco.storeapp.users;
+package com.danieljoaco.storeapp.user;
 
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.time.LocalDate;
 
-public class SupportAgent extends Users{
+public class SupportAgent extends User {
     
     private SupportAgent(String id, String email, String password, String name){
         super(id, email, password, UserType.SUPPORT_AGENT.name(), name);
@@ -21,7 +21,7 @@ public class SupportAgent extends Users{
     }
 
     public static SupportAgent loginSupportAgent(String emailAccess, String passwordAccess){
-        Users user = UserDao.findUserByEmail(emailAccess);
+        User user = UserDao.findUserByEmail(emailAccess);
         assert user != null;
         if (!BCrypt.checkpw(passwordAccess, user.getPasswordHash()) ||
                 !user.getTypeUser().equals(UserType.SUPPORT_AGENT.name())) {

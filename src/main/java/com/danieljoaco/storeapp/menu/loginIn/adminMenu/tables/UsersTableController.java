@@ -1,8 +1,8 @@
 package com.danieljoaco.storeapp.menu.loginIn.adminMenu.tables;
 
 import com.danieljoaco.storeapp.menu.forms.UserFormController;
-import com.danieljoaco.storeapp.users.Admin;
-import com.danieljoaco.storeapp.users.Users;
+import com.danieljoaco.storeapp.user.Admin;
+import com.danieljoaco.storeapp.user.User;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
@@ -16,13 +16,13 @@ import java.util.Objects;
 
 import static com.danieljoaco.storeapp.menu.utils.Utils.alert;
 import static com.danieljoaco.storeapp.menu.utils.Utils.capitalize;
-import static com.danieljoaco.storeapp.users.UserDao.deleteUserToDb;
-import static com.danieljoaco.storeapp.users.UserDao.getAllUsers;
+import static com.danieljoaco.storeapp.user.UserDao.deleteUserToDb;
+import static com.danieljoaco.storeapp.user.UserDao.getAllUsers;
 
 /**
  * Controller for the users table
  */
-public class UsersTableController extends BaseTableController<Users> {
+public class UsersTableController extends BaseTableController<User> {
 
     private Admin adminLogin;
 
@@ -36,18 +36,18 @@ public class UsersTableController extends BaseTableController<Users> {
 
     @Override
     protected void setupColumns() {
-        TableColumn<Users, String> colUserId = createColumn("Id", "id", 80);
-        TableColumn<Users, String> colUserName = createColumn("Name", "name", 160);
-        TableColumn<Users, String> colUserEmail = createColumn("Email", "email", 200);
-        TableColumn<Users, String> colUserType = createColumn("User type", "typeUser", 100);
+        TableColumn<User, String> colUserId = createColumn("Id", "id", 80);
+        TableColumn<User, String> colUserName = createColumn("Name", "name", 160);
+        TableColumn<User, String> colUserEmail = createColumn("Email", "email", 200);
+        TableColumn<User, String> colUserType = createColumn("User type", "typeUser", 100);
         configureCapitalizeColumn(colUserType);
-        TableColumn<Users, String> colUserCreateAt = createColumn("Create at", "formattedDate", 80);
+        TableColumn<User, String> colUserCreateAt = createColumn("Create at", "formattedDate", 80);
 
         // Action columns
-        TableColumn<Users, String> colUserEdit = createActionColumn("Edit", 40);
+        TableColumn<User, String> colUserEdit = createActionColumn("Edit", 40);
         setupEditColumn(colUserEdit);
 
-        TableColumn<Users, String> colUserDelete = createActionColumn("Delete", 50);
+        TableColumn<User, String> colUserDelete = createActionColumn("Delete", 50);
         setupDeleteColumn(colUserDelete);
 
         tableView.getColumns().addAll(
@@ -61,8 +61,8 @@ public class UsersTableController extends BaseTableController<Users> {
      * @param width The preferred width of the column
      * @return The created TableColumn
      */
-    private TableColumn<Users, String> createActionColumn(String title, double width) {
-        TableColumn<Users, String> column = new TableColumn<>(title);
+    private TableColumn<User, String> createActionColumn(String title, double width) {
+        TableColumn<User, String> column = new TableColumn<>(title);
         column.setPrefWidth(width);
         return column;
     }
@@ -71,7 +71,7 @@ public class UsersTableController extends BaseTableController<Users> {
      * Sets up the edit column with a button that opens the edit form
      * @param column The column to set up
      */
-    private void setupEditColumn(TableColumn<Users, String> column) {
+    private void setupEditColumn(TableColumn<User, String> column) {
         column.setCellFactory(param -> new TableCell<>() {
             final Button editButton = new Button("📝");
 
@@ -84,7 +84,7 @@ public class UsersTableController extends BaseTableController<Users> {
                     setText(null);
                 } else {
                     editButton.setOnAction(event -> {
-                        Users user = getTableView().getItems().get(getIndex());
+                        User user = getTableView().getItems().get(getIndex());
                         editUserEntry(user);
                     });
                     setGraphic(editButton);
@@ -99,7 +99,7 @@ public class UsersTableController extends BaseTableController<Users> {
      * Sets up the delete column with a button that confirms and deletes a user
      * @param column The column to set up
      */
-    private void setupDeleteColumn(TableColumn<Users, String> column) {
+    private void setupDeleteColumn(TableColumn<User, String> column) {
         column.setCellFactory(param -> new TableCell<>() {
             final Button deleteButton = new Button("❌");
 
@@ -112,7 +112,7 @@ public class UsersTableController extends BaseTableController<Users> {
                     setText(null);
                 } else {
                     deleteButton.setOnAction(event -> {
-                        Users user = getTableView().getItems().get(getIndex());
+                        User user = getTableView().getItems().get(getIndex());
                         deleteUser(user);
                     });
                     setGraphic(deleteButton);
@@ -127,7 +127,7 @@ public class UsersTableController extends BaseTableController<Users> {
      * Opens the edit form for a user
      * @param user The user to edit
      */
-    private void editUserEntry(Users user) {
+    private void editUserEntry(User user) {
         try {
             openFormWithController(
                     (UserFormController controller, Stage stage) -> {
@@ -164,7 +164,7 @@ public class UsersTableController extends BaseTableController<Users> {
      * Shows a confirmation dialog and deletes the user if confirmed
      * @param user The user to delete
      */
-    private void deleteUser(Users user) {
+    private void deleteUser(User user) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirm elimination");
         alert.setHeaderText("Are you sure you want to eliminate this user?");
@@ -182,7 +182,7 @@ public class UsersTableController extends BaseTableController<Users> {
     @Override
     public void loadData() {
         dataList.clear();
-        List<Users> users = getAllUsers();
+        List<User> users = getAllUsers();
         dataList.addAll(users);
 
         if (dataList.isEmpty()) {
@@ -196,7 +196,7 @@ public class UsersTableController extends BaseTableController<Users> {
      * Configures a column to capitalize the displayed text
      * @param column The column to configure
      */
-    private void configureCapitalizeColumn(TableColumn<Users, String> column) {
+    private void configureCapitalizeColumn(TableColumn<User, String> column) {
         column.setCellFactory(col -> new TableCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {

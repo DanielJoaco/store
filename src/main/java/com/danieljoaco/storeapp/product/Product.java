@@ -1,11 +1,11 @@
-package com.danieljoaco.storeapp.products;
-import com.danieljoaco.storeapp.users.*;
+package com.danieljoaco.storeapp.product;
+import com.danieljoaco.storeapp.user.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
-public class Products {
+public class Product {
     
     private final String id;
     private String name;
@@ -21,7 +21,7 @@ public class Products {
     private String description;
     private Rating rating;
     
-    public Products(String name, String brand, String ref, double cost, double price, int stock, String bill, String category, String subcategory, String description) {
+    public Product(String name, String brand, String ref, double cost, double price, int stock, String bill, String category, String subcategory, String description) {
         this.id = UUID.randomUUID().toString();
         this.name = name;
         this.brand = brand;
@@ -36,7 +36,7 @@ public class Products {
         this.description = description;
     }
 
-    public Products(String id, String name, String brand, String ref, double cost, double price, int stock, String bill, LocalDate date, String category, String subcategory, String description) {
+    public Product(String id, String name, String brand, String ref, double cost, double price, int stock, String bill, LocalDate date, String category, String subcategory, String description) {
         this.id = id;
         this.name = name;
         this.brand = brand;

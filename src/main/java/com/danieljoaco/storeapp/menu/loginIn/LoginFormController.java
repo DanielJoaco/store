@@ -1,10 +1,10 @@
 package com.danieljoaco.storeapp.menu.loginIn;
 
 import static com.danieljoaco.storeapp.menu.utils.Utils.*;
-import static com.danieljoaco.storeapp.utils.UserValidator.*;
+import static com.danieljoaco.storeapp.utils.FieldsValidator.*;
 
 import com.danieljoaco.storeapp.menu.loginIn.adminMenu.AdminWin;
-import com.danieljoaco.storeapp.users.*;
+import com.danieljoaco.storeapp.user.*;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -40,7 +40,7 @@ public class LoginFormController {
     private Stage loginStage;
     private Stage primaryStage;
     private Stage loginInMenuStage;
-    private Users userLogin;
+    private User userLogin;
 
     @FXML
     public void initialize() {
@@ -124,7 +124,7 @@ public class LoginFormController {
         return showPasswordCheckbox.isSelected() ? visiblePasswordField.getText() : passwordField.getText();
     }
 
-    public Users getUserLogin() {
+    public User getUserLogin() {
         return userLogin;
     }
 }

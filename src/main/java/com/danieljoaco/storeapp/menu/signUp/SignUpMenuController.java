@@ -1,18 +1,17 @@
 package com.danieljoaco.storeapp.menu.signUp;
 
 import static com.danieljoaco.storeapp.menu.loginIn.LoginIn.*;
-import static com.danieljoaco.storeapp.users.UserDao.*;
+import static com.danieljoaco.storeapp.user.UserDao.*;
 import static com.danieljoaco.storeapp.menu.utils.Utils.*;
 
 import com.danieljoaco.storeapp.menu.forms.UserFormController;
-import com.danieljoaco.storeapp.users.*;
+import com.danieljoaco.storeapp.user.*;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
 
@@ -22,22 +21,7 @@ import java.util.Objects;
 public class SignUpMenuController {
 
     @FXML
-    private Label lblTitle;
-
-    @FXML
     private Label lblError;
-
-    @FXML
-    private Button btnCreateCustomer;
-
-    @FXML
-    private Button btnCreateSupportAgent;
-
-    @FXML
-    private Button btnCreateAdmin;
-
-    @FXML
-    private Button btnReturnToMainMenu;
 
     private Stage signUpStage;
     private Stage primaryStage;
@@ -83,7 +67,7 @@ public class SignUpMenuController {
 
     private void createCustomer() {
         try {
-            newUser(Users.UserType.CUSTOMER.name());
+            newUser(User.UserType.CUSTOMER.name());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -91,16 +75,16 @@ public class SignUpMenuController {
 
     private void createSupportAgent() {
         adminLogin = null;
-        adminLogin = (Admin) loginInUsers(Users.UserType.ADMIN.name(), null, null);
+        adminLogin = (Admin) loginInUsers(User.UserType.ADMIN.name(), null, null);
         if (adminLogin != null && adminLogin.isAdmin()) {
-            newUser(Users.UserType.SUPPORT_AGENT.name());
+            newUser(User.UserType.SUPPORT_AGENT.name());
         }
     }
 
     private void createdAdmin() {
         adminLogin = null;
         if (adminExists) {
-            adminLogin = (Admin) loginInUsers(Users.UserType.ADMIN.name(), null, null);
+            adminLogin = (Admin) loginInUsers(User.UserType.ADMIN.name(), null, null);
             if (adminLogin == null || !adminLogin.isAdmin()) {
                 return;
             }

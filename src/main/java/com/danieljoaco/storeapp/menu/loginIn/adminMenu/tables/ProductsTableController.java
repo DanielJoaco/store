@@ -1,8 +1,8 @@
 package com.danieljoaco.storeapp.menu.loginIn.adminMenu.tables;
 
 import com.danieljoaco.storeapp.menu.forms.ProductFormController;
-import com.danieljoaco.storeapp.products.Products;
-import com.danieljoaco.storeapp.users.Admin;
+import com.danieljoaco.storeapp.product.Product;
+import com.danieljoaco.storeapp.user.Admin;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -21,7 +21,7 @@ import static com.danieljoaco.storeapp.menu.utils.Utils.capitalize;
 /**
  * Controller for the products table
  */
-public class ProductsTableController extends BaseTableController<Products> {
+public class ProductsTableController extends BaseTableController<Product> {
 
     private Admin adminLogin;
 
@@ -35,27 +35,27 @@ public class ProductsTableController extends BaseTableController<Products> {
 
     @Override
     protected void setupColumns() {
-        TableColumn<Products, String> colProductRef = createColumn("Ref", "ref", 50);
-        TableColumn<Products, String> colProductName = createColumn("Name", "name", 120);
-        TableColumn<Products, String> colProductBrand = createColumn("Brand", "brand", 60);
-        TableColumn<Products, Integer> colProductStock = createColumn("Stock", "stock", 45);
-        TableColumn<Products, Double> colProductCost = createColumn("Cost", "cost", 50);
-        TableColumn<Products, Double> colProductPrice = createColumn("Price", "price", 50);
-        TableColumn<Products, String> colProductBill = createColumn("Bill", "bill", 80);
+        TableColumn<Product, String> colProductRef = createColumn("Ref", "ref", 50);
+        TableColumn<Product, String> colProductName = createColumn("Name", "name", 120);
+        TableColumn<Product, String> colProductBrand = createColumn("Brand", "brand", 60);
+        TableColumn<Product, Integer> colProductStock = createColumn("Stock", "stock", 45);
+        TableColumn<Product, Double> colProductCost = createColumn("Cost", "cost", 50);
+        TableColumn<Product, Double> colProductPrice = createColumn("Price", "price", 50);
+        TableColumn<Product, String> colProductBill = createColumn("Bill", "bill", 80);
 
-        TableColumn<Products, String> colProductCategory = createColumn("Cat.", "category", 70);
+        TableColumn<Product, String> colProductCategory = createColumn("Cat.", "category", 70);
         configureCapitalizeColumn(colProductCategory);
 
-        TableColumn<Products, String> colProductSubcategory = createColumn("Subcat.", "subCategory", 100);
+        TableColumn<Product, String> colProductSubcategory = createColumn("Subcat.", "subCategory", 100);
         configureCapitalizeColumn(colProductSubcategory);
 
-        TableColumn<Products, String> colProductDate = createColumn("Date", "formattedDate", 60);
+        TableColumn<Product, String> colProductDate = createColumn("Date", "formattedDate", 60);
 
         // Action columns
-        TableColumn<Products, String> colProductEdit = createActionColumn("Edit", 40);
+        TableColumn<Product, String> colProductEdit = createActionColumn("Edit", 40);
         setupEditColumn(colProductEdit);
 
-        TableColumn<Products, String> colProductDelete = createActionColumn("Delete", 50);
+        TableColumn<Product, String> colProductDelete = createActionColumn("Delete", 50);
         setupDeleteColumn(colProductDelete);
 
         tableView.getColumns().addAll(
@@ -68,7 +68,7 @@ public class ProductsTableController extends BaseTableController<Products> {
     @Override
     public void loadData() {
         dataList.clear();
-        List<Products> products = getAllProducts();
+        List<Product> products = getAllProducts();
         dataList.addAll(products);
 
         if (dataList.isEmpty()) {
@@ -82,7 +82,7 @@ public class ProductsTableController extends BaseTableController<Products> {
      * Configures a column to capitalize the displayed text
      * @param column The column to configure
      */
-    private void configureCapitalizeColumn(TableColumn<Products, String> column) {
+    private void configureCapitalizeColumn(TableColumn<Product, String> column) {
         column.setCellFactory(col -> new TableCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -102,8 +102,8 @@ public class ProductsTableController extends BaseTableController<Products> {
      * @param width The preferred width of the column
      * @return The created TableColumn
      */
-    private TableColumn<Products, String> createActionColumn(String title, double width) {
-        TableColumn<Products, String> column = new TableColumn<>(title);
+    private TableColumn<Product, String> createActionColumn(String title, double width) {
+        TableColumn<Product, String> column = new TableColumn<>(title);
         column.setPrefWidth(width);
         return column;
     }
@@ -112,7 +112,7 @@ public class ProductsTableController extends BaseTableController<Products> {
      * Sets up the edit column with a button that opens the edit form
      * @param column The column to set up
      */
-    private void setupEditColumn(TableColumn<Products, String> column) {
+    private void setupEditColumn(TableColumn<Product, String> column) {
         column.setCellFactory(param -> new TableCell<>() {
             final Button editButton = new Button("📝");
 
@@ -125,7 +125,7 @@ public class ProductsTableController extends BaseTableController<Products> {
                     setText(null);
                 } else {
                     editButton.setOnAction(event -> {
-                        Products product = getTableView().getItems().get(getIndex());
+                        Product product = getTableView().getItems().get(getIndex());
                         editProductEntry(product);
                     });
                     setGraphic(editButton);
@@ -140,7 +140,7 @@ public class ProductsTableController extends BaseTableController<Products> {
      * Sets up the delete column with a button that confirms and deletes a product
      * @param column The column to set up
      */
-    private void setupDeleteColumn(TableColumn<Products, String> column) {
+    private void setupDeleteColumn(TableColumn<Product, String> column) {
         column.setCellFactory(param -> new TableCell<>() {
             final Button deleteButton = new Button("❌");
 
@@ -153,7 +153,7 @@ public class ProductsTableController extends BaseTableController<Products> {
                     setText(null);
                 } else {
                     deleteButton.setOnAction(event -> {
-                        Products product = getTableView().getItems().get(getIndex());
+                        Product product = getTableView().getItems().get(getIndex());
                         deleteProduct(product);
                     });
                     setGraphic(deleteButton);
@@ -168,7 +168,7 @@ public class ProductsTableController extends BaseTableController<Products> {
      * Opens the edit form for a product
      * @param product The product to edit
      */
-    private void editProductEntry(Products product) {
+    private void editProductEntry(Product product) {
         try {
             openFormWithController("/fxml/product_form.fxml", "Edit Product entry",
                     (ProductFormController controller, Stage stage) -> {
@@ -186,7 +186,7 @@ public class ProductsTableController extends BaseTableController<Products> {
      * Shows a confirmation dialog and deletes the product if confirmed
      * @param product The product to delete
      */
-    private void deleteProduct(Products product) {
+    private void deleteProduct(Product product) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirm elimination");
         alert.setHeaderText("Are you sure you want to eliminate this product entry?");

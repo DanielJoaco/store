@@ -1,7 +1,7 @@
 package com.danieljoaco.storeapp.menu.loginIn.adminMenu;
 
-import com.danieljoaco.storeapp.products.ProductReference;
-import com.danieljoaco.storeapp.users.UserDao;
+import com.danieljoaco.storeapp.product.ProductInfo;
+import com.danieljoaco.storeapp.user.UserDao;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -22,7 +22,7 @@ public class SearchEngineController {
     private Button btnSearch;
 
     private Stage searchEngineStage;
-    private ProductReference selectedProduct;
+    private ProductInfo selectedProduct;
     private UserDao.BasicUserInfoDb selectedUser;
 
 
@@ -57,7 +57,7 @@ public class SearchEngineController {
             String searchText = tfSearch.getText();
             switch (tittle) {
                 case "Search Product": {
-                    ObservableList<ProductReference> productsList = searchProductReferences(searchText);
+                    ObservableList<ProductInfo> productsList = searchProductReferences(searchText);
                     if (productsList.isEmpty()) {
                         lblError.setText("No products were found for:" + searchText);
                     } else if (productsList.size() == 1) {
@@ -85,10 +85,10 @@ public class SearchEngineController {
         });
     }
 
-    private void showProductSelectionDialog(ObservableList<ProductReference> products) {
-        ListView<ProductReference> listView = getProductReferenceListView(products);
+    private void showProductSelectionDialog(ObservableList<ProductInfo> products) {
+        ListView<ProductInfo> listView = getProductReferenceListView(products);
 
-        Dialog<ProductReference> dialog = new Dialog<>();
+        Dialog<ProductInfo> dialog = new Dialog<>();
         dialog.setTitle("Select product");
         dialog.setHeaderText("Multiple products found. Please select one:");
 
@@ -111,11 +111,11 @@ public class SearchEngineController {
         });
     }
 
-    private ListView<ProductReference> getProductReferenceListView(ObservableList<ProductReference> products) {
-        ListView<ProductReference> listView = new ListView<>(products);
+    private ListView<ProductInfo> getProductReferenceListView(ObservableList<ProductInfo> products) {
+        ListView<ProductInfo> listView = new ListView<>(products);
         listView.setCellFactory(lv -> new ListCell<>() {
             @Override
-            protected void updateItem(ProductReference product, boolean empty) {
+            protected void updateItem(ProductInfo product, boolean empty) {
                 super.updateItem(product, empty);
                 if (empty || product == null) {
                     setText(null);
@@ -169,7 +169,7 @@ public class SearchEngineController {
         return listView;
     }
 
-    public ProductReference getSelectedProduct() {
+    public ProductInfo getSelectedProduct() {
         return selectedProduct;
     }
     public UserDao.BasicUserInfoDb getSelectedUser() {return selectedUser;}

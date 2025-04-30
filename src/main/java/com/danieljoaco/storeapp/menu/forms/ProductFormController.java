@@ -1,15 +1,15 @@
 package com.danieljoaco.storeapp.menu.forms;
 
 import com.danieljoaco.storeapp.menu.utils.Utils;
-import com.danieljoaco.storeapp.products.Category;
-import com.danieljoaco.storeapp.products.ProductReference;
-import com.danieljoaco.storeapp.products.Products;
-import com.danieljoaco.storeapp.products.SubCategory;
-import com.danieljoaco.storeapp.users.Admin;
+import com.danieljoaco.storeapp.product.Category;
+import com.danieljoaco.storeapp.product.ProductInfo;
+import com.danieljoaco.storeapp.product.Product;
+import com.danieljoaco.storeapp.product.SubCategory;
+import com.danieljoaco.storeapp.user.Admin;
 
 import static com.danieljoaco.storeapp.db.ProductsDao.*;
 import static com.danieljoaco.storeapp.menu.utils.Utils.*;
-import static com.danieljoaco.storeapp.utils.UserValidator.isValidProductsInputs;
+import static com.danieljoaco.storeapp.utils.FieldsValidator.isValidAlphanumericInput;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -35,8 +35,8 @@ public class ProductFormController extends FormController {
     @FXML
     private Label lblTitle, lblCost, lblPrice, lblStock, lblBill, lblCategory, lblSubcategory, lblDescription, lblError;
 
-    private Products productToEdit;
-    private ProductReference referenceToEdit;
+    private Product productToEdit;
+    private ProductInfo referenceToEdit;
 
     private enum ProductFormMode {
         NEW_PRODUCT,         // Creating a completely new product
@@ -64,7 +64,7 @@ public class ProductFormController extends FormController {
     /**
      * Initializes the controller for creating a new entry of an existing product reference.
      */
-    public void initializeForNewEntry(Stage stage, Admin adminLogin, ProductReference productRef) {
+    public void initializeForNewEntry(Stage stage, Admin adminLogin, ProductInfo productRef) {
         initialize(stage, adminLogin);
         this.productMode = ProductFormMode.NEW_ENTRY;
 
@@ -95,7 +95,7 @@ public class ProductFormController extends FormController {
     /**
      * Initializes the controller for editing a full product.
      */
-    public void initializeForEditProduct(Stage stage, Admin adminLogin, Products product) {
+    public void initializeForEditProduct(Stage stage, Admin adminLogin, Product product) {
         initialize(stage, adminLogin);
         this.productMode = ProductFormMode.EDIT_PRODUCT;
         this.productToEdit = product;
@@ -121,7 +121,7 @@ public class ProductFormController extends FormController {
     /**
      * Initializes the controller for editing only product reference details.
      */
-    public void initializeForEditProdData(Stage stage, Admin adminLogin, ProductReference reference) {
+    public void initializeForEditProdData(Stage stage, Admin adminLogin, ProductInfo reference) {
         initialize(stage, adminLogin);
         this.productMode = ProductFormMode.EDIT_PRODUCT_DATA;
         this.referenceToEdit = reference;
@@ -345,10 +345,10 @@ public class ProductFormController extends FormController {
         }
 
         try {
-            isValidProductsInputs(name);
-            isValidProductsInputs(brand);
-            isValidProductsInputs(ref);
-            isValidProductsInputs(description);
+            isValidAlphanumericInput(name);
+            isValidAlphanumericInput(brand);
+            isValidAlphanumericInput(ref);
+            isValidAlphanumericInput(description);
 
             int maxLengthDescription = 550;
             if(description.length() > maxLengthDescription) {
@@ -371,7 +371,7 @@ public class ProductFormController extends FormController {
             double cost = Double.parseDouble(costText);
             double price = Double.parseDouble(priceText);
             int stock = Integer.parseInt(stockText);
-            isValidProductsInputs(bill);
+            isValidAlphanumericInput(bill);
 
             if (cost <= 0) {
                 throw new IllegalArgumentException("Cost must be greater than 0.");
@@ -415,7 +415,7 @@ public class ProductFormController extends FormController {
     private void createNewProduct(ProductFormData formData) {
         try {
             if (adminLogin.isAdmin()) {
-                Products newProduct = new Products(
+                Product newProduct = new Product(
                         formData.name, formData.brand, formData.ref, formData.cost, formData.price,
                         formData.stock, formData.bill, formData.category, formData.subCategory, formData.description
                 );

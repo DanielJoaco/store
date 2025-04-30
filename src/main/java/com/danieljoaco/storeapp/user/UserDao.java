@@ -1,4 +1,4 @@
-package com.danieljoaco.storeapp.users;
+package com.danieljoaco.storeapp.user;
 
 import com.danieljoaco.storeapp.db.DatabaseManager;
 import com.danieljoaco.storeapp.menu.forms.UserFormController;
@@ -25,7 +25,7 @@ public class UserDao {
 
     // SQL Constants
     private static final String SQL_CHECK_USER_EXISTS = "SELECT COUNT(*) FROM users WHERE id_user = ? OR email = ?";
-    private static final String SQL_INSERT_USER = "INSERT INTO users (id_user, name, email, password, type_id, created_at) VALUES (?, ?, ?, ?, ?, ?)";
+    private static final String SQL_INSERT_USER = "INSERT INTO users (id_user, name, email, password, type_id, created_at, phone_number) VALUES (?, ?, ?, ?, ?, ?, ?)";
     private static final String SQL_CHECK_ADMIN_EXISTS = "SELECT COUNT(*) FROM users WHERE type_id = 1";
     private static final String SQL_FIND_USER_BY_EMAIL = "SELECT * FROM users WHERE email = ?";
     private static final String SQL_SEARCH_USERS = """
@@ -34,12 +34,13 @@ public class UserDao {
                 u.name,
                 u.email,
                 u.type_id,
-                u.created_at
+                u.created_at,
+                u.phone_number
             FROM users u
             WHERE u.email LIKE ? OR u.name LIKE ? OR u.id_user LIKE ?
             """;
     private static final String SQL_GET_ALL_USERS = "SELECT * FROM users";
-    private static final String SQL_UPDATE_USER = "UPDATE users SET  id = ?, name = ?, email = ?, type_id = ? WHERE id_user = ?";
+    private static final String SQL_UPDATE_USER = "UPDATE users SET  id = ?, name = ?, email = ?, type_id = ?, phone_number = ? WHERE id_user = ?";
     private static final String SQL_DELETE_USER = "DELETE FROM users WHERE id_user = ?";
 
     // Minimum similarity threshold for search results
@@ -52,7 +53,7 @@ public class UserDao {
      * @return Numeric ID of user type
      * @throws IllegalArgumentException If user type is invalid
      */
-    private static int getUserTypeId(Users user) {
+    private static int getUserTypeId(User user) {
         if (user instanceof Admin) return 1;
         if (user instanceof SupportAgent) return 2;
         if (user instanceof Customer) return 3;
@@ -65,22 +66,23 @@ public class UserDao {
      * Creates a user object from a ResultSet
      *
      * @param rs ResultSet with user data
-     * @return Created Users object
+     * @return Created User object
      * @throws SQLException If there's an error reading data
      * @throws IllegalStateException If the user type is unknown
      */
-    private static Users createUserFromResultSet(ResultSet rs) throws SQLException {
+    private static User createUserFromResultSet(ResultSet rs) throws SQLException {
         String id = rs.getString("id_user");
         String name = rs.getString("name");
         String email = rs.getString("email");
         String pwdHash = rs.getString("password");
         int typeUser = rs.getInt("type_id");
         LocalDate createdAt = rs.getDate("created_at").toLocalDate();
+        String phoneNumber = rs.getString("phone_number");
 
         return switch (typeUser) {
             case 1 -> Admin.createAdminFromDb(id, email, pwdHash, name, createdAt);
             case 2 -> SupportAgent.createAgentFromDb(id, email, pwdHash, name, createdAt);
-            case 3 -> new Customer(id, email, pwdHash, name, createdAt);
+            case 3 -> new Customer(id, email, pwdHash, name, phoneNumber, createdAt);
             default -> throw new IllegalStateException("Unknown user type: " + typeUser);
         };
     }
@@ -92,15 +94,16 @@ public class UserDao {
      * @param user User to save
      * @return true if the user was successfully saved, false otherwise
      */
-    public static boolean saveUser(Users user) {
+    public static boolean saveUser(User user) {
         if (user == null) {
             logger.error("❌ Null user");
             return false;
         }
 
         int userType = getUserTypeId(user);
+        String phoneNumber = (user instanceof Customer) ? ((Customer) user).getPhoneNumber() : null;
 
-        try (Connection conn = DatabaseManager.connectUsers()) {
+        try (Connection conn = DatabaseManager.connect()) {
             // Check if user already exists
             if (userExists(conn, user.getId(), user.getEmail())) {
                 logger.warn("⚠️ Error: ID or email already registered");
@@ -115,6 +118,7 @@ public class UserDao {
                 pstmt.setString(4, user.getPasswordHash());
                 pstmt.setInt(5, userType);
                 pstmt.setDate(6, Date.valueOf(user.getCreatedAt()));
+                pstmt.setString(7, phoneNumber);
 
                 int rows = pstmt.executeUpdate();
                 if (rows > 0) {
@@ -156,7 +160,7 @@ public class UserDao {
      * @return true if an admin exists, false otherwise
      */
     public static boolean adminExists() {
-        try (Connection conn = DatabaseManager.connectUsers();
+        try (Connection conn = DatabaseManager.connect();
              PreparedStatement pstmt = conn.prepareStatement(SQL_CHECK_ADMIN_EXISTS);
              ResultSet rs = pstmt.executeQuery()) {
             return rs.next() && rs.getInt(1) > 0;
@@ -172,12 +176,12 @@ public class UserDao {
      * @param email Email of the user to find
      * @return Optional with the user if found, Optional.empty() otherwise
      */
-    public static Users findUserByEmail(String email) {
+    public static User findUserByEmail(String email) {
         if (email == null || email.isEmpty()) {
             return null;
         }
 
-        try (Connection conn = DatabaseManager.connectUsers();
+        try (Connection conn = DatabaseManager.connect();
              PreparedStatement pstmt = conn.prepareStatement(SQL_FIND_USER_BY_EMAIL)) {
 
             pstmt.setString(1, email);
@@ -206,7 +210,7 @@ public class UserDao {
         String searchPattern = "%" + query.replace("_", "\\_").replace("%", "\\%") + "%";
         Map<BasicUserInfoDb, Integer> userScores = new HashMap<>();
 
-        try (Connection conn = DatabaseManager.connectUsers();
+        try (Connection conn = DatabaseManager.connect();
              PreparedStatement pstmt = conn.prepareStatement(SQL_SEARCH_USERS)) {
 
             pstmt.setString(1, searchPattern);
@@ -220,7 +224,8 @@ public class UserDao {
                             rs.getString("email"),
                             rs.getString("name"),
                             rs.getInt("type_id"),
-                            rs.getDate("created_at").toLocalDate()
+                            rs.getDate("created_at").toLocalDate(),
+                            rs.getString("phoneNumber")
                     );
 
                     // Calculate similarity score
@@ -249,10 +254,10 @@ public class UserDao {
      *
      * @return List of all users
      */
-    public static List<Users> getAllUsers() {
-        List<Users> usersList = new ArrayList<>();
+    public static List<User> getAllUsers() {
+        List<User> usersList = new ArrayList<>();
 
-        try (Connection conn = DatabaseManager.connectUsers();
+        try (Connection conn = DatabaseManager.connect();
              PreparedStatement pstmt = conn.prepareStatement(SQL_GET_ALL_USERS);
              ResultSet rs = pstmt.executeQuery()) {
 
@@ -277,7 +282,7 @@ public class UserDao {
             logger.error("❌ Null user information");
         }
 
-        try (Connection conn = DatabaseManager.connectUsers()) {
+        try (Connection conn = DatabaseManager.connect()) {
             boolean originalAutoCommit = conn.getAutoCommit();
             conn.setAutoCommit(false);
 
@@ -288,7 +293,8 @@ public class UserDao {
                     pstmt.setString(2, basicUserInfo.name());
                     pstmt.setString(3, basicUserInfo.email());
                     pstmt.setInt(4, basicUserInfo.typeUserId());
-                    pstmt.setString(5, basicUserInfo.id());
+                    pstmt.setString(5, basicUserInfo.phoneNumber());
+                    pstmt.setString(6, basicUserInfo.id());
 
 
                     int rowsAffected = pstmt.executeUpdate();
@@ -321,7 +327,7 @@ public class UserDao {
             logger.error("❌ Invalid user ID");
         }
 
-        try (Connection conn = DatabaseManager.connectUsers();
+        try (Connection conn = DatabaseManager.connect();
              PreparedStatement pstmt = conn.prepareStatement(SQL_DELETE_USER)) {
 
             pstmt.setString(1, id);
@@ -340,5 +346,5 @@ public class UserDao {
     /**
      * Basic information about a user in the database.
      */
-    public record BasicUserInfoDb(String id, String email, String name, int typeUserId, LocalDate createAt) {}
+    public record BasicUserInfoDb(String id, String email, String name, int typeUserId, LocalDate createAt, String phoneNumber) {}
 }

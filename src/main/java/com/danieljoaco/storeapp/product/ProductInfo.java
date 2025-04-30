@@ -1,8 +1,8 @@
-package com.danieljoaco.storeapp.products;
+package com.danieljoaco.storeapp.product;
 
-import com.danieljoaco.storeapp.users.Admin;
+import com.danieljoaco.storeapp.user.Admin;
 
-public class ProductReference {
+public class ProductInfo {
     private final String ref;
     private String name;
     private String brand;
@@ -10,7 +10,7 @@ public class ProductReference {
     private String subcategory;
     private String description;
 
-    public ProductReference(String ref, String name, String brand, String category, String subcategory, String description) {
+    public ProductInfo(String ref, String name, String brand, String category, String subcategory, String description) {
         this.ref = ref;
         this.name = name;
         this.brand = brand;

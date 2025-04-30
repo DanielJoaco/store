@@ -1,11 +1,11 @@
-package com.danieljoaco.storeapp.users;
+package com.danieljoaco.storeapp.user;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
 
 import org.mindrot.jbcrypt.BCrypt;
 
-public class Admin extends Users {
+public class Admin extends User {
     
     // Constructor privado, no puede ser llamado desde fuera de la clase
     private Admin(String id, String email, String password, String name) {
@@ -46,7 +46,7 @@ public class Admin extends Users {
         if (!UserDao.adminExists()) {
             throw new IllegalStateException("No admin exists. Use createFirstAdmin(...) first.");
         }
-        Users user = UserDao.findUserByEmail(emailAccess);
+        User user = UserDao.findUserByEmail(emailAccess);
         if (user != null) {
             if (BCrypt.checkpw(passwordAccess, user.getPasswordHash()) &&
                     user.getTypeUser().equals(UserType.ADMIN.name())){

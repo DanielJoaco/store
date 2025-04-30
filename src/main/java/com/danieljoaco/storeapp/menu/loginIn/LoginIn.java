@@ -1,7 +1,7 @@
 package com.danieljoaco.storeapp.menu.loginIn;
 
 import com.danieljoaco.storeapp.menu.utils.Utils;
-import com.danieljoaco.storeapp.users.*;
+import com.danieljoaco.storeapp.user.*;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -43,8 +43,8 @@ public class LoginIn {
         }
     }
 
-    public static Users loginInUsers(String typeUser, Stage primaryStage, Stage loginInMenuStage) {
-        Users userLogin = null;
+    public static User loginInUsers(String typeUser, Stage primaryStage, Stage loginInMenuStage) {
+        User userLogin = null;
 
         String title = switch (typeUser) {
             case "ADMIN" -> "Login In Admin";

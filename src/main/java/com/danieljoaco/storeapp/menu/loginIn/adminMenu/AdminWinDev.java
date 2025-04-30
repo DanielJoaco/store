@@ -1,7 +1,7 @@
 package com.danieljoaco.storeapp.menu.loginIn.adminMenu;
 
 import com.danieljoaco.storeapp.Main;
-import com.danieljoaco.storeapp.users.Admin;
+import com.danieljoaco.storeapp.user.Admin;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;

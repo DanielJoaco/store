@@ -2,7 +2,7 @@ package com.danieljoaco.storeapp.menu.forms;
 
 import static com.danieljoaco.storeapp.menu.utils.Utils.*;
 
-import com.danieljoaco.storeapp.users.Admin;
+import com.danieljoaco.storeapp.user.Admin;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
 

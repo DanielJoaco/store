@@ -1,4 +1,4 @@
-package com.danieljoaco.storeapp.products;
+package com.danieljoaco.storeapp.product;
 
 public class SubCategory extends Category {
 
