@@ -89,6 +89,7 @@ public class ProductFormController extends FormController {
 
         // Hide description as it's not needed for new entry
         lblDescription.setVisible(false);
+        txtDescription.setText(productRef.getDescription());
         txtDescription.setVisible(false);
     }
 

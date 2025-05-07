@@ -1,4 +1,4 @@
-package com.danieljoaco.storeapp.menu.loginIn.adminMenu.tables;
+package com.danieljoaco.storeapp.menu.tables;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

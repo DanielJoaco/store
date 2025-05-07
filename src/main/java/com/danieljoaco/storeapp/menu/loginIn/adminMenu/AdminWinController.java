@@ -2,9 +2,9 @@ package com.danieljoaco.storeapp.menu.loginIn.adminMenu;
 
 import com.danieljoaco.storeapp.menu.forms.ProductFormController;
 import com.danieljoaco.storeapp.menu.loginIn.adminMenu.SearchEngineController.SearchType;
-import com.danieljoaco.storeapp.menu.loginIn.adminMenu.tables.OrdersTableController;
-import com.danieljoaco.storeapp.menu.loginIn.adminMenu.tables.ProductsTableController;
-import com.danieljoaco.storeapp.menu.loginIn.adminMenu.tables.UsersTableController;
+import com.danieljoaco.storeapp.menu.tables.OrdersTableController;
+import com.danieljoaco.storeapp.menu.tables.ProductsTableController;
+import com.danieljoaco.storeapp.menu.tables.UsersTableController;
 import com.danieljoaco.storeapp.menu.forms.UserFormController;
 import com.danieljoaco.storeapp.product.ProductInfo;
 import com.danieljoaco.storeapp.user.Admin;

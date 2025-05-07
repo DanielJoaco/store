@@ -336,6 +336,58 @@ public class ProductsDao {
         return productsList;
     }
 
+    public static List<ProductViewInfo> getAllProductsView() {
+        String sql = """
+            SELECT
+                pr.name,
+                pr.brand,
+                pr.description,
+                p.product_ref AS ref,
+                p.price,
+                SUM(p.stock) AS stock,
+                c.name AS category,
+                s.name AS subcategory
+            FROM products p
+            JOIN product_references pr ON p.product_ref = pr.ref
+            LEFT JOIN subcategories s ON pr.subcategory_id = s.id
+            LEFT JOIN categories c ON s.category_id = c.id
+            GROUP BY
+                p.product_ref,
+                p.price,
+                pr.name,
+                pr.brand,
+                pr.description,
+                c.name,
+                s.name
+            ORDER BY pr.name
+            """;
+
+        List<ProductViewInfo> productsViewList = new ArrayList<>();
+        try (Connection conn = DatabaseManager.connect();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                ProductViewInfo productView = new ProductViewInfo(
+                        rs.getString("ref"),
+                        rs.getString("name"),
+                        rs.getString("brand"),
+                        rs.getString("category"),
+                        rs.getString("subcategory"),
+                        rs.getInt("stock"),
+                        rs.getDouble("price"),
+                        "",
+                        rs.getString("description")
+                );
+                productsViewList.add(productView);
+            }
+        } catch (SQLException e) {
+            System.out.println("Error obtaining the products: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return productsViewList;
+    }
+
     /**
      * Updates a product reference in the database.
      */
@@ -506,4 +558,16 @@ public class ProductsDao {
             System.out.println("Error in the database operation:" + e.getMessage());
         }
     }
+
+    public record ProductViewInfo(
+            String ref,
+            String name,
+            String brand,
+            String category,
+            String subcategory,
+            int stock,
+            double price,
+            String image,
+            String description)
+    {}
 }

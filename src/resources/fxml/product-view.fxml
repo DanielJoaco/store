@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.danieljoaco.storeapp.menu.shippingCar.ProductViewController"
+            prefHeight="700" prefWidth="1060">
+    <top>
+        <VBox alignment="CENTER" spacing="10" maxHeight="50">
+            <padding>
+                <Insets top="10" bottom="10" left="10" right="10"/>
+            </padding>
+            <Label text="Product catalog" styleClass="title">
+                <font>
+                    <Font name="System Bold" size="24"/>
+                </font>
+            </Label>
+        </VBox>
+    </top>
+
+    <left>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" prefWidth="160">
+            <VBox  fx:id="boxCategories" spacing="5" style="-fx-background-color: #f4f4f4;">
+                <padding>
+                    <Insets top="10" right="10" bottom="10" left="10"/>
+                </padding>
+                <Label text="Categories" styleClass="sidebar-header">
+                    <font>
+                        <Font name="System Bold" size="16"/>
+                    </font>
+                </Label>
+            </VBox>
+        </ScrollPane>
+    </left>
+
+
+    <center>
+        <ScrollPane fx:id="gridProductPane" fitToWidth="true" fitToHeight="true">
+        </ScrollPane>
+    </center>
+
+
+    <bottom>
+        <VBox alignment="CENTER" spacing="20">
+            <padding>
+                <Insets top="10" right="10" bottom="20" left="10"/>
+            </padding>
+
+
+            <HBox alignment="CENTER" spacing="10">
+                <Button fx:id="btnPrev" onAction="#prevPage" text="⏮ " styleClass="tab-button"/>
+                <HBox fx:id="boxExplorationButtons" alignment="CENTER" spacing="10">
+
+                </HBox>
+                <Button fx:id="btnNext" onAction="#nextPage" text="⏭" styleClass="tab-button"/>
+            </HBox>
+
+            <Button text="New Order"  onAction="#newOrder" styleClass="new-order-button">
+                <font>
+                    <Font name="System Bold" size="14"/>
+                </font>
+            </Button>
+        </VBox>
+    </bottom>
+
+</BorderPane>

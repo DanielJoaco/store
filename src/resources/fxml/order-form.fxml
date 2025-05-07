@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox alignment="CENTER" spacing="15" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.danieljoaco.storeapp.menu.forms.OrderFormController"
+      prefHeight="500.0" prefWidth="700.0">
+    <padding>
+        <Insets bottom="20" left="20" right="20" top="20" />
+    </padding>
+
+    <GridPane>
+
+        <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="150.0" />
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="150.0" />
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="150.0" />
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="150.0" />
+        </columnConstraints>
+
+        <Label fx:id="lblTitle" styleClass="title-label" text="Order Form" GridPane.columnSpan="4" GridPane.halignment="CENTER" GridPane.rowIndex="0" />
+
+        <Label text="Customer:" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+        <Label fx:id="txtCustomerName"  text="Customer name" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+        <AnchorPane fx:id="TableContainer" GridPane.columnSpan="4" GridPane.rowIndex="3" minHeight="400.0">
+        </AnchorPane>
+
+
+        <Button fx:id="btnSubmitOrder" onAction="#handleSubmitOrder"
+                text="Submit Order"
+                GridPane.columnSpan="4"
+                GridPane.halignment="CENTER"
+                GridPane.rowIndex="5"/>
+
+        <Label fx:id="lblErrorMessage"
+               styleClass="error-label"
+               GridPane.columnSpan="2"
+               GridPane.halignment="CENTER"
+               GridPane.rowIndex="6"/>
+
+    </GridPane>
+</VBox>

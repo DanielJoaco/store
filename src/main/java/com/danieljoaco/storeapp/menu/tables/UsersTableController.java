@@ -1,4 +1,4 @@
-package com.danieljoaco.storeapp.menu.loginIn.adminMenu.tables;
+package com.danieljoaco.storeapp.menu.tables;
 
 import com.danieljoaco.storeapp.menu.forms.UserFormController;
 import com.danieljoaco.storeapp.user.Admin;

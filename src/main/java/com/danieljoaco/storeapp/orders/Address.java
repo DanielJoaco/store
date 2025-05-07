@@ -29,7 +29,7 @@ public record Address(
         if (!stLet.isBlank() && !isValidAlphabeticInput(stLet)) throw new IllegalArgumentException("stLet it must be a valid location");
         if (!crossStLet.isBlank() && !isValidAlphabeticInput(crossStLet)) throw new IllegalArgumentException("crossStLet it must be a valid location");
         if (!houseLet.isBlank() && !isValidAlphabeticInput(houseLet)) throw new IllegalArgumentException("houseLet it must be a valid location");
-        if (!indications.isBlank() && !isValidAlphanumericInput(indications)) throw new IllegalArgumentException("indications it must be a valid location");
+        if (!indications.isBlank() && !isValidAlphanumericInput(indications)) throw new IllegalArgumentException("Indications must be a valid alphanumeric characters.");
         if (!isValidLocation(city)) throw new IllegalArgumentException("city it must be a valid location");
         if (!isValidPostalCode(postalCode)) throw new IllegalArgumentException("postalCode it must be a valid postal code");
         if (!isValidLocation(state)) throw new IllegalArgumentException("state it must be a valid location");

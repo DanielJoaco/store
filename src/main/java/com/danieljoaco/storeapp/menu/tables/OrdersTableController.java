@@ -1,4 +1,4 @@
-package com.danieljoaco.storeapp.menu.loginIn.adminMenu.tables;
+package com.danieljoaco.storeapp.menu.tables;
 
 import javafx.scene.control.TableColumn;
 

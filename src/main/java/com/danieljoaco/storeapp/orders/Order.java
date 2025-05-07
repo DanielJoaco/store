@@ -17,7 +17,7 @@ public class Order {
 
     private final String id;
     private Customer.CustomerInfo customerInfo;
-    private final List<OrderItem> products;
+    private final List<OrderItem> items;
     private final LocalDateTime orderDate;
     private Status status;
     private final Payment.PaymentData paymentData;
@@ -50,7 +50,7 @@ public class Order {
 
         this.id = UUID.randomUUID().toString();
         this.customerInfo = customerInfo;
-        this.products = new ArrayList<>(products);
+        this.items = new ArrayList<>(products);
         this.orderDate = LocalDateTime.now();
         this.status = Status.PENDING;
         this.paymentData = paymentData;
@@ -66,11 +66,11 @@ public class Order {
 
     public void addProduct(ProductInfo product, int quantity, double unitPrice) {
         OrderItem orderItem = new OrderItem(product, quantity, unitPrice);
-        products.add(orderItem);
+        items.add(orderItem);
     }
 
     public void removeProduct(ProductInfo product) {
-        products.removeIf(item -> item.productInfo().equals(product));
+        items.removeIf(item -> item.productInfo().equals(product));
     }
 
     private void setStatus(Status status) {
@@ -110,13 +110,13 @@ public class Order {
 
     public String getId() {return id;}
     public Customer.CustomerInfo getCustomerInfo() {return customerInfo;}
-    public List<OrderItem> getProducts() {
-        return Collections.unmodifiableList(products);
+    public List<OrderItem> getItems() {
+        return Collections.unmodifiableList(items);
     }
     public LocalDateTime getOrderDate() {return orderDate;}
     public Payment.PaymentData getPaymentData() {return paymentData;}
     public double getSubtotal() {
-        return products.stream()
+        return items.stream()
                 .mapToDouble(i -> i.unitPrice() * i.quantity())
                 .sum();
     }

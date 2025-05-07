@@ -1,4 +1,4 @@
-package com.danieljoaco.storeapp.menu.loginIn.adminMenu.tables;
+package com.danieljoaco.storeapp.menu.tables;
 
 import com.danieljoaco.storeapp.menu.forms.ProductFormController;
 import com.danieljoaco.storeapp.product.Product;
@@ -170,7 +170,7 @@ public class ProductsTableController extends BaseTableController<Product> {
      */
     private void editProductEntry(Product product) {
         try {
-            openFormWithController("/fxml/product_form.fxml", "Edit Product entry",
+            openFormWithController(
                     (ProductFormController controller, Stage stage) -> {
                         controller.initializeForEditProduct(stage, this.adminLogin, product);
                     });
@@ -203,19 +203,18 @@ public class ProductsTableController extends BaseTableController<Product> {
 
     /**
      * Opens a form with the specified controller
-     * @param fxmlPath The path to the FXML file
-     * @param title The title of the form
+     *
+     * @param <T>         The type of the controller
      * @param initializer The initializer for the controller
-     * @param <T> The type of the controller
      * @throws IOException If the FXML file cannot be loaded
      */
-    private <T> void openFormWithController(String fxmlPath, String title, ControllerInitializer<T> initializer)
+    private <T> void openFormWithController(ControllerInitializer<T> initializer)
             throws IOException {
         Stage stage = new Stage();
-        stage.setTitle(title);
+        stage.setTitle("Edit Product entry");
         stage.setResizable(false);
 
-        javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource(fxmlPath));
+        javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/fxml/product_form.fxml"));
         Parent root = loader.load();
 
         T controller = loader.getController();

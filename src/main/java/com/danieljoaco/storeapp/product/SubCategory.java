@@ -1,8 +1,10 @@
 package com.danieljoaco.storeapp.product;
 
+import java.util.Optional;
+
 public class SubCategory extends Category {
 
-    private  final String name;
+    private final String name;
 
     public enum SubCategories {
         LIPS("LIPSTICKS", "DELINERS", "SOFT_LIPS", "TINTE", "GLOSS"),
@@ -19,8 +21,15 @@ public class SubCategory extends Category {
             return items;
         }
 
-    private static boolean isValidSubCategory(String category, String subcategory) {
+        public static Optional<SubCategories> fromCategory(String category) {
+            try {
+                return Optional.of(SubCategories.valueOf(category.toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                return Optional.empty();
+            }
+        }
 
+        public static boolean isValidSubCategory(String category, String subcategory) {
             try {
                 SubCategories subCategoryEnum = SubCategories.valueOf(category.toUpperCase());
                 for (String item : subCategoryEnum.getItems()) {
