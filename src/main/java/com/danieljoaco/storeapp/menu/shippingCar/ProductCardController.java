@@ -2,14 +2,11 @@ package com.danieljoaco.storeapp.menu.shippingCar;
 
 import com.danieljoaco.storeapp.db.ProductsDao;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.danieljoaco.storeapp.menu.utils.Utils.showError;
+import javafx.scene.image.ImageView;
+import javafx.animation.PauseTransition;
+import javafx.util.Duration;
 
 public class ProductCardController {
 
@@ -19,50 +16,57 @@ public class ProductCardController {
     @FXML
     private Button btnReduce, btnAdd;
 
+    @FXML
+    private ImageView imageView;
+
     private ProductsDao.ProductViewInfo productViewInfo;
     private int quantity;
     private double price;
-    private static List<ProductCardInfo>  productCardInfoList;
+    private ProductCardInfo productCardInfo;
 
+    @FXML
     public void initialize() {
-        this.productCardInfoList = new ArrayList<>();
+        // Initialize error message label as empty and invisible
+        if (lblErrorMessage != null) {
+            lblErrorMessage.setText("");
+            lblErrorMessage.setVisible(false);
+        }
     }
 
     public void initData(ProductsDao.ProductViewInfo productViewInfo) {
         this.productViewInfo = productViewInfo;
-        this.quantity = 1;
+        quantity = 1;
         this.price = productViewInfo.price();
 
         lblName.setText(productViewInfo.name());
-        lblPrice.setText(String.valueOf(price));
+        lblQuantity.setText(String.valueOf(quantity));
+        lblPrice.setText(String.format("%.2f", price));
+
+        // Set initial button states
+        btnReduce.setDisable(quantity <= 0);
+        btnAdd.setDisable(quantity >= productViewInfo.stock());
     }
 
     @FXML
-    private void reduceQuantity() {
+    public void reduceQuantity() {
         if (quantity > 0) {
-            btnAdd.setDisable(false);
             quantity--;
-            lblQuantity.setText("");
             lblQuantity.setText(String.valueOf(quantity));
             calculatePrice();
-        } else if (quantity == 0) {
-            btnReduce.setDisable(true);
+            btnReduce.setDisable(quantity <= 0);
+            btnAdd.setDisable(false);
         }
-
     }
 
     @FXML
     public void addQuantity() {
-        if (quantity < productViewInfo.stock()) {
-            btnReduce.setDisable(false);
+        if (productViewInfo != null && quantity < productViewInfo.stock()) {
             quantity++;
-            lblQuantity.setText("");
             lblQuantity.setText(String.valueOf(quantity));
             calculatePrice();
-        } else if (quantity == productViewInfo.stock()) {
-            btnAdd.setDisable(true);
+            btnAdd.setDisable(quantity >= productViewInfo.stock());
+            btnReduce.setDisable(false);
         }
-
     }
 
     private void calculatePrice() {
@@ -70,32 +74,37 @@ public class ProductCardController {
         lblPrice.setText(String.format("%.2f", totalPrice));
     }
 
-
     @FXML
-    private void addToCart() {
-        ProductCardInfo productCardInfo = new ProductCardInfo(productViewInfo.ref(), quantity, price);
+    public void addToCart() {
+        if (quantity > 0) {
+            this.productCardInfo = new ProductCardInfo(productViewInfo, quantity, price * quantity);
 
-        boolean found = false;
-        for (ProductCardInfo p: productCardInfoList) {
-            if (p.ref().equals(productCardInfo.ref())) {
-                int i = productCardInfoList.indexOf(p);
-                productCardInfoList.set(i, productCardInfo);
-                found = true;
-                break;
-            }
+            // Show confirmation message
+            lblErrorMessage.setText("Added to cart!");
+            lblErrorMessage.setVisible(true);
+
+            // Auto-hide message after 2 seconds
+            PauseTransition pause = new PauseTransition(Duration.seconds(2));
+            pause.setOnFinished(e -> lblErrorMessage.setVisible(false));
+            pause.play();
+        } else {
+            lblErrorMessage.setText("Please select quantity!");
+            lblErrorMessage.setVisible(true);
+
+            // Auto-hide error message after 2 seconds
+            PauseTransition pause = new PauseTransition(Duration.seconds(2));
+            pause.setOnFinished(e -> lblErrorMessage.setVisible(false));
+            pause.play();
         }
-
-        if (!found) {
-            productCardInfoList.add(productCardInfo);
-        }
-
     }
 
-    public static List<ProductCardInfo> getProductCardInfoList() {return productCardInfoList;}
-
-    public void viewProductDetails() {
-        // Logic to view product details
+    public ProductCardInfo getProductCardInfo() {
+        return productCardInfo;
     }
 
-    public record ProductCardInfo(String ref, int quantity, double price){}
+    public void clearProductCardInfo() {
+        this.productCardInfo = null;
+    }
+
+    public record ProductCardInfo(ProductsDao.ProductViewInfo productViewInfo, int quantity, double total){}
 }

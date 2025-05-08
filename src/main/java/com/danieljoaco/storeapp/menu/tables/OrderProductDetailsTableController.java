@@ -28,7 +28,7 @@ public class OrderProductDetailsTableController extends BaseTableController<Orde
         TableColumn<OrderProductDetails, String> colProductName = createColumn("Name", "productName", 120);
         TableColumn<OrderProductDetails, String> colProductBrand = createColumn("Brand", "productBrand", 60);
         TableColumn<OrderProductDetails, Integer> colQuantity = createQuantityColumn("Quantity", "quantity", 90);
-        TableColumn<OrderProductDetails, Double> colPrice = createColumn("Price", "price", 50);
+        TableColumn<OrderProductDetails, Double> colPrice = createColumn("Price", "total", 50);
 
         tableView.getColumns().clear();
         tableView.getColumns().addAll(

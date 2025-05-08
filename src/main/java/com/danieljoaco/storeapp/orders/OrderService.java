@@ -51,7 +51,7 @@ public class OrderService {
         Objects.requireNonNull(order,   "order is required");
         Objects.requireNonNull(product, "product is required");
         if (quantity <= 0) throw new IllegalArgumentException("Quantity must be > 0");
-        if (unitPrice < 0) throw new IllegalArgumentException("Unit price must be >= 0");
+        if (unitPrice < 0) throw new IllegalArgumentException("Unit total must be >= 0");
 
         order.addProduct(product, quantity, unitPrice);
         // Si en tu diseño vuelves a subtotal/total mutables, aquí podrías:

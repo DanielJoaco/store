@@ -289,7 +289,7 @@ public class ProductFormController extends FormController {
     /**
      * Collects the data from the input fields and validates them.
      *
-     * @param validateFullProduct if true, validates all fields including cost, price, stock, bill
+     * @param validateFullProduct if true, validates all fields including cost, total, stock, bill
      * @return a ProductFormData object containing the collected data
      */
     private ProductFormData collectFormData(boolean validateFullProduct) {
@@ -365,7 +365,7 @@ public class ProductFormController extends FormController {
      */
     private void validateProductInputs(String costText, String priceText, String stockText, String bill) {
         if (costText.isEmpty() || priceText.isEmpty() || stockText.isEmpty() || bill.isEmpty()) {
-            throw new IllegalArgumentException("Cost, price, stock and bill fields cannot be empty.");
+            throw new IllegalArgumentException("Cost, total, stock and bill fields cannot be empty.");
         }
 
         try {
@@ -384,7 +384,7 @@ public class ProductFormController extends FormController {
                 throw new IllegalArgumentException("Stock cannot be negative or zero.");
             }
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Please enter valid numeric values for cost, price, and stock.");
+            throw new IllegalArgumentException("Please enter valid numeric values for cost, total, and stock.");
         } catch (Exception e) {
             throw new IllegalArgumentException("Only use alphanumeric characters or _ for bill.");
         }

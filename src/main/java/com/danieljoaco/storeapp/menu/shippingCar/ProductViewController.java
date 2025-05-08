@@ -1,22 +1,24 @@
 package com.danieljoaco.storeapp.menu.shippingCar;
 
 import com.danieljoaco.storeapp.db.ProductsDao;
+import com.danieljoaco.storeapp.menu.forms.OrderFormController;
 import com.danieljoaco.storeapp.product.SubCategory;
+import com.danieljoaco.storeapp.user.Customer;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TitledPane;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.danieljoaco.storeapp.menu.shippingCar.ProductCardController.getProductCardInfoList;
 import static com.danieljoaco.storeapp.menu.utils.Utils.capitalize;
 
 public class ProductViewController {
@@ -30,13 +32,60 @@ public class ProductViewController {
     @FXML
     private HBox boxExplorationButtons;
 
-    private List<ProductsDao.ProductViewInfo> products;
+    @FXML
+    private Label cartCountLabel;
 
-    public void initialize() {
+    @FXML
+    private Button newOrderButton;
+
+    private List<ProductsDao.ProductViewInfo> products;
+    private Customer.CustomerInfo customer;
+    private Stage productViewStage;
+    private List<GridPane> productPages;
+    private List<ProductCardController> productCardControllers;
+    private int cartItemCount;
+    private int currentPageIndex;
+
+    public void initialize(Customer.CustomerInfo customer, Stage stage) {
         this.products = loadProducts();
+        this.customer = customer;
+        this.productViewStage = stage;
+        this.productPages = new ArrayList<>();
+        this.productCardControllers = new ArrayList<>();
+        this.cartItemCount = 0;
+        this.currentPageIndex = 0;
+
+        // Initialize cart count label if present
+        if (cartCountLabel != null) {
+            updateCartCountLabel();
+        }
+
         setupCategoriesTittlePane();
         setupViewProductsGrid();
         createExplorationButtons();
+
+        // Initially disable New Order button if cart is empty
+        if (newOrderButton != null) {
+            newOrderButton.setDisable(cartItemCount == 0);
+        }
+    }
+
+    private void updateCartCountLabel() {
+        cartItemCount = 0;
+        for (ProductCardController controller : productCardControllers) {
+            if (controller.getProductCardInfo() != null) {
+                cartItemCount++;
+            }
+        }
+
+        if (cartCountLabel != null) {
+            cartCountLabel.setText("Cart: " + cartItemCount + " items");
+        }
+
+        // Enable/disable New Order button based on cart contents
+        if (newOrderButton != null) {
+            newOrderButton.setDisable(cartItemCount == 0);
+        }
     }
 
     private List<ProductsDao.ProductViewInfo> loadProducts() {
@@ -51,12 +100,13 @@ public class ProductViewController {
                 .collect(Collectors.toSet());
 
         for (String category : uniqueCategories) {
-            System.out.println(category);
             SubCategory.SubCategories subCategoryEnum = SubCategory.SubCategories.valueOf(category);
 
             List<Hyperlink> subcategoryLinks = new ArrayList<>();
             for (String sub : subCategoryEnum.getItems()) {
                 Hyperlink link = new Hyperlink(capitalize(sub));
+                String finalSub = sub;
+                link.setOnAction(event -> filterBySubcategory(finalSub));
                 subcategoryLinks.add(link);
             }
 
@@ -69,66 +119,62 @@ public class ProductViewController {
         }
     }
 
-
+    private void filterBySubcategory(String subcategory) {
+        // Implement filtering logic here
+        System.out.println("Filtering by subcategory: " + subcategory);
+        // You would typically filter your products list and reload the grid
+    }
 
     private void setupViewProductsGrid() {
-        int row = 0;
-        int col = 0;
-        int numberProducts = 0;
-        int numerGridPane = 0;
-
-        GridPane gridProductsPage = createGridPane();
-        gridProductsPage.setId(String.valueOf(numerGridPane));
-
-        BorderPane centeringPane = new BorderPane();
-        centeringPane.setCenter(gridProductsPage);
-
-        StackPane stackPane = new StackPane();
-        stackPane.setAlignment(Pos.CENTER);
-        stackPane.getChildren().add(centeringPane);
-
+        int row = 0, col = 0, count = 0, pageIdx = 0;
+        GridPane currentPage = createGridPane();
 
         for (ProductsDao.ProductViewInfo product : products) {
-            FXMLLoader cardLoader = new FXMLLoader(getClass().getResource("/fxml/product-card.fxml"));
-            Node cardNode;
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/product-card.fxml"));
+            Node card;
             try {
-                cardNode = cardLoader.load();
-            }catch (Exception e) {
+                card = loader.load();
+
+            }catch (IOException e) {
                 e.printStackTrace();
                 System.err.println("Error loading product card: " + e.getMessage());
-                continue;
+                continue; // Skip this product if loading fails
             }
-            ProductCardController cardCtrl = cardLoader.getController();
-            cardCtrl.initData(product);
-
-            if (numberProducts < 6) {
-                gridProductsPage.add(cardNode, col, row);
-                numberProducts++;
-            }else{
-                numberProducts = 0;
-                col = 0;
-                row = 0;
-                numerGridPane++;
-
-                gridProductsPage = createGridPane();
-                gridProductsPage.setId(String.valueOf(numerGridPane));
-                gridProductsPage.setVisible(false);
-                gridProductsPage.add(cardNode, col, row);
-
-                centeringPane = new BorderPane();
-                centeringPane.setCenter(gridProductsPage);
-                stackPane.getChildren().add(centeringPane);
+            ProductCardController ctrl = loader.getController();
+            ctrl.initData(product);
+            // Listener del botón…
+            Button btn = findAddButton(card);
+            if (btn != null) {
+                btn.setOnAction(e -> { ctrl.addToCart(); updateCartCountLabel(); });
             }
+            productCardControllers.add(ctrl);
 
-            col++;
-            if (col > 2) {
-                col = 0;
-                row++;
+            // Añade la tarjeta al grid actual
+            currentPage.add(card, col, row);
+            count++; col = (col + 1) % 3;
+            if (col == 0) row++;
+
+            // Cuando llegues a 6 productos, inicia nueva página
+            if (count == 6) {
+                productPages.add(currentPage);
+                currentPage = createGridPane();
+                count = row = col = 0;
+                pageIdx++;
             }
-
+        }
+        // Añade la última página (si quedó con <6 items)
+        if (count > 0 || productPages.isEmpty()) {
+            productPages.add(currentPage);
         }
 
-        gridProductPane.setContent(stackPane);
+        // Muestra la primera página
+        gridProductPane.setContent(productPages.get(0));
+    }
+
+    private Button findAddButton(Node cardNode) {
+        return (Button) ((VBox) cardNode).getChildren().stream()
+                .filter(n -> n instanceof Button && ((Button) n).getText().equals("Add to Cart"))
+                .findFirst().orElse(null);
     }
 
     private GridPane createGridPane() {
@@ -158,84 +204,110 @@ public class ProductViewController {
         return gridPane;
     }
 
-    private void createExplorationButtons(){
-        int items = 1;
-        int page = 0;
-        List<Button> explorationButtons = new ArrayList<>();
-        Button button = new Button("1");
-        button.setId(String.valueOf(page));
-        Button finalButton = button;
-        button.setOnAction(event -> {changePage(finalButton.getId());});
-        explorationButtons.add(button);
-        for(ProductsDao.ProductViewInfo p: products){
-            items++;
-            if(items > 6){
-                page++;
-                button = new Button(String.valueOf(page+1));
-                button.setId(String.valueOf(page));
-                Button finalButton2 = button;
-                button.setOnAction(event -> {changePage(finalButton2.getId());});
-                explorationButtons.add(button);
-                items = 1;
+    private void createExplorationButtons() {
+        boxExplorationButtons.getChildren().clear();
 
-            }
+        // Declara e inicializa aquí tu lista local
+        List<Button> explorationButtons = new ArrayList<>();
+
+        int totalPages = productPages.size();
+        for (int i = 0; i < totalPages; i++) {
+            Button btn = new Button(String.valueOf(i + 1));
+            btn.setId(String.valueOf(i));
+            btn.setOnAction(e -> changePage(btn.getId()));
+            explorationButtons.add(btn);
         }
 
-        boxExplorationButtons.getChildren().clear();
         boxExplorationButtons.getChildren().addAll(explorationButtons);
     }
 
+
+
     private void changePage(String id) {
-        Node content = gridProductPane.getContent();
-        if (content instanceof StackPane stackPane) {
-            for (Node innerNode : stackPane.getChildren()) {
-                if (innerNode instanceof BorderPane borderPane) {
-                    Node center = borderPane.getCenter();
-                    if (center instanceof GridPane gridProductsPage) {
-                        gridProductsPage.setVisible(gridProductsPage.getId().equals(id));
-                    }
-                }
-            }
+        int idx = Integer.parseInt(id);
+        if (idx >= 0 && idx < productPages.size()) {
+            currentPageIndex = idx;
+            gridProductPane.setContent(productPages.get(idx));
         }
     }
 
+
     @FXML
     private void prevPage() {
-        Node content = gridProductPane.getContent();
-        if (content instanceof StackPane stackPane) {
-            for (Node innerNode : stackPane.getChildren()) {
-                if (innerNode instanceof BorderPane borderPane) {
-                    Node center = borderPane.getCenter();
-                    if (center instanceof GridPane gridProductsPage) {
-                        int currentPage = Integer.parseInt(gridProductsPage.getId());
-                        if (currentPage > 0) {
-                            changePage(String.valueOf(currentPage - 1));
-                        }
-                    }
-                }
-            }
+        if (currentPageIndex > 0) {
+            changePage(String.valueOf(currentPageIndex - 1));
         }
     }
 
     @FXML
     private void nextPage() {
-        Node content = gridProductPane.getContent();
-        if (content instanceof StackPane stackPane) {
-            for (Node innerNode : stackPane.getChildren()) {
-                if (innerNode instanceof BorderPane borderPane) {
-                    Node center = borderPane.getCenter();
-                    if (center instanceof GridPane gridProductsPage) {
-                        int currentPage = Integer.parseInt(gridProductsPage.getId());
-                        changePage(String.valueOf(currentPage));
-                    }
+        if (currentPageIndex < productPages.size() - 1) {
+            changePage(String.valueOf(currentPageIndex + 1));
+        }
+    }
+
+
+    @FXML
+    private void newOrder() {
+        try {
+            List<ProductCardController.ProductCardInfo> productCardInfoList = new ArrayList<>();
+
+            for (ProductCardController controller : productCardControllers) {
+                ProductCardController.ProductCardInfo productCardInfo = controller.getProductCardInfo();
+                if (productCardInfo != null) {
+                    productCardInfoList.add(productCardInfo);
                 }
             }
+
+            if (productCardInfoList.isEmpty()) {
+                // Show an alert if no products were selected
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Empty Cart");
+                alert.setHeaderText(null);
+                alert.setContentText("Please add at least one product to your cart.");
+                alert.showAndWait();
+                return;
+            }
+
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/order-form.fxml"));
+            Parent root;
+            try {
+                root = loader.load();
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.err.println("Error loading order form: " + e.getMessage());
+                return;
+            }
+
+            Scene scene = new Scene(root);
+            Stage orderFormStage = new Stage();
+            orderFormStage.setTitle("Order Form");
+            orderFormStage.setScene(scene);
+
+            // Get the controller after loading the FXML
+            OrderFormController orderFormController = loader.getController();
+            orderFormController.initialize(productCardInfoList, customer, orderFormStage);
+
+            productViewStage.close();
+            orderFormStage.showAndWait();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Error loading order form: " + e.getMessage());
         }
     }
 
     @FXML
-    private void newOrder(){
-        List<ProductCardController.ProductCardInfo> productCardInfoList = getProductCardInfoList();
+    private void clearCart() {
+        for (ProductCardController controller : productCardControllers) {
+            controller.clearProductCardInfo();
+        }
+        updateCartCountLabel();
 
+        // Show confirmation alert
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Cart Cleared");
+        alert.setHeaderText(null);
+        alert.setContentText("Your shopping cart has been cleared.");
+        alert.showAndWait();
     }
 }

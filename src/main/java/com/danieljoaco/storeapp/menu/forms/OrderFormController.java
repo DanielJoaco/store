@@ -1,39 +1,68 @@
 package com.danieljoaco.storeapp.menu.forms;
 
-import com.danieljoaco.storeapp.menu.tables.OrderProductDetailsTableController;
-import com.danieljoaco.storeapp.orders.Order;
+import com.danieljoaco.storeapp.db.ProductsDao;
+import com.danieljoaco.storeapp.menu.shippingCar.ProductCardController;
+import com.danieljoaco.storeapp.user.Customer;
 import javafx.fxml.FXML;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class OrderFormController {
 
     @FXML
-    private AnchorPane TableContainer;
+    private Label lblCustomerName;
 
-    private Order order;
-    private List<OrderProductDetailsTableController.OrderProductDetails> orderProductDetailsList;
+    @FXML
+    private TextField txtSubtotal, txtTax, txtDiscounts, txtTotal;
 
-    public void initialize(Order order) {
-        this.order = order;
-        orderProductDetailsList = new ArrayList<>();
+    private List<ProductCardController.ProductCardInfo> productCardInfoList;
+    private Customer.CustomerInfo customer;
+    private Stage orderFormStage;
+    private double subtotal, tax, discounts, total;
 
-        for(Order.OrderItem item: order.getItems()){
-            OrderProductDetailsTableController.OrderProductDetails orderProductDetails = new OrderProductDetailsTableController.OrderProductDetails(
-                    item.productInfo().getRef(),
-                    item.productInfo().getName(),
-                    item.productInfo().getBrand(),
-                    item.quantity(),
-                    item.unitPrice()
-            );
-            orderProductDetailsList.add(orderProductDetails);
-        }
-        OrderProductDetailsTableController orderProductDetailsTableController = new OrderProductDetailsTableController();
-        orderProductDetailsTableController.addTableToContainer(TableContainer);
-        orderProductDetailsTableController.initialize(orderProductDetailsList);
+
+    public void initialize(List<ProductCardController.ProductCardInfo> productCardInfoList, Customer.CustomerInfo customer, Stage orderFormStage) {
+        this.productCardInfoList = productCardInfoList;
+        this.customer = customer;
+        this.orderFormStage = orderFormStage;
+        this.lblCustomerName.setText(customer.name());
+        this.txtSubtotal.setDisable(true);
+        this.txtTax.setText("0");
+        this.txtDiscounts.setText("0");
+        this.txtTotal.setDisable(true);
+
+
+        setupTable();
+        calculateSubtotal();
+        calculateTotal();
+
     }
+
+    private void setupTable() {
+
+        //
+    }
+
+    private void calculateSubtotal() {
+        subtotal = 0;
+        for (ProductCardController.ProductCardInfo productCardInfo : productCardInfoList) {
+            subtotal += productCardInfo.total();
+        }
+        txtSubtotal.setText(String.valueOf(subtotal));
+    }
+    private void calculateTotal() {
+        tax = Double.parseDouble(txtTax.getText());
+        discounts = Double.parseDouble(txtDiscounts.getText());
+        total = subtotal + tax - discounts;
+        txtTotal.setText(String.valueOf(total));
+    }
+
+    @FXML
+    private void handleSubmitOrder(){}
 
 
 }
