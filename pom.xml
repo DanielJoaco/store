@@ -96,7 +96,7 @@
                         <argument>${exec.vmArgs}</argument>
                         <argument>-classpath</argument>
                         <classpath/>
-                        <argument>com.danieljoaco.storeapp.Main</argument>
+                        <argument>storeApp.Main</argument>
                     </arguments>
                 </configuration>
             </plugin>
@@ -109,7 +109,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.danieljoaco.storeapp.Main</mainClass>
+                            <mainClass>storeApp.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane prefHeight="700" prefWidth="1060" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.danieljoaco.storeapp.menu.shippingCar.ProductViewController">
+<BorderPane prefHeight="700" prefWidth="1060" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="storeApp.menu.shippingCar.ProductViewController">
     <top>
         <HBox alignment="CENTER" maxHeight="50" spacing="10">
             <padding>

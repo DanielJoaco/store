@@ -10,7 +10,8 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" prefHeight="700.0" prefWidth="900.0" spacing="15" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.danieljoaco.storeapp.menu.forms.OrderFormController">
+<?import javafx.scene.layout.AnchorPane?>
+<VBox alignment="CENTER" prefHeight="700.0" prefWidth="900.0" spacing="15" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="storeApp.menu.forms.OrderFormController">
     <padding>
         <Insets bottom="20" left="20" right="20" top="20" />
     </padding>
@@ -64,11 +65,11 @@
             <Insets left="200.0" />
          </GridPane.margin></Button>
         <Label fx:id="lblErrorMessage" styleClass="error-label" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="10" />
-      <TableView prefHeight="376.0" prefWidth="304.0" GridPane.columnSpan="5" GridPane.rowIndex="3" GridPane.rowSpan="2">
+      <AnchorPane  fx:id="tableProductsOrder" prefHeight="376.0" prefWidth="304.0" GridPane.columnSpan="5" GridPane.rowIndex="3" GridPane.rowSpan="2">
          <GridPane.margin>
             <Insets bottom="10.0" top="10.0" />
          </GridPane.margin>
-      </TableView>
+      </AnchorPane>
 
 
       <VBox.margin>

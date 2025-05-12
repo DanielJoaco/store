@@ -13,7 +13,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox fx:id="newUserRoot" alignment="CENTER" prefHeight="403.0" prefWidth="553.0" spacing="20" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.danieljoaco.storeapp.menu.forms.UserFormController">
+<VBox fx:id="newUserRoot" alignment="CENTER" prefHeight="403.0" prefWidth="553.0" spacing="20" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="storeApp.menu.forms.UserFormController">
     <padding>
         <Insets bottom="20" left="20" right="20" top="20" />
     </padding>
