@@ -342,6 +342,7 @@ public class ProductsDao {
                 pr.name,
                 pr.brand,
                 pr.description,
+                p.id,
                 p.product_ref AS ref,
                 p.price,
                 SUM(p.stock) AS stock,
@@ -354,6 +355,7 @@ public class ProductsDao {
             GROUP BY
                 p.product_ref,
                 p.price,
+                p.id,
                 pr.name,
                 pr.brand,
                 pr.description,
@@ -369,6 +371,7 @@ public class ProductsDao {
 
             while (rs.next()) {
                 ProductViewInfo productView = new ProductViewInfo(
+                        rs.getString("id"),
                         rs.getString("ref"),
                         rs.getString("name"),
                         rs.getString("brand"),
@@ -560,6 +563,7 @@ public class ProductsDao {
     }
 
     public record ProductViewInfo(
+            String id,
             String ref,
             String name,
             String brand,

@@ -200,109 +200,99 @@ public class DatabaseManager {
         try (Statement stat = conn.createStatement()) {
             // Crear las tablas
             stat.execute("""
-            CREATE TABLE IF NOT EXISTS franchises (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL UNIQUE
-            );
-        """);
+                CREATE TABLE IF NOT EXISTS franchises (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL UNIQUE
+                    );
+                """);
 
             stat.execute("""
-            CREATE TABLE IF NOT EXISTS payment_data (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                methods_name TEXT NOT NULL UNIQUE,
-                franchise_id INTEGER,
-                FOREIGN KEY (franchise_id) REFERENCES franchises(id) ON DELETE RESTRICT
-            );
-        """);
+                CREATE TABLE IF NOT EXISTS payment_data (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    methods_name TEXT NOT NULL UNIQUE
+                    );
+                """);
 
             stat.execute("""
-            CREATE TABLE IF NOT EXISTS streets (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL UNIQUE
-            );
-        """);
+                CREATE TABLE IF NOT EXISTS streets (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL UNIQUE
+                    );
+                """);
 
             stat.execute("""
-            CREATE TABLE IF NOT EXISTS shipping_address (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                street_id INTEGER NOT NULL,
-                st_number INTEGER NOT NULL,
-                st_letter TEXT,
-                cross_st_number INTEGER NOT NULL,
-                cross_st_letter TEXT,
-                house_number INTEGER NOT NULL,
-                house_letter TEXT,
-                indications TEXT,
-                city TEXT NOT NULL,
-                postal_code TEXT NOT NULL,
-                state TEXT NOT NULL,
-                country TEXT NOT NULL,
-                FOREIGN KEY (street_id) REFERENCES streets(id) ON DELETE RESTRICT
-            );
-        """);
+                CREATE TABLE IF NOT EXISTS shipping_address (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    street_id INTEGER NOT NULL,
+                    st_number INTEGER NOT NULL,
+                    st_letter TEXT,
+                    cross_st_number INTEGER NOT NULL,
+                    cross_st_letter TEXT,
+                    house_number INTEGER NOT NULL,
+                    house_letter TEXT,
+                    indications TEXT,
+                    city TEXT NOT NULL,
+                    postal_code TEXT NOT NULL,
+                    state TEXT NOT NULL,
+                    country TEXT NOT NULL,
+                    FOREIGN KEY (street_id) REFERENCES streets(id) ON DELETE RESTRICT
+                    );
+                """);
 
             stat.execute("""
-            CREATE TABLE IF NOT EXISTS orders (
-                id TEXT PRIMARY KEY,
-                user_id INTEGER NOT NULL,
-                order_date DATE NOT NULL,
-                status TEXT NOT NULL,
-                payment_id INTEGER NOT NULL,
-                subtotal REAL NOT NULL CHECK (subtotal >= 0),
-                shipping_cost REAL NOT NULL CHECK (shipping_cost >= 0),
-                tax REAL NOT NULL CHECK (tax >= 0),
-                discount REAL NOT NULL CHECK (discount >= 0),
-                total REAL NOT NULL CHECK (total >= 0),
-                shipping_id TEXT NOT NULL,
-                tracking_number TEXT,
-                notes TEXT,
-                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT,
-                FOREIGN KEY (payment_id) REFERENCES payment_data(id) ON DELETE RESTRICT,
-                FOREIGN KEY (shipping_id) REFERENCES shipping_address(id) ON DELETE RESTRICT
-            );
-        """);
+                CREATE TABLE IF NOT EXISTS order_statuses (
+                    id INTEGER PRIMARY KEY,
+                    name TEXT UNIQUE NOT NULL
+                    );
+                """);
 
             stat.execute("""
-            CREATE TABLE IF NOT EXISTS order_items (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                order_id TEXT NOT NULL,
-                product_id TEXT NOT NULL,
-                quantity INTEGER NOT NULL CHECK (quantity > 0),
-                unit_price REAL NOT NULL CHECK (unit_price >= 0),
-                item_discount REAL DEFAULT 0.0,
-                FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
-                FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT
-            );
-        """);
+                CREATE TABLE IF NOT EXISTS orders (
+                    id TEXT PRIMARY KEY,
+                    user_id INTEGER NOT NULL,
+                    order_date DATETIME NOT NULL,
+                    status_id INTEGER NOT NULL,
+                    payment_id INTEGER NOT NULL,
+                    franchise_id INTEGER NOT NULL,
+                    subtotal REAL NOT NULL CHECK (subtotal >= 0),
+                    shipping_cost REAL NOT NULL CHECK (shipping_cost >= 0),
+                    tax REAL NOT NULL CHECK (tax >= 0),
+                    discount REAL NOT NULL CHECK (discount >= 0),
+                    total REAL NOT NULL CHECK (total >= 0),
+                    shipping_id INTEGER NOT NULL,
+                    tracking_number TEXT,
+                    notes TEXT,
+                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT,
+                    FOREIGN KEY (status_id) REFERENCES order_statuses(id) ON DELETE RESTRICT,
+                    FOREIGN KEY (payment_id) REFERENCES payment_data(id) ON DELETE RESTRICT,
+                    FOREIGN KEY (franchise_id) REFERENCES franchises(id) ON DELETE RESTRICT,
+                    FOREIGN KEY (shipping_id) REFERENCES shipping_address(id) ON DELETE RESTRICT
+                    );
+                """);
 
             stat.execute("""
-            CREATE TABLE IF NOT EXISTS order_statuses (
-                id INTEGER PRIMARY KEY,
-                name TEXT UNIQUE NOT NULL
-            );
-        """);
+                CREATE TABLE IF NOT EXISTS order_items (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    order_id TEXT NOT NULL,
+                    product_id TEXT NOT NULL,
+                    quantity INTEGER NOT NULL CHECK (quantity > 0),
+                    unit_price REAL NOT NULL CHECK (unit_price >= 0),
+                    item_discount REAL DEFAULT 0.0,
+                    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+                    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT
+                    );
+                """);
 
             stat.execute("""
-            CREATE TABLE IF NOT EXISTS order_status_history (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                order_id TEXT NOT NULL,
-                status_id INTEGER NOT NULL,
-                date DATE NOT NULL,
-                FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
-                FOREIGN KEY (status_id) REFERENCES order_statuses(id) ON DELETE RESTRICT
-            );
-        """);
-
-            stat.execute("""
-            CREATE TABLE IF NOT EXISTS status_history (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                order_id TEXT NOT NULL,
-                status_id INTEGER NOT NULL,
-                updated_at DATETIME NOT NULL,
-                FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
-                FOREIGN KEY (status_id) REFERENCES order_statuses(id) ON DELETE RESTRICT
-            );
-        """);
+                CREATE TABLE IF NOT EXISTS status_history (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    order_id TEXT NOT NULL,
+                    status_id INTEGER NOT NULL,
+                    updated_at DATETIME NOT NULL,
+                    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+                    FOREIGN KEY (status_id) REFERENCES order_statuses(id) ON DELETE RESTRICT
+                    );
+                """);
 
             // Insertar valores iniciales
             insertInitialData(conn);

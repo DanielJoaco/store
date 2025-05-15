@@ -2,7 +2,6 @@ package storeApp.orders;
 
 import storeApp.product.ProductInfo;
 import storeApp.user.Customer;
-
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -64,8 +63,49 @@ public class Order {
         this.notes = notes;
     }
 
-    public void addProduct(ProductInfo product, int quantity, double unitPrice) {
-        OrderItem orderItem = new OrderItem(product, quantity, unitPrice);
+    public Order(
+            String id,
+            Customer.CustomerInfo customerInfo,
+            List<OrderItem> products,
+            LocalDateTime orderDate,
+            Status status,
+            Payment.PaymentData paymentData,
+            double shippingCost,
+            double tax,
+            double discount,
+            Address shippingAddress,
+            String notes) {
+        if(id == null || id.isEmpty())
+            throw new IllegalArgumentException("Order ID cannot be null or empty");
+        Objects.requireNonNull(customerInfo, "customerInfo is required");
+        Objects.requireNonNull(products, "products is required");
+        Objects.requireNonNull(orderDate, "orderDate is required");
+        Objects.requireNonNull(status, "status is required");
+        Objects.requireNonNull(paymentData, "paymentData is required");
+        Objects.requireNonNull(shippingAddress, "shippingAddress is required");
+
+        if (products.isEmpty()) throw new IllegalArgumentException("Order must contain at least one product");
+        if (shippingCost < 0 || tax < 0 || discount < 0)
+            throw new IllegalArgumentException("Costs and discount must be non-negative");
+
+        this.id = id;
+        this.customerInfo = customerInfo;
+        this.items = new ArrayList<>(products);
+        this.orderDate = orderDate;
+        this.status = status;
+        this.paymentData = paymentData;
+        this.shippingCost = shippingCost;
+        this.tax = tax;
+        this.discount = discount;
+        this.shippingAddress = shippingAddress;
+        this.trackingNumber = null;
+        this.statusHistory = new ArrayList<>();
+        this.statusHistory.add(new StatusHistory(status, orderDate));
+        this.notes = notes;
+    }
+
+    public void addProduct(ProductInfo product, String id, int quantity, double unitPrice) {
+        OrderItem orderItem = new OrderItem(product, id, quantity, unitPrice);
         items.add(orderItem);
     }
 
@@ -137,6 +177,7 @@ public class Order {
 
     public record OrderItem(
             ProductInfo productInfo,
+            String productId,
             int quantity,
             double unitPrice)
     {}

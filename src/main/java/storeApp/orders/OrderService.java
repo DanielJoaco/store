@@ -47,13 +47,13 @@ public class OrderService {
     /**
      * Añade un producto al pedido y devuelve el subtotal y total recalculados.
      */
-    public static void addProduct(Order order, ProductInfo product, int quantity, double unitPrice) {
+    public static void addProduct(Order order, ProductInfo product, String id, int quantity, double unitPrice) {
         Objects.requireNonNull(order,   "order is required");
         Objects.requireNonNull(product, "product is required");
         if (quantity <= 0) throw new IllegalArgumentException("Quantity must be > 0");
         if (unitPrice < 0) throw new IllegalArgumentException("Unit total must be >= 0");
 
-        order.addProduct(product, quantity, unitPrice);
+        order.addProduct(product, id, quantity, unitPrice);
         // Si en tu diseño vuelves a subtotal/total mutables, aquí podrías:
         // order.recalculateTotals();
     }

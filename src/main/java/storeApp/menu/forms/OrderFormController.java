@@ -19,6 +19,8 @@ import javafx.stage.Stage;
 
 import java.util.List;
 
+import static storeApp.db.OrderDao.createOrder;
+
 public class OrderFormController {
 
     @FXML
@@ -125,6 +127,13 @@ public class OrderFormController {
                     shippingAddress,
                     null
             );
+            boolean createdOrder = createOrder(order);
+            if(createdOrder){
+                orderFormStage.close();
+
+            }else{
+                System.out.println("Error creating order");
+            }
         }
 
     }

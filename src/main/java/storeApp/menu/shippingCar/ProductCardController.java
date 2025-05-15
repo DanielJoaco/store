@@ -23,6 +23,7 @@ public class ProductCardController {
 
     private ProductsDao.ProductViewInfo productViewInfo;
     private ProductInfo productInfo;
+    private String id;
     private int quantity;
     private double price;
     private Order.OrderItem orderItem;
@@ -45,7 +46,8 @@ public class ProductCardController {
                 productViewInfo.category(),
                 productViewInfo.subcategory(),
                 productViewInfo.description());
-        quantity = 1;
+        this.id = productViewInfo.id();
+        this.quantity = 1;
         this.price = productViewInfo.price();
 
         lblName.setText(productViewInfo.name());
@@ -87,7 +89,7 @@ public class ProductCardController {
     @FXML
     public void addToCart() {
         if (quantity > 0) {
-            this.orderItem = new Order.OrderItem(productInfo, quantity, price);
+            this.orderItem = new Order.OrderItem(productInfo, id, quantity, price);
 
             // Show confirmation message
             lblErrorMessage.setText("Added to cart!");
