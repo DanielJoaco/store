@@ -178,26 +178,28 @@ public class ProductsDao {
      * @param query The search query.
      * @return A list of matching product references.
      */
-    public static ObservableList<ProductInfo> searchProductReferences(String query) {
+    public static ObservableList<ProductInfo> searchProductByQuery(String query) {
         ObservableList<ProductInfo> results = FXCollections.observableArrayList();
         String searchPattern = "%" + query.replace("_", "\\_").replace("%", "\\%") + "%";
 
         String sql = """
-            SELECT DISTINCT
-                pr.ref,
-                pr.name,
-                pr.brand,
-                c.name AS category,
-                s.name AS subcategory,
-                pr.description
-            FROM product_references pr
-            LEFT JOIN subcategories s ON pr.subcategory_id = s.id
-            LEFT JOIN categories c ON s.category_id = c.id
-            LEFT JOIN products p ON pr.ref = p.product_ref
-            WHERE pr.ref LIKE ? ESCAPE '\\'
-            OR pr.name LIKE ? ESCAPE '\\'
-            OR pr.brand LIKE ? ESCAPE '\\'
-            """;
+        SELECT DISTINCT
+            pr.ref,
+            pr.name,
+            pr.brand,
+            c.name AS category,
+            s.name AS subcategory,
+            pr.description,
+            p.id AS product_id
+        FROM product_references pr
+        LEFT JOIN subcategories s ON pr.subcategory_id = s.id
+        LEFT JOIN categories c ON s.category_id = c.id
+        LEFT JOIN products p ON pr.ref = p.product_ref
+        WHERE pr.ref LIKE ? ESCAPE '\\'
+        OR pr.name LIKE ? ESCAPE '\\'
+        OR pr.brand LIKE ? ESCAPE '\\'
+        OR p.id LIKE ? ESCAPE '\\'
+        """;
 
         try (Connection conn = DatabaseManager.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -205,6 +207,7 @@ public class ProductsDao {
             pstmt.setString(1, searchPattern);
             pstmt.setString(2, searchPattern);
             pstmt.setString(3, searchPattern);
+            pstmt.setString(4, searchPattern);
 
             ResultSet rs = pstmt.executeQuery();
 
@@ -224,7 +227,8 @@ public class ProductsDao {
                 int nameScore = calculateSimilarityScore(query, reference.getName());
                 int refScore = calculateSimilarityScore(query, reference.getRef());
                 int brandScore = calculateSimilarityScore(query, reference.getBrand());
-                int maxScore = Math.max(Math.max(nameScore, refScore), brandScore);
+                int idScore = calculateSimilarityScore(query, rs.getString("product_id"));
+                int maxScore = Math.max(Math.max(Math.max(nameScore, refScore), brandScore), idScore);
 
                 referenceScores.put(reference, maxScore);
             }

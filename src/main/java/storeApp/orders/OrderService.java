@@ -3,6 +3,7 @@ package storeApp.orders;
 import storeApp.product.ProductInfo;
 import storeApp.user.Customer;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -40,6 +41,51 @@ public class OrderService {
                 tax,
                 discount,
                 shippingAddress,
+                notes
+        );
+    }
+
+    public static Order createOrder(
+            String id,
+            Customer.CustomerInfo customerInfo,
+            List<Order.OrderItem> items,
+            LocalDateTime orderDate,
+            Order.Status status,
+            List<Order.StatusHistory> statusHistory,
+            Payment.PaymentData paymentData,
+            double shippingCost,
+            double tax,
+            double discount,
+            Address shippingAddress,
+            String trackingNumber,
+            String notes
+    ) {
+        Objects.requireNonNull(customerInfo,   "customerInfo is required");
+        Objects.requireNonNull(items,          "items is required");
+        if (items.isEmpty())
+            throw new IllegalArgumentException("Order must contain at least one product");
+        Objects.requireNonNull(paymentData,    "paymentData is required");
+        if (shippingCost < 0 || tax < 0 || discount < 0)
+            throw new IllegalArgumentException("Costs and discount must be non-negative");
+        Objects.requireNonNull(shippingAddress,"shippingAddress is required");
+        if (statusHistory.isEmpty()){
+            throw new IllegalArgumentException("Order must contain at least one status");
+        }
+
+
+        return new Order(
+                id,
+                customerInfo,
+                items,
+                orderDate,
+                status,
+                statusHistory,
+                paymentData,
+                shippingCost,
+                tax,
+                discount,
+                shippingAddress,
+                trackingNumber,
                 notes
         );
     }

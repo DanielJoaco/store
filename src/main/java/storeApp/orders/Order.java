@@ -2,8 +2,13 @@ package storeApp.orders;
 
 import storeApp.product.ProductInfo;
 import storeApp.user.Customer;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+
+import static storeApp.menu.utils.Utils.capitalize;
 
 public class Order {
 
@@ -69,11 +74,13 @@ public class Order {
             List<OrderItem> products,
             LocalDateTime orderDate,
             Status status,
+            List<Order.StatusHistory> statusHistory,
             Payment.PaymentData paymentData,
             double shippingCost,
             double tax,
             double discount,
             Address shippingAddress,
+            String trackingNumber,
             String notes) {
         if(id == null || id.isEmpty())
             throw new IllegalArgumentException("Order ID cannot be null or empty");
@@ -83,6 +90,8 @@ public class Order {
         Objects.requireNonNull(status, "status is required");
         Objects.requireNonNull(paymentData, "paymentData is required");
         Objects.requireNonNull(shippingAddress, "shippingAddress is required");
+        if(statusHistory.isEmpty())
+            throw new IllegalArgumentException("Order status history is required");
 
         if (products.isEmpty()) throw new IllegalArgumentException("Order must contain at least one product");
         if (shippingCost < 0 || tax < 0 || discount < 0)
@@ -98,9 +107,8 @@ public class Order {
         this.tax = tax;
         this.discount = discount;
         this.shippingAddress = shippingAddress;
-        this.trackingNumber = null;
-        this.statusHistory = new ArrayList<>();
-        this.statusHistory.add(new StatusHistory(status, orderDate));
+        this.trackingNumber = trackingNumber;
+        this.statusHistory = new ArrayList<>(statusHistory);
         this.notes = notes;
     }
 
@@ -148,12 +156,22 @@ public class Order {
     public void setShippingAddress(Address shippingAddress) {this.shippingAddress = shippingAddress;}
     public void setNotes(String notes) {this.notes = notes;}
 
-    public String getId() {return id;}
+    public String getId() {
+        String[] id_split = id.split("-");
+        return id_split[4];
+    }
     public Customer.CustomerInfo getCustomerInfo() {return customerInfo;}
     public List<OrderItem> getItems() {
         return Collections.unmodifiableList(items);
     }
+    public String getOrderDateFormatted() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yy");
+        return orderDate.format(formatter);
+    }
     public LocalDateTime getOrderDate() {return orderDate;}
+    public String getCustomerName() {
+        return customerInfo.name();
+    }
     public Payment.PaymentData getPaymentData() {return paymentData;}
     public double getSubtotal() {
         return items.stream()
@@ -166,11 +184,17 @@ public class Order {
     public double getTotal() {
         return getSubtotal() + shippingCost + tax - discount;
     }
+    public int getItemCount() {
+        return items.stream()
+                .mapToInt(OrderItem::quantity)
+                .sum();
+    }
     public Address getShippingAddress() {return shippingAddress;}
     public String getTrackingNumber() {return trackingNumber;}
     public StatusHistory getLastStatus() {
-        return statusHistory.get(statusHistory.size() - 1);
+        return statusHistory.getLast();
     }
+    public String getLastStatusString(){return capitalize(statusHistory.getLast().status.name());}
     public List<StatusHistory> getStatusHistory() {
         return Collections.unmodifiableList(statusHistory);}
     public String getNotes() {return notes;}

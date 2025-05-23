@@ -7,7 +7,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 
-import static storeApp.db.ProductsDao.searchProductReferences;
+import static storeApp.db.ProductsDao.searchProductByQuery;
 import static storeApp.menu.utils.Utils.closeAfterDelay;
 
 public class SearchEngineController {
@@ -57,7 +57,7 @@ public class SearchEngineController {
             String searchText = tfSearch.getText();
             switch (tittle) {
                 case "Search Product": {
-                    ObservableList<ProductInfo> productsList = searchProductReferences(searchText);
+                    ObservableList<ProductInfo> productsList = searchProductByQuery(searchText);
                     if (productsList.isEmpty()) {
                         lblError.setText("No products were found for:" + searchText);
                     } else if (productsList.size() == 1) {

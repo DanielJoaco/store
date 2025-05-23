@@ -4,7 +4,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import storeApp.menu.shippingCar.PayMethodsController;
-import storeApp.menu.shippingCar.ProductCardController;
 import storeApp.menu.tables.ViewProductsOrderTable;
 import storeApp.orders.Address;
 import storeApp.orders.Order;
@@ -19,7 +18,7 @@ import javafx.stage.Stage;
 
 import java.util.List;
 
-import static storeApp.db.OrderDao.createOrder;
+import static storeApp.db.OrderDao.createOrderInDb;
 
 public class OrderFormController {
 
@@ -127,7 +126,7 @@ public class OrderFormController {
                     shippingAddress,
                     null
             );
-            boolean createdOrder = createOrder(order);
+            boolean createdOrder = createOrderInDb(order);
             if(createdOrder){
                 orderFormStage.close();
 

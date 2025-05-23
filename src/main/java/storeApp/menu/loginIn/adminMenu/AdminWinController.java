@@ -128,7 +128,7 @@ public class AdminWinController implements Initializable {
 
     private void showOrdersTable() {
         setTableVisibility(false, false, true);
-        // Order data loading would be implemented here when needed
+        ordersTableController.loadData();
         setButtonStyles("", "", "#FF9800");
     }
 

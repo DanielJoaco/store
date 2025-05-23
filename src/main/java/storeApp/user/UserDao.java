@@ -196,6 +196,25 @@ public class UserDao {
         return null;
     }
 
+    public static User findUserById(int id){
+        if(id < 0) {
+            return null;
+        }
+        String sql = "SELECT * FROM users WHERE id = ?";
+        try(Connection conn = DatabaseManager.connect();
+            PreparedStatement pstmt = conn.prepareStatement(sql)){
+            pstmt.setInt(1, id);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return createUserFromResultSet(rs);
+                }
+            }
+        } catch (SQLException e){
+            logger.error("❌ Error finding user: {}", e.getMessage());
+        }
+        return null;
+    }
+
     /**
      * Searches for users that match the search pattern in ID, name, or email.
      *

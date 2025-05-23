@@ -40,7 +40,7 @@ public class ProductsTableController extends BaseTableController<Product> {
         TableColumn<Product, String> colProductBrand = createColumn("Brand", "brand", 60);
         TableColumn<Product, Integer> colProductStock = createColumn("Stock", "stock", 45);
         TableColumn<Product, Double> colProductCost = createColumn("Cost", "cost", 50);
-        TableColumn<Product, Double> colProductPrice = createColumn("Price", "total", 50);
+        TableColumn<Product, Double> colProductPrice = createColumn("Price", "price", 50);
         TableColumn<Product, String> colProductBill = createColumn("Bill", "bill", 80);
 
         TableColumn<Product, String> colProductCategory = createColumn("Cat.", "category", 70);
