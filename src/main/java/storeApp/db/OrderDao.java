@@ -2,21 +2,19 @@ package storeApp.db;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import storeApp.orders.*;
-
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import storeApp.product.ProductInfo;
 import storeApp.user.Customer;
+import storeApp.orders.*;
 
 import static storeApp.db.ProductsDao.searchProductByQuery;
+import static storeApp.db.Utils.*;
 import static storeApp.orders.OrderService.createOrder;
 import static storeApp.user.UserDao.findUserById;
 
@@ -71,36 +69,6 @@ public class OrderDao {
         return executeTransactionWithResult(OrderDao::performGetAllOrders, FXCollections.observableArrayList());
     }
 
-    // Método genérico para ejecutar transacciones
-    private static boolean executeOrderTransaction(Order order, OrderTransactionFunction function) {
-        return executeTransactionWithResult(conn -> {
-            function.execute(conn, order);
-            return true;
-        }, false);
-    }
-
-    // Método genérico para transacciones con resultado
-    private static <T> T executeTransactionWithResult(TransactionFunction<T> function, T defaultValue) {
-        Connection conn = null;
-        boolean originalAutoCommit = false;
-
-        try {
-            conn = DatabaseManager.connect();
-            originalAutoCommit = conn.getAutoCommit();
-            conn.setAutoCommit(false);
-
-            T result = function.execute(conn);
-            conn.commit();
-            return result;
-        } catch (SQLException e) {
-            logger.error("Error executing database transaction", e);
-            rollbackConnection(conn);
-            return defaultValue;
-        } finally {
-            closeConnection(conn, originalAutoCommit);
-        }
-    }
-
     // Lógica específica para crear orden
     private static void performCreateOrder(Connection conn, Order order) throws SQLException {
         OrderContext context = prepareOrderContext(conn, order);
@@ -132,22 +100,7 @@ public class OrderDao {
         insertStatusHistory(conn, order.getId(), context.statusId, order.getLastStatus().dateTime());
     }
 
-    // Clase para encapsular el contexto de la orden
-    private static class OrderContext {
-        final int paymentMethodId;
-        final int franchiseId;
-        final int streetId;
-        final int userId;
-        final int statusId;
 
-        OrderContext(int paymentMethodId, int franchiseId, int streetId, int userId, int statusId) {
-            this.paymentMethodId = paymentMethodId;
-            this.franchiseId = franchiseId;
-            this.streetId = streetId;
-            this.userId = userId;
-            this.statusId = statusId;
-        }
-    }
 
     // Método para preparar el contexto común de las operaciones
     private static OrderContext prepareOrderContext(Connection conn, Order order) throws SQLException {
@@ -176,17 +129,6 @@ public class OrderDao {
         }
 
         return new OrderContext(paymentMethodId, franchiseId, streetId, userId, statusId);
-    }
-
-    // Método genérico para obtener IDs por nombre
-    private static int getIdByName(Connection conn, String tableName, String columnName, String value) throws SQLException {
-        String sql = String.format("SELECT id FROM %s WHERE %s = ?", tableName, columnName);
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, value);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                return rs.next() ? rs.getInt("id") : -1;
-            }
-        }
     }
 
     // Insertar orden usando el contexto
@@ -504,36 +446,7 @@ public class OrderDao {
         }
     }
 
-    // Métodos utilitarios
-    private static void rollbackConnection(Connection conn) {
-        if (conn != null) {
-            try {
-                conn.rollback();
-            } catch (SQLException rollbackEx) {
-                logger.error("Error during rollback", rollbackEx);
-            }
-        }
+    private record OrderContext(int paymentMethodId, int franchiseId, int streetId, int userId, int statusId) {
     }
 
-    private static void closeConnection(Connection conn, boolean originalAutoCommit) {
-        if (conn != null) {
-            try {
-                conn.setAutoCommit(originalAutoCommit);
-                conn.close();
-            } catch (SQLException e) {
-                logger.error("Error closing database connection", e);
-            }
-        }
-    }
-
-    // Interfaces funcionales para las transacciones
-    @FunctionalInterface
-    private interface TransactionFunction<T> {
-        T execute(Connection conn) throws SQLException;
-    }
-
-    @FunctionalInterface
-    private interface OrderTransactionFunction {
-        void execute(Connection conn, Order order) throws SQLException;
-    }
 }
